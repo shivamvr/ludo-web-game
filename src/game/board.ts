@@ -149,6 +149,25 @@ export const YARD_ORIGIN: Record<Color, Cell> = {
   red: { row: 9, col: 0 },
 };
 
+/** The colour whose yard sits in the opposite corner of the board. */
+export const OPPOSITE_CORNER: Record<Color, Color> = {
+  green: 'blue', // top-left    <-> bottom-right
+  blue: 'green',
+  yellow: 'red', // top-right   <-> bottom-left
+  red: 'yellow',
+};
+
+/**
+ * The order colours are handed out in as players arrive. Not the turn order,
+ * which stays COLORS — this only decides who gets which corner.
+ *
+ * The first two are opposite corners, so a two-player game is played across the
+ * board rather than along one edge. Seated side by side, one player's home
+ * column runs alongside the other's start, and most of the board never comes
+ * into play.
+ */
+export const SEATING_ORDER: readonly Color[] = ['red', 'yellow', 'green', 'blue'];
+
 /**
  * How far each parking slot is drawn in from the centre of its corner cell, in
  * cell units. Without it the tokens sit hard against the yard's inner border.

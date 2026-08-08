@@ -7,6 +7,7 @@
  * and when — is unit-testable without Firebase, an emulator, or a network.
  */
 
+import { OPPOSITE_CORNER, SEATING_ORDER } from '../game/board';
 import { isGameOver, skipTurn } from '../game/engine';
 import type { Color, GameState } from '../game/types';
 import { COLORS } from '../game/types';
@@ -107,10 +108,37 @@ function awayFor(player: RoomPlayer | undefined, now: number): number {
   return player.disconnectedAt === undefined ? Number.POSITIVE_INFINITY : now - player.disconnectedAt;
 }
 
-/** The first color no one has taken, in clockwise seat order. */
+/**
+ * The first color no one has taken. Handed out in SEATING_ORDER rather than turn
+ * order, so the first two players land in opposite corners.
+ */
 export function freeColor(players: Record<string, RoomPlayer>): Color | null {
   const taken = new Set(Object.values(players).map((p) => p.color));
-  return COLORS.find((color) => !taken.has(color)) ?? null;
+  return SEATING_ORDER.find((color) => !taken.has(color)) ?? null;
+}
+
+/**
+ * Move a two-player table onto opposite corners, keeping the host where they
+ * are. Join order already seats the first two diagonally; this catches the table
+ * that got there another way — a third player who joined and left, or a colour
+ * picked by hand in the lobby.
+ *
+ * Left alone at three or four players: every corner is in use, or the empty one
+ * is nobody's to argue over.
+ */
+export function seatOppositeCorners(
+  players: Record<string, RoomPlayer>,
+  hostId: string,
+): Record<string, RoomPlayer> {
+  const uids = Object.keys(players);
+  if (uids.length !== 2) return players;
+
+  const host = uids.includes(hostId) ? hostId : uids[0];
+  const guest = uids.find((uid) => uid !== host)!;
+  const across = OPPOSITE_CORNER[players[host].color];
+  if (players[guest].color === across) return players;
+
+  return { ...players, [guest]: { ...players[guest], color: across } };
 }
 
 /** Seats sorted into clockwise turn order. */
@@ -194,13 +222,17 @@ export function decideStart(
   if (room.hostId !== uid) return deny('not-host');
   if (room.status !== 'waiting') return deny('already-started');
 
-  const seats = seatsOf(room.players);
-  if (seats.length < 2) return deny('not-enough-players');
+  if (Object.keys(room.players).length < 2) return deny('not-enough-players');
+
+  // Written back to the lobby seats as well, so the colour a player sees beside
+  // their name is the colour they are about to play.
+  const players = seatOppositeCorners(room.players, room.hostId);
 
   return allow({
     ...room,
+    players,
     status: 'playing',
-    gameState: forDatabase(seatGame(seats)),
+    gameState: forDatabase(seatGame(seatsOf(players))),
   });
 }
 

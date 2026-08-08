@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FINISH } from '../../game/board';
+import { FINISH, OPPOSITE_CORNER } from '../../game/board';
 import { applyMove, getLegalMoves, isGameOver, rollDice } from '../../game/engine';
 import type { GameState } from '../../game/types';
 import { seatGame } from '../rooms';
@@ -78,7 +78,7 @@ describe('joining', () => {
     if (!decision.ok) return;
     expect(decision.value.players['uid-b']).toEqual({
       name: 'Bo',
-      color: 'green',
+      color: 'yellow',
       joinedAt: 50,
       connected: true,
     });
@@ -86,11 +86,13 @@ describe('joining', () => {
     expect(decision.value.players['uid-a'].color).toBe('red');
   });
 
-  it('fills colors in clockwise order and then refuses a fifth player', () => {
+  it('seats arrivals across the board first, then refuses a fifth player', () => {
     let room = waitingRoom({ 'uid-a': player('Ana', 'red') });
+    // The second seat is red's opposite corner, not its neighbour, so a game
+    // that stops at two players is played diagonally.
     for (const [uid, color] of [
-      ['uid-b', 'green'],
-      ['uid-c', 'yellow'],
+      ['uid-b', 'yellow'],
+      ['uid-c', 'green'],
       ['uid-d', 'blue'],
     ] as const) {
       const decision = decideJoin(room, uid, uid);
@@ -181,9 +183,53 @@ describe('starting', () => {
     const state = toGameState(decision.value.gameState)!;
     expect(state.players.map((p) => [p.color, p.uid, p.name])).toEqual([
       ['red', 'uid-a', 'Ana'],
-      ['green', 'uid-b', 'Bo'],
+      ['yellow', 'uid-b', 'Bo'],
     ]);
     expect(currentSeatUid(state)).toBe('uid-a');
+  });
+
+  it('puts two players on opposite corners, keeping the host where they are', () => {
+    // Adjacent seats: red is bottom-left, green top-left. Bo moves across to
+    // red's opposite corner rather than Ana being shifted.
+    const decision = decideStart(twoSeats, 'uid-a', seatGame);
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) return;
+
+    expect(decision.value.players['uid-a'].color).toBe('red');
+    expect(decision.value.players['uid-b'].color).toBe('yellow');
+    expect(OPPOSITE_CORNER[decision.value.players['uid-a'].color]).toBe(
+      decision.value.players['uid-b'].color,
+    );
+  });
+
+  it('leaves a two-player table that is already across the board alone', () => {
+    const across = waitingRoom({
+      'uid-a': player('Ana', 'green'),
+      'uid-b': player('Bo', 'blue'),
+    });
+    const decision = decideStart(across, 'uid-a', seatGame);
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) return;
+
+    expect(decision.value.players['uid-a'].color).toBe('green');
+    expect(decision.value.players['uid-b'].color).toBe('blue');
+  });
+
+  it('leaves three players as they are', () => {
+    const three = waitingRoom({
+      'uid-a': player('Ana', 'red'),
+      'uid-b': player('Bo', 'green'),
+      'uid-c': player('Cy', 'yellow'),
+    });
+    const decision = decideStart(three, 'uid-a', seatGame);
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) return;
+
+    expect(Object.values(decision.value.players).map((p) => p.color).sort()).toEqual([
+      'green',
+      'red',
+      'yellow',
+    ]);
   });
 
   it('seats players in clockwise order regardless of join order', () => {

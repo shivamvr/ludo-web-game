@@ -8,7 +8,9 @@ import {
   HOME_COLUMN,
   HOME_COLUMN_LENGTH,
   MAIN_TRACK_STEPS,
+  OPPOSITE_CORNER,
   SAFE_INDICES,
+  SEATING_ORDER,
   START_INDEX,
   TRACK,
   TRACK_LENGTH,
@@ -219,6 +221,24 @@ describe('yards', () => {
         }
       }
     }
+  });
+
+  it('pairs each colour with the yard diagonally across from it', () => {
+    for (const color of COLORS) {
+      const mine = YARD_ORIGIN[color];
+      const theirs = YARD_ORIGIN[OPPOSITE_CORNER[color]];
+      // Diagonal means both coordinates differ, which is what rules out the two
+      // neighbouring corners — they share a row or a column.
+      expect(mine.row).not.toBe(theirs.row);
+      expect(mine.col).not.toBe(theirs.col);
+      expect(OPPOSITE_CORNER[OPPOSITE_CORNER[color]]).toBe(color);
+    }
+  });
+
+  it('seats the first two arrivals in opposite corners', () => {
+    expect([...SEATING_ORDER].sort()).toEqual([...COLORS].sort());
+    expect(OPPOSITE_CORNER[SEATING_ORDER[0]]).toBe(SEATING_ORDER[1]);
+    expect(OPPOSITE_CORNER[SEATING_ORDER[2]]).toBe(SEATING_ORDER[3]);
   });
 
   it('keeps the four tokens in a yard well apart', () => {

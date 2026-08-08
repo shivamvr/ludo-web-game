@@ -47,8 +47,12 @@
             },
             // Your colour is yours to change, but only in the lobby — once the
             // game is under way a seat's colour is what binds it to the board.
+            // The host may also move a seat while the room is waiting, which is
+            // what lets the start write put a two-player table on opposite
+            // corners. `root` is the pre-write state, so a room being started in
+            // this very write still reads as 'waiting' here.
             "color": {
-              ".validate": "newData.isString() && newData.val().matches(/^(red|green|yellow|blue)$/) && (newData.val() === data.val() || ($playerUid === auth.uid && (!data.exists() || root.child('rooms').child($roomId).child('status').val() === 'waiting')))"
+              ".validate": "newData.isString() && newData.val().matches(/^(red|green|yellow|blue)$/) && (newData.val() === data.val() || (!data.exists() && $playerUid === auth.uid) || (root.child('rooms').child($roomId).child('status').val() === 'waiting' && ($playerUid === auth.uid || root.child('rooms').child($roomId).child('hostId').val() === auth.uid)))"
             },
             "joinedAt": {
               ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val())"
