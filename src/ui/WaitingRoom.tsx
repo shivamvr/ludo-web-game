@@ -10,6 +10,7 @@ import {
 import type { Room } from '../data/serialize';
 import type { Color } from '../game/types';
 import { COLORS } from '../game/types';
+import { copyText } from './clipboard';
 import './Lobby.css';
 
 interface Props {
@@ -25,6 +26,7 @@ export default function WaitingRoom({ room, uid, joinError, onNameChange, onLeav
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [manualLink, setManualLink] = useState<string | null>(null);
   // Someone who arrived by invite link never saw the home screen, so this is
   // their only chance to be something other than "Player".
   const [draftName, setDraftName] = useState<string | null>(null);
@@ -69,14 +71,20 @@ export default function WaitingRoom({ room, uid, joinError, onNameChange, onLeav
     if (!result.ok) setError(explain(result));
   };
 
+  /**
+   * Copying can fail for reasons that are nobody's fault — most often because
+   * the page was opened over a LAN address, where the clipboard API does not
+   * exist. That is not an error to report; it just means the link has to be
+   * copied by hand, so show it ready to be selected.
+   */
   const copyLink = async () => {
     const url = `${window.location.origin}${window.location.pathname}?room=${room.id}`;
-    try {
-      await navigator.clipboard.writeText(url);
+    if (await copyText(url)) {
+      setManualLink(null);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setError(url);
+    } else {
+      setManualLink(url);
     }
   };
 
@@ -93,6 +101,19 @@ export default function WaitingRoom({ room, uid, joinError, onNameChange, onLeav
         <button type="button" className="lobby__secondary" onClick={copyLink}>
           {copied ? 'Link copied' : 'Copy invite link'}
         </button>
+
+        {manualLink && (
+          <label className="lobby__manual">
+            <span className="field__label">Copy this link</span>
+            <input
+              className="field__input lobby__manual-link"
+              value={manualLink}
+              readOnly
+              onFocus={(e) => e.currentTarget.select()}
+              ref={(el) => el?.select()}
+            />
+          </label>
+        )}
 
         <ul className="seat-list">
           {seats.map(([playerUid, player]) => (

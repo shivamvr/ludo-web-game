@@ -346,3 +346,17 @@
   color: var(--muted);
   font-size: 14px;
 }
+
+.lobby__manual {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 4px;
+  text-align: left;
+}
+
+.lobby__manual-link {
+  font-size: 15px;
+  /* Long invite URLs must stay tappable rather than stretch the lobby. */
+  text-overflow: ellipsis;
+}
