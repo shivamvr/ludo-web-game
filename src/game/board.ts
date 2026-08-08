@@ -12,7 +12,7 @@
  *   - Four 6-cell home columns pointing inward, then the center goal at (7,7).
  */
 
-import type { Color } from './types';
+import type { Color } from "./types";
 
 export interface Cell {
   row: number;
@@ -64,35 +64,66 @@ export const CENTER_SIZE = 3;
  */
 export const TRACK: readonly Cell[] = [
   // left arm, upper row — red's start square first
-  { row: 6, col: 1 }, { row: 6, col: 2 }, { row: 6, col: 3 },
-  { row: 6, col: 4 }, { row: 6, col: 5 },
+  { row: 6, col: 1 },
+  { row: 6, col: 2 },
+  { row: 6, col: 3 },
+  { row: 6, col: 4 },
+  { row: 6, col: 5 },
   // top arm, left column, going up
-  { row: 5, col: 6 }, { row: 4, col: 6 }, { row: 3, col: 6 },
-  { row: 2, col: 6 }, { row: 1, col: 6 }, { row: 0, col: 6 },
+  { row: 5, col: 6 },
+  { row: 4, col: 6 },
+  { row: 3, col: 6 },
+  { row: 2, col: 6 },
+  { row: 1, col: 6 },
+  { row: 0, col: 6 },
   // top arm tip
   { row: 0, col: 7 },
   // top arm, right column, coming down — green's start square at (1,8)
-  { row: 0, col: 8 }, { row: 1, col: 8 }, { row: 2, col: 8 },
-  { row: 3, col: 8 }, { row: 4, col: 8 }, { row: 5, col: 8 },
+  { row: 0, col: 8 },
+  { row: 1, col: 8 },
+  { row: 2, col: 8 },
+  { row: 3, col: 8 },
+  { row: 4, col: 8 },
+  { row: 5, col: 8 },
   // right arm, upper row
-  { row: 6, col: 9 }, { row: 6, col: 10 }, { row: 6, col: 11 },
-  { row: 6, col: 12 }, { row: 6, col: 13 }, { row: 6, col: 14 },
+  { row: 6, col: 9 },
+  { row: 6, col: 10 },
+  { row: 6, col: 11 },
+  { row: 6, col: 12 },
+  { row: 6, col: 13 },
+  { row: 6, col: 14 },
   // right arm tip
   { row: 7, col: 14 },
   // right arm, lower row, coming back — yellow's start square at (8,13)
-  { row: 8, col: 14 }, { row: 8, col: 13 }, { row: 8, col: 12 },
-  { row: 8, col: 11 }, { row: 8, col: 10 }, { row: 8, col: 9 },
+  { row: 8, col: 14 },
+  { row: 8, col: 13 },
+  { row: 8, col: 12 },
+  { row: 8, col: 11 },
+  { row: 8, col: 10 },
+  { row: 8, col: 9 },
   // bottom arm, right column, going down
-  { row: 9, col: 8 }, { row: 10, col: 8 }, { row: 11, col: 8 },
-  { row: 12, col: 8 }, { row: 13, col: 8 }, { row: 14, col: 8 },
+  { row: 9, col: 8 },
+  { row: 10, col: 8 },
+  { row: 11, col: 8 },
+  { row: 12, col: 8 },
+  { row: 13, col: 8 },
+  { row: 14, col: 8 },
   // bottom arm tip
   { row: 14, col: 7 },
   // bottom arm, left column, coming up — blue's start square at (13,6)
-  { row: 14, col: 6 }, { row: 13, col: 6 }, { row: 12, col: 6 },
-  { row: 11, col: 6 }, { row: 10, col: 6 }, { row: 9, col: 6 },
+  { row: 14, col: 6 },
+  { row: 13, col: 6 },
+  { row: 12, col: 6 },
+  { row: 11, col: 6 },
+  { row: 10, col: 6 },
+  { row: 9, col: 6 },
   // left arm, lower row, coming back
-  { row: 8, col: 5 }, { row: 8, col: 4 }, { row: 8, col: 3 },
-  { row: 8, col: 2 }, { row: 8, col: 1 }, { row: 8, col: 0 },
+  { row: 8, col: 5 },
+  { row: 8, col: 4 },
+  { row: 8, col: 3 },
+  { row: 8, col: 2 },
+  { row: 8, col: 1 },
+  { row: 8, col: 0 },
   // left arm tip
   { row: 7, col: 0 },
   // back to red's start
@@ -151,10 +182,10 @@ export const YARD_ORIGIN: Record<Color, Cell> = {
 
 /** The colour whose yard sits in the opposite corner of the board. */
 export const OPPOSITE_CORNER: Record<Color, Color> = {
-  green: 'blue', // top-left    <-> bottom-right
-  blue: 'green',
-  yellow: 'red', // top-right   <-> bottom-left
-  red: 'yellow',
+  green: "blue", // top-left    <-> bottom-right
+  blue: "green",
+  yellow: "red", // top-right   <-> bottom-left
+  red: "yellow",
 };
 
 /**
@@ -166,13 +197,18 @@ export const OPPOSITE_CORNER: Record<Color, Color> = {
  * column runs alongside the other's start, and most of the board never comes
  * into play.
  */
-export const SEATING_ORDER: readonly Color[] = ['red', 'yellow', 'green', 'blue'];
+export const SEATING_ORDER: readonly Color[] = [
+  "red",
+  "yellow",
+  "green",
+  "blue",
+];
 
 /**
  * How far each parking slot is drawn in from the centre of its corner cell, in
  * cell units. Without it the tokens sit hard against the yard's inner border.
  */
-const YARD_SLOT_INSET = 0.2;
+const YARD_SLOT_INSET = 0.5;
 
 function slots(origin: Cell): readonly Point[] {
   const near = 1.5 + YARD_SLOT_INSET;
@@ -198,7 +234,10 @@ export const YARD_SLOT_CENTERS: Record<Color, readonly Point[]> = {
  * shared track (in the yard, in a home column, or finished). Two tokens collide
  * only if this returns the same non-null value for both.
  */
-export function absoluteTrackIndex(color: Color, progress: number): number | null {
+export function absoluteTrackIndex(
+  color: Color,
+  progress: number,
+): number | null {
   if (progress < 1 || progress > MAIN_TRACK_STEPS) return null;
   return (START_INDEX[color] + progress - 1) % TRACK_LENGTH;
 }
