@@ -38,46 +38,78 @@
 /* --- arm-tip arrows, pointing into each colour's home column --- */
 
 .cell--arrow::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 26%;
   background: currentColor;
 }
 
-.cell--arrow-green { color: var(--green); }
-.cell--arrow-yellow { color: var(--yellow); }
-.cell--arrow-blue { color: var(--blue); }
-.cell--arrow-red { color: var(--red); }
+.cell--arrow-green {
+  color: var(--green);
+}
+.cell--arrow-yellow {
+  color: var(--yellow);
+}
+.cell--arrow-blue {
+  color: var(--blue);
+}
+.cell--arrow-red {
+  color: var(--red);
+}
 
-.cell--arrow-right::before { clip-path: polygon(0 0, 100% 50%, 0 100%); }
-.cell--arrow-left::before { clip-path: polygon(100% 0, 0 50%, 100% 100%); }
-.cell--arrow-down::before { clip-path: polygon(0 0, 100% 0, 50% 100%); }
-.cell--arrow-up::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.cell--arrow-right::before {
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.cell--arrow-left::before {
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+.cell--arrow-down::before {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.cell--arrow-up::before {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
 
-.cell--yard.cell--red { background: var(--red); }
-.cell--yard.cell--green { background: var(--green); }
-.cell--yard.cell--yellow { background: var(--yellow); }
-.cell--yard.cell--blue { background: var(--blue); }
+.cell--yard.cell--red {
+  background: var(--red);
+}
+.cell--yard.cell--green {
+  background: var(--green);
+}
+.cell--yard.cell--yellow {
+  background: var(--yellow);
+}
+.cell--yard.cell--blue {
+  background: var(--blue);
+}
 
-.cell--home.cell--red { background: var(--red); }
-.cell--home.cell--green { background: var(--green); }
-.cell--home.cell--yellow { background: var(--yellow); }
-.cell--home.cell--blue { background: var(--blue); }
+.cell--home.cell--red {
+  background: var(--red);
+}
+.cell--home.cell--green {
+  background: var(--green);
+}
+.cell--home.cell--yellow {
+  background: var(--yellow);
+}
+.cell--home.cell--blue {
+  background: var(--blue);
+}
 
 /* Start squares are left white, as on the printed board: the arrow at the arm
    tip is the only marking, and the safe squares carry stars. */
 
 /* Star safe squares, drawn as an outline like the printed board. */
 .cell--star::after {
-  content: '★';
+  content: "★";
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: min(2.4vw, 13px);
+  font-size: min(3.8vw, 22px);
   line-height: 1;
   color: transparent;
-  -webkit-text-stroke: 1px #2b2f3a;
+  -webkit-text-stroke: 1.1px #2b2f3a;
 }
 
 /* The centre cells are blank; the goal is drawn as one overlay across them. */
@@ -91,19 +123,35 @@
   inset: 0;
 }
 
-.goal__wedge--up { clip-path: polygon(0 0, 100% 0, 50% 50%); }
-.goal__wedge--right { clip-path: polygon(100% 0, 100% 100%, 50% 50%); }
-.goal__wedge--down { clip-path: polygon(100% 100%, 0 100%, 50% 50%); }
-.goal__wedge--left { clip-path: polygon(0 100%, 0 0, 50% 50%); }
+.goal__wedge--up {
+  clip-path: polygon(0 0, 100% 0, 50% 50%);
+}
+.goal__wedge--right {
+  clip-path: polygon(100% 0, 100% 100%, 50% 50%);
+}
+.goal__wedge--down {
+  clip-path: polygon(100% 100%, 0 100%, 50% 50%);
+}
+.goal__wedge--left {
+  clip-path: polygon(0 100%, 0 0, 50% 50%);
+}
 
-.goal__wedge--green { background: var(--green); }
-.goal__wedge--yellow { background: var(--yellow); }
-.goal__wedge--blue { background: var(--blue); }
-.goal__wedge--red { background: var(--red); }
+.goal__wedge--green {
+  background: var(--green);
+}
+.goal__wedge--yellow {
+  background: var(--yellow);
+}
+.goal__wedge--blue {
+  background: var(--blue);
+}
+.goal__wedge--red {
+  background: var(--red);
+}
 
 /* Highlight for squares a legal move can reach. */
 .cell--target::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 6%;
   border-radius: 50%;
@@ -114,7 +162,9 @@
 }
 
 @keyframes target-pulse {
-  50% { opacity: 0.35; }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 /* --- yards --- */
@@ -122,7 +172,9 @@
 /* Grown slightly past its 4x4 grid area so the tokens are not pressed against
    the inner border. Paired with the inset applied to the slot centres. */
 .yard-pad {
-  border-radius: 8px;
+  /* A percentage keeps the corners equally round at every board size, which a
+     fixed pixel radius does not. */
+  border-radius: 15%;
   background: var(--board);
   scale: 1.1;
 }
@@ -138,10 +190,18 @@
   opacity: 0.55;
 }
 
-.yard-slot--red { border-color: var(--red); }
-.yard-slot--green { border-color: var(--green); }
-.yard-slot--yellow { border-color: var(--yellow); }
-.yard-slot--blue { border-color: var(--blue); }
+.yard-slot--red {
+  border-color: var(--red);
+}
+.yard-slot--green {
+  border-color: var(--green);
+}
+.yard-slot--yellow {
+  border-color: var(--yellow);
+}
+.yard-slot--blue {
+  border-color: var(--blue);
+}
 
 /* --- tokens --- */
 
@@ -162,14 +222,25 @@
   border-radius: 50%;
   border: 1px solid rgb(0 0 0 / 0.22);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.28);
-  transition: left 0.22s ease, top 0.22s ease, scale 0.15s ease;
+  transition:
+    left 0.22s ease,
+    top 0.22s ease,
+    scale 0.15s ease;
   z-index: 2;
 }
 
-.token--red { background: var(--red); }
-.token--green { background: var(--green); }
-.token--yellow { background: var(--yellow); }
-.token--blue { background: var(--blue); }
+.token--red {
+  background: var(--red);
+}
+.token--green {
+  background: var(--green);
+}
+.token--yellow {
+  background: var(--yellow);
+}
+.token--blue {
+  background: var(--blue);
+}
 
 .token--movable {
   pointer-events: auto;
@@ -184,7 +255,7 @@
 
 /* Enlarge the tap target well past the visual size on small screens. */
 .token--movable::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -10px;
   border-radius: 50%;
@@ -195,7 +266,9 @@
 }
 
 @keyframes token-bob {
-  50% { translate: -50% -62%; }
+  50% {
+    translate: -50% -62%;
+  }
 }
 
 /* A token sent back to its yard flashes white on the way. */
@@ -205,9 +278,17 @@
 }
 
 @keyframes token-hit {
-  0% { box-shadow: 0 0 0 0 rgb(255 255 255 / 0.9); filter: brightness(2.2); }
-  60% { box-shadow: 0 0 0 10px rgb(255 255 255 / 0); filter: brightness(1); }
-  100% { box-shadow: 0 2px 4px rgb(0 0 0 / 0.35); }
+  0% {
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 0.9);
+    filter: brightness(2.2);
+  }
+  60% {
+    box-shadow: 0 0 0 10px rgb(255 255 255 / 0);
+    filter: brightness(1);
+  }
+  100% {
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.35);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
