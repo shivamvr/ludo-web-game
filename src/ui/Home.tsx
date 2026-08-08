@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { DEFAULT_TOKEN_COUNT } from '../game/board';
 import { createRoom, explain, inspectRoom, normalizeCode } from '../data/rooms';
 import type { AuthState } from '../data/useAuth';
+import TokenCountPicker from './TokenCountPicker';
 import './Lobby.css';
 
 interface Props {
@@ -16,6 +18,7 @@ export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLoca
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState<'create' | 'join' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tokenCount, setTokenCount] = useState(DEFAULT_TOKEN_COUNT);
 
   const online = auth.configured && auth.uid !== null;
 
@@ -23,7 +26,7 @@ export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLoca
     if (!auth.uid) return;
     setBusy('create');
     setError(null);
-    const result = await createRoom(auth.uid, name.trim() || 'Player');
+    const result = await createRoom(auth.uid, name.trim() || 'Player', tokenCount);
     setBusy(null);
     if (result.ok) onEnterRoom(result.value);
     else setError(explain(result));
@@ -79,6 +82,13 @@ export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLoca
                 onChange={(e) => onNameChange(e.target.value)}
               />
             </label>
+
+            {/* Only the creator picks: everyone who joins plays the host's game. */}
+            <TokenCountPicker
+              value={tokenCount}
+              onChange={setTokenCount}
+              disabled={busy !== null}
+            />
 
             <button
               type="button"

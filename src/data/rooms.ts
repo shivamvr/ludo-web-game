@@ -10,9 +10,9 @@
  */
 
 import { get, ref, runTransaction, serverTimestamp, update } from 'firebase/database';
+import { DEFAULT_TOKEN_COUNT, SEATING_ORDER, isTokenCount } from '../game/board';
 import { createGame } from '../game/engine';
 import type { Color, GameState } from '../game/types';
-import { COLORS } from '../game/types';
 import { getDb } from './firebase';
 import {
   ABANDON_GRACE_MS,
@@ -67,11 +67,16 @@ function randomCode(): string {
 }
 
 /** Build the initial GameState with each seat bound to its owner's uid. */
-export function seatGame(seats: { uid: string; name: string; color: Color }[]): GameState {
+export function seatGame(
+  seats: { uid: string; name: string; color: Color }[],
+  tokenCount: number = DEFAULT_TOKEN_COUNT,
+): GameState {
   const byColor = new Map(seats.map((seat) => [seat.color, seat] as const));
   const base = createGame(
     seats.map((seat) => seat.color),
     seats.map((seat) => seat.name),
+    undefined,
+    tokenCount,
   );
   return {
     ...base,
@@ -126,7 +131,12 @@ function message(thrown: unknown): string {
  * `undefined` for an occupied code is what makes the claim atomic — two people
  * creating a room at the same instant cannot land on the same code.
  */
-export async function createRoom(uid: string, name: string): Promise<Result<string>> {
+export async function createRoom(
+  uid: string,
+  name: string,
+  tokenCount: number = DEFAULT_TOKEN_COUNT,
+): Promise<Result<string>> {
+  const tokens = isTokenCount(tokenCount) ? tokenCount : DEFAULT_TOKEN_COUNT;
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = randomCode();
     try {
@@ -135,8 +145,11 @@ export async function createRoom(uid: string, name: string): Promise<Result<stri
         return {
           hostId: uid,
           status: 'waiting',
-          players: { [uid]: { name, color: COLORS[0], joinedAt: Date.now(), connected: true } },
+          players: {
+            [uid]: { name, color: SEATING_ORDER[0], joinedAt: Date.now(), connected: true },
+          },
           createdAt: serverTimestamp(),
+          tokenCount: tokens,
         };
       });
       if (result.committed) return done(code);

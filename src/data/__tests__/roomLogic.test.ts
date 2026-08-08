@@ -215,6 +215,29 @@ describe('starting', () => {
     expect(decision.value.players['uid-b'].color).toBe('blue');
   });
 
+  it("deals the room's token count to every seat", () => {
+    for (const count of [4, 6, 8]) {
+      const decision = decideStart({ ...twoSeats, tokenCount: count }, 'uid-a', seatGame);
+      expect(decision.ok).toBe(true);
+      if (!decision.ok) return;
+
+      const state = toGameState(decision.value.gameState)!;
+      for (const player of state.players) {
+        expect(player.tokens).toHaveLength(count);
+      }
+    }
+  });
+
+  it('falls back to four when the room predates the setting or stores nonsense', () => {
+    for (const stored of [undefined, 3, 99, 'six']) {
+      const room = stored === undefined ? twoSeats : { ...twoSeats, tokenCount: stored };
+      const decision = decideStart(room, 'uid-a', seatGame);
+      expect(decision.ok).toBe(true);
+      if (!decision.ok) return;
+      expect(toGameState(decision.value.gameState)!.players[0].tokens).toHaveLength(4);
+    }
+  });
+
   it('leaves three players as they are', () => {
     const three = waitingRoom({
       'uid-a': player('Ana', 'red'),

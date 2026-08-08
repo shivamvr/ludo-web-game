@@ -8,10 +8,10 @@ import {
   START_INDEX,
   TRACK,
   YARD_ORIGIN,
-  YARD_SLOT_CENTERS,
   cellCenter,
   isSafeIndex,
   progressToCell,
+  yardSlots,
 } from '../game/board';
 import type { Cell, Point } from '../game/board';
 import type { Color, GameState, Move } from '../game/types';
@@ -181,6 +181,12 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
     return new Set(event?.type === 'captured' ? event.tokenIds : []);
   }, [state.lastEvent]);
 
+  /**
+   * Tokens per player, read off the game rather than passed in — every player
+   * has the same number, and it decides how the yards are laid out.
+   */
+  const tokenCount = state.players[0]?.tokens.length ?? 4;
+
   /** Every token laid out on the grid, fanned out where squares are shared. */
   const placed = useMemo(() => {
     const occupancy = new Map<string, number>();
@@ -190,7 +196,7 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
         // everywhere else a token sits in the middle of its cell.
         const point =
           token.progress === 0
-            ? YARD_SLOT_CENTERS[player.color][index]
+            ? yardSlots(player.color, player.tokens.length)[index]
             : cellCenter(progressToCell(player.color, token.progress)!);
         const key = cellKey(point);
         const slot = occupancy.get(key) ?? 0;
@@ -280,7 +286,7 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
           );
         })}
         {COLORS.flatMap((color) =>
-          YARD_SLOT_CENTERS[color].map((point, i) => (
+          yardSlots(color, tokenCount).map((point, i) => (
             <div
               key={`slot-${color}-${i}`}
               className={`yard-slot yard-slot--${color}`}

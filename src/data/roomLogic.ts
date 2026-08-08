@@ -7,7 +7,12 @@
  * and when — is unit-testable without Firebase, an emulator, or a network.
  */
 
-import { OPPOSITE_CORNER, SEATING_ORDER } from '../game/board';
+import {
+  DEFAULT_TOKEN_COUNT,
+  OPPOSITE_CORNER,
+  SEATING_ORDER,
+  isTokenCount,
+} from '../game/board';
 import { isGameOver, skipTurn } from '../game/engine';
 import type { Color, GameState } from '../game/types';
 import { COLORS } from '../game/types';
@@ -63,6 +68,7 @@ export interface StoredRoom {
   gameState?: unknown;
   createdAt?: unknown;
   endedReason?: EndedReason;
+  tokenCount?: unknown;
 }
 
 export type Decision =
@@ -88,6 +94,7 @@ function asRoom(current: unknown): StoredRoom | null {
   if (raw.gameState !== undefined) room.gameState = raw.gameState;
   if (raw.createdAt !== undefined) room.createdAt = raw.createdAt;
   if (raw.endedReason !== undefined) room.endedReason = raw.endedReason;
+  if (raw.tokenCount !== undefined) room.tokenCount = raw.tokenCount;
   return room;
 }
 
@@ -215,7 +222,7 @@ export function decideColor(current: unknown, uid: string, color: Color): Decisi
 export function decideStart(
   current: unknown,
   uid: string,
-  seatGame: (seats: { uid: string; name: string; color: Color }[]) => GameState,
+  seatGame: (seats: { uid: string; name: string; color: Color }[], tokenCount: number) => GameState,
 ): Decision {
   const room = asRoom(current);
   if (!room) return deny('not-found');
@@ -232,7 +239,14 @@ export function decideStart(
     ...room,
     players,
     status: 'playing',
-    gameState: forDatabase(seatGame(seatsOf(players))),
+    gameState: forDatabase(
+      seatGame(
+        seatsOf(players),
+        // A room stored before this was a choice, or with a value we do not
+        // recognise, plays with four rather than refusing to start.
+        isTokenCount(room.tokenCount) ? (room.tokenCount as number) : DEFAULT_TOKEN_COUNT,
+      ),
+    ),
   });
 }
 

@@ -8,6 +8,7 @@
  * app only ever sees a complete, correctly typed GameState.
  */
 
+import { DEFAULT_TOKEN_COUNT, isTokenCount } from '../game/board';
 import type { Color, GameEvent, GameState, Move, Player, Token, TurnPhase } from '../game/types';
 import { COLORS } from '../game/types';
 
@@ -34,6 +35,8 @@ export interface Room {
   gameState: GameState | null;
   createdAt: number;
   endedReason: EndedReason | null;
+  /** Tokens each player gets, chosen by the host when the room is created. */
+  tokenCount: number;
 }
 
 type Raw = Record<string, unknown>;
@@ -211,6 +214,8 @@ export function toRoom(id: string, value: unknown): Room | null {
     gameState: toGameState(value.gameState),
     createdAt: num(value.createdAt, 0),
     endedReason,
+    // Rooms created before this was a choice have no field; they are four.
+    tokenCount: isTokenCount(value.tokenCount) ? (value.tokenCount as number) : DEFAULT_TOKEN_COUNT,
   };
 }
 

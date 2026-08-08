@@ -18,7 +18,12 @@ export default function LocalGame({ onExit }: { onExit: () => void }) {
   if (!state) {
     return (
       <main className="app app--setup">
-        <Setup onStart={(colors: Color[]) => setState(createGame(colors))} onBack={onExit} />
+        <Setup
+          onStart={(colors: Color[], tokenCount: number) =>
+            setState(createGame(colors, [], undefined, tokenCount))
+          }
+          onBack={onExit}
+        />
       </main>
     );
   }

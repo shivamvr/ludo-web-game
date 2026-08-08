@@ -6,9 +6,11 @@
  */
 
 import {
+  DEFAULT_TOKEN_COUNT,
   FINISH,
   HOME_COLUMN_START,
   MAIN_TRACK_STEPS,
+  TOKEN_COUNTS,
   YARD,
   absoluteTrackIndex,
   isSafeIndex,
@@ -18,7 +20,6 @@ import type { Color, GameEvent, GameState, Move, Player, Token } from './types';
 import { COLORS } from './types';
 
 export const MAX_CONSECUTIVE_SIXES = 3;
-const TOKENS_PER_PLAYER = 4;
 
 // ---------------------------------------------------------------------------
 // Construction
@@ -26,12 +27,16 @@ const TOKENS_PER_PLAYER = 4;
 
 /**
  * Start a new game. `colors` must be 2..4 distinct colors; they are seated in
- * clockwise track order regardless of the order given.
+ * clockwise track order regardless of the order given. Every player gets the
+ * same number of tokens — the table agrees on it before the first roll, and
+ * nothing afterwards reads it back off a setting: the token list itself is the
+ * record, so a state read from the database needs no extra field to be complete.
  */
 export function createGame(
   colors: Color[],
   names: string[] = [],
   seed: number = randomSeed(),
+  tokenCount: number = DEFAULT_TOKEN_COUNT,
 ): GameState {
   if (colors.length < 2 || colors.length > 4) {
     throw new Error(`A game needs 2 to 4 players, got ${colors.length}`);
@@ -39,13 +44,16 @@ export function createGame(
   if (new Set(colors).size !== colors.length) {
     throw new Error('Each player must have a distinct color');
   }
+  if (!TOKEN_COUNTS.includes(tokenCount)) {
+    throw new Error(`Tokens per player must be one of ${TOKEN_COUNTS.join(', ')}`);
+  }
 
   const seated = COLORS.filter((c) => colors.includes(c));
 
   const players: Player[] = seated.map((color) => ({
     color,
     name: names[colors.indexOf(color)] ?? capitalize(color),
-    tokens: makeTokens(color),
+    tokens: makeTokens(color, tokenCount),
     finished: false,
   }));
 
@@ -63,8 +71,8 @@ export function createGame(
   };
 }
 
-function makeTokens(color: Color): Token[] {
-  return Array.from({ length: TOKENS_PER_PLAYER }, (_, i) => ({
+function makeTokens(color: Color, count: number): Token[] {
+  return Array.from({ length: count }, (_, i) => ({
     id: `${color}-${i}`,
     color,
     progress: YARD,

@@ -7,10 +7,12 @@ import {
   GRID_SIZE,
   HOME_COLUMN,
   HOME_COLUMN_LENGTH,
+  DEFAULT_TOKEN_COUNT,
   MAIN_TRACK_STEPS,
   OPPOSITE_CORNER,
   SAFE_INDICES,
   SEATING_ORDER,
+  TOKEN_COUNTS,
   START_INDEX,
   TRACK,
   TRACK_LENGTH,
@@ -19,6 +21,7 @@ import {
   absoluteTrackIndex,
   isSafeIndex,
   progressToCell,
+  yardSlots,
 } from '../board';
 import { COLORS } from '../types';
 import type { Cell } from '../board';
@@ -239,6 +242,50 @@ describe('yards', () => {
     expect([...SEATING_ORDER].sort()).toEqual([...COLORS].sort());
     expect(OPPOSITE_CORNER[SEATING_ORDER[0]]).toBe(SEATING_ORDER[1]);
     expect(OPPOSITE_CORNER[SEATING_ORDER[2]]).toBe(SEATING_ORDER[3]);
+  });
+
+  it('gives every supported token count its own arrangement, all inside the pad', () => {
+    const padMargin = (4 * 1.1 - 4) / 2;
+    const tokenRadius = 0.86 / 2;
+
+    for (const count of TOKEN_COUNTS) {
+      for (const color of COLORS) {
+        const points = yardSlots(color, count);
+        expect(points).toHaveLength(count);
+        expect(new Set(points.map(key)).size).toBe(count);
+
+        const origin = YARD_ORIGIN[color];
+        for (const point of points) {
+          for (const [value, start] of [
+            [point.row, origin.row],
+            [point.col, origin.col],
+          ] as const) {
+            expect(value - tokenRadius).toBeGreaterThan(start + 1 - padMargin);
+            expect(value + tokenRadius).toBeLessThan(start + 5 + padMargin);
+          }
+        }
+      }
+    }
+  });
+
+  it('never lets two tokens in a yard overlap, at any count', () => {
+    for (const count of TOKEN_COUNTS) {
+      const points = yardSlots('green', count);
+      for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+          const dr = points[i].row - points[j].row;
+          const dc = points[i].col - points[j].col;
+          // Centres must be more than a token apart, or the discs would touch.
+          expect(Math.hypot(dr, dc)).toBeGreaterThan(0.86);
+        }
+      }
+    }
+  });
+
+  it('leaves the four-token layout exactly where it was', () => {
+    for (const color of COLORS) {
+      expect(yardSlots(color, DEFAULT_TOKEN_COUNT)).toEqual(YARD_SLOT_CENTERS[color]);
+    }
   });
 
   it('keeps the four tokens in a yard well apart', () => {

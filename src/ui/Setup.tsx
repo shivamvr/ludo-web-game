@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { DEFAULT_TOKEN_COUNT } from '../game/board';
 import type { Color } from '../game/types';
 import { COLORS } from '../game/types';
+import TokenCountPicker from './TokenCountPicker';
 
 interface Props {
-  onStart: (colors: Color[]) => void;
+  onStart: (colors: Color[], tokenCount: number) => void;
   onBack: () => void;
 }
 
@@ -13,6 +15,7 @@ interface Props {
  */
 export default function Setup({ onStart, onBack }: Props) {
   const [selected, setSelected] = useState<Color[]>(['red', 'green', 'yellow', 'blue']);
+  const [tokenCount, setTokenCount] = useState(DEFAULT_TOKEN_COUNT);
 
   const toggle = (color: Color) => {
     setSelected((prev) =>
@@ -45,10 +48,12 @@ export default function Setup({ onStart, onBack }: Props) {
         })}
       </div>
 
+      <TokenCountPicker value={tokenCount} onChange={setTokenCount} />
+
       <button
         type="button"
         className="setup__start"
-        onClick={() => onStart(selected)}
+        onClick={() => onStart(selected, tokenCount)}
         disabled={!ready}
       >
         {ready ? `Start ${selected.length}-player game` : 'Pick at least 2 colors'}

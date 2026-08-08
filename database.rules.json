@@ -26,6 +26,13 @@
           ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val())"
         },
 
+        // Tokens each player gets. Set once by whoever creates the room and
+        // fixed thereafter — the game state is built from it, so letting it move
+        // mid-room would put the board and the seats out of step.
+        "tokenCount": {
+          ".validate": "newData.isNumber() && newData.val() >= 4 && newData.val() <= 8 && newData.val() % 1 === 0 && (!data.exists() || newData.val() === data.val())"
+        },
+
         // Only the host may start the game. Anyone at the table may finish it —
         // the winning move and the abandonment watchdog both need to.
         "status": {

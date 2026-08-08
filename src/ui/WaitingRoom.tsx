@@ -86,6 +86,10 @@ export default function WaitingRoom({ room, uid, joinError, onNameChange, onLeav
         <p className="setup__subtitle">Room code</p>
         <p className="room-code">{room.id}</p>
 
+        {/* Set by whoever made the room, so everyone who arrives can see what
+            they have joined before the first roll. */}
+        <p className="lobby__rule">{room.tokenCount} tokens each</p>
+
         <button type="button" className="lobby__secondary" onClick={copyLink}>
           {copied ? 'Link copied' : 'Copy invite link'}
         </button>

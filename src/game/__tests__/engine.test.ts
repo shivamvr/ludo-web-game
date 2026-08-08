@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { FINISH, MAIN_TRACK_STEPS, START_INDEX, absoluteTrackIndex, isSafeIndex } from '../board';
+import {
+  FINISH,
+  MAIN_TRACK_STEPS,
+  START_INDEX,
+  TOKEN_COUNTS,
+  absoluteTrackIndex,
+  isSafeIndex,
+} from '../board';
 import {
   applyMove,
   createGame,
@@ -29,6 +36,40 @@ describe('createGame', () => {
   it('rejects impossible line-ups', () => {
     expect(() => createGame(['red'])).toThrow(/2 to 4/);
     expect(() => createGame(['red', 'red'])).toThrow(/distinct/);
+    expect(() => createGame(['red', 'green'], [], 1, 3)).toThrow(/Tokens per player/);
+    expect(() => createGame(['red', 'green'], [], 1, 9)).toThrow(/Tokens per player/);
+  });
+
+  it('deals every player the chosen number of tokens, with distinct ids', () => {
+    for (const count of TOKEN_COUNTS) {
+      const game = createGame(['red', 'green', 'blue'], [], 1, count);
+      const ids = new Set<string>();
+      for (const player of game.players) {
+        expect(player.tokens).toHaveLength(count);
+        for (const token of player.tokens) {
+          expect(token.progress).toBe(0);
+          expect(token.color).toBe(player.color);
+          ids.add(token.id);
+        }
+      }
+      expect(ids.size).toBe(count * game.players.length);
+    }
+  });
+
+  it('needs every token home before a player is finished, whatever the count', () => {
+    const count = 6;
+    let game = createGame(['red', 'green'], [], 1, count);
+    // All but one token home: still playing.
+    game = {
+      ...game,
+      players: game.players.map((p, i) =>
+        i === 0
+          ? { ...p, tokens: p.tokens.map((t, j) => (j === 0 ? t : { ...t, progress: FINISH })) }
+          : p,
+      ),
+    };
+    expect(game.players[0].tokens.filter((t) => t.progress === FINISH)).toHaveLength(count - 1);
+    expect(isGameOver(game)).toBe(false);
   });
 
   it('produces a state that survives a JSON round-trip', () => {

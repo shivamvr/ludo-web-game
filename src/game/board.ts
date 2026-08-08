@@ -204,29 +204,64 @@ export const SEATING_ORDER: readonly Color[] = [
   "blue",
 ];
 
-/**
- * How far each parking slot is drawn in from the centre of its corner cell, in
- * cell units. Without it the tokens sit hard against the yard's inner border.
- */
-const YARD_SLOT_INSET = 0.5;
+/** How many tokens each player may be given. */
+export const TOKEN_COUNTS: readonly number[] = [4, 5, 6, 7, 8];
+export const DEFAULT_TOKEN_COUNT = 4;
+export const MIN_TOKEN_COUNT = TOKEN_COUNTS[0];
+export const MAX_TOKEN_COUNT = TOKEN_COUNTS[TOKEN_COUNTS.length - 1];
 
-function slots(origin: Cell): readonly Point[] {
-  const near = 1.5 + YARD_SLOT_INSET;
-  const far = 4.5 - YARD_SLOT_INSET;
-  return [
-    { row: origin.row + near, col: origin.col + near },
-    { row: origin.row + near, col: origin.col + far },
-    { row: origin.row + far, col: origin.col + near },
-    { row: origin.row + far, col: origin.col + far },
-  ];
+export function isTokenCount(value: unknown): boolean {
+  return typeof value === "number" && TOKEN_COUNTS.includes(value);
 }
 
-/** Centres of the four parking slots inside a yard, in token order. */
+/**
+ * How far the outermost parking slots sit in from the centre of their corner
+ * cell, in cell units. Without it the tokens sit hard against the yard's inner
+ * border. Two slots to an axis can afford to sit wide; three have to draw in to
+ * leave room between them.
+ */
+const YARD_SLOT_INSET: Record<number, number> = { 2: 0.5, 3: 0.2 };
+
+/** The centres of `n` slots spread evenly about the middle of a yard axis. */
+function axis(n: number, of: number): number[] {
+  // Both a full row and a short one step by the same amount, so a partial row
+  // sits centred under the row above rather than drifting out of line.
+  const step = n === 1 ? 0 : (3 - 2 * YARD_SLOT_INSET[of]) / (of - 1);
+  return Array.from({ length: n }, (_, i) => 3 + (i - (n - 1) / 2) * step);
+}
+
+/**
+ * The parking slots inside a yard, in token order.
+ *
+ * Laid out as a grid: two to a row up to four tokens, three thereafter, with any
+ * short final row centred. Four keeps the square arrangement it has always had.
+ */
+function slots(origin: Cell, count: number): readonly Point[] {
+  const cols = count <= 4 ? 2 : 3;
+  const rows = Math.ceil(count / cols);
+  const ys = axis(rows, rows);
+
+  const points: Point[] = [];
+  for (let row = 0; row < rows; row++) {
+    const inRow = Math.min(cols, count - row * cols);
+    for (const x of axis(inRow, cols)) {
+      points.push({ row: origin.row + ys[row], col: origin.col + x });
+    }
+  }
+  return points;
+}
+
+/** Centres of a colour's parking slots, for a game of `count` tokens each. */
+export function yardSlots(color: Color, count: number): readonly Point[] {
+  return slots(YARD_ORIGIN[color], count);
+}
+
+/** The default four-token arrangement, kept for callers that have no game yet. */
 export const YARD_SLOT_CENTERS: Record<Color, readonly Point[]> = {
-  red: slots(YARD_ORIGIN.red),
-  green: slots(YARD_ORIGIN.green),
-  yellow: slots(YARD_ORIGIN.yellow),
-  blue: slots(YARD_ORIGIN.blue),
+  red: yardSlots("red", DEFAULT_TOKEN_COUNT),
+  green: yardSlots("green", DEFAULT_TOKEN_COUNT),
+  yellow: yardSlots("yellow", DEFAULT_TOKEN_COUNT),
+  blue: yardSlots("blue", DEFAULT_TOKEN_COUNT),
 };
 
 /**

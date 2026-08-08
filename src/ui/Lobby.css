@@ -339,3 +339,10 @@
   font-size: 14px;
   margin-top: -6px;
 }
+
+.lobby__rule {
+  margin-top: -10px;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
