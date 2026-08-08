@@ -99,6 +99,38 @@ const GRID: CellInfo[] = (() => {
   return grid;
 })();
 
+/**
+ * The grid lines, as one path over deduplicated unit edges.
+ *
+ * Drawing them as a border on each cell doubled every edge two lined cells
+ * shared, left a single line where one met a yard, and drew nothing at all
+ * around the goal block. Collecting each edge exactly once and stroking them in
+ * a single layer gives one uniform hairline everywhere instead.
+ *
+ * Edges on the board's perimeter are left out — the board's own border draws
+ * those, and a stroke centred on the edge would be half clipped away.
+ */
+const GRID_LINES: string = (() => {
+  const edges = new Set<string>();
+
+  for (let row = 0; row < GRID_SIZE; row++) {
+    for (let col = 0; col < GRID_SIZE; col++) {
+      const { kind } = GRID[row * GRID_SIZE + col];
+      // Yards are solid blocks of colour, and the goal is drawn as one shape,
+      // so only the track and the home columns are ruled into squares. The goal
+      // still gets an outline: the cells ringing it contribute those edges.
+      if (kind !== 'track' && kind !== 'home') continue;
+
+      if (row > 0) edges.add(`M${col} ${row}h1`);
+      if (row < GRID_SIZE - 1) edges.add(`M${col} ${row + 1}h1`);
+      if (col > 0) edges.add(`M${col} ${row}v1`);
+      if (col < GRID_SIZE - 1) edges.add(`M${col + 1} ${row}v1`);
+    }
+  }
+
+  return [...edges].join('');
+})();
+
 interface Props {
   state: GameState;
   legalMoves: Move[];
@@ -196,6 +228,19 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
           <span key={side} className={`goal__wedge goal__wedge--${['yellow', 'blue', 'red', 'green'][i]} goal__wedge--${side}`} />
         ))}
       </div>
+
+      {/*
+        Drawn over the goal, so the block is outlined but stays free of the
+        lines that would otherwise run across it.
+      */}
+      <svg
+        className="board__lines"
+        viewBox={`0 0 ${GRID_SIZE} ${GRID_SIZE}`}
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path d={GRID_LINES} vectorEffect="non-scaling-stroke" shapeRendering="crispEdges" />
+      </svg>
 
       {/*
         Yard pads and parking rings live in their own grid layer. Putting them

@@ -2,6 +2,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1;
+  border: 1px solid var(--board-line);
   border-radius: 10px;
   overflow: hidden;
   background: var(--board);
@@ -30,9 +31,22 @@
   position: relative;
 }
 
-.cell--track,
-.cell--home {
-  border: 1px solid var(--board-line);
+/* One layer for every grid line, so each is exactly a pixel wide whatever the
+   board's size — see GRID_LINES. `non-scaling-stroke` keeps the width fixed
+   while the viewBox scales, and `crispEdges` stops a line landing on a half
+   pixel from rendering paler than its neighbours. */
+.board__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.board__lines path {
+  fill: none;
+  stroke: var(--board-line);
+  stroke-width: 1;
 }
 
 /* --- arm-tip arrows, pointing into each colour's home column --- */
