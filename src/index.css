@@ -16,7 +16,8 @@
   --text: #eef1f8;
   --muted: #98a0bb;
   --board: #fdfdfd;
-  --board-line: #cfd4e2;
+  /* Thin dark rules between cells, as printed on a real board. */
+  --board-line: #333a47;
 
   color-scheme: dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;

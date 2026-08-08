@@ -45,7 +45,6 @@ export default function TokenPiece({
       onClick={movable ? onClick : undefined}
       {...(movable ? { type: 'button' as const, 'aria-label': `Move ${color} token` } : {})}
     >
-      <span className="token__dot" />
     </Element>
   );
 }

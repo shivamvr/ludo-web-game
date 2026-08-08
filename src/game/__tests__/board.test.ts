@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   CENTER,
+  CENTER_ORIGIN,
+  CENTER_SIZE,
   FINISH,
   GRID_SIZE,
   HOME_COLUMN,
@@ -49,10 +51,23 @@ describe('track geometry', () => {
   });
 
   it('puts each color on its canonical start square', () => {
-    expect(TRACK[START_INDEX.red]).toEqual({ row: 6, col: 1 });
-    expect(TRACK[START_INDEX.green]).toEqual({ row: 1, col: 8 });
-    expect(TRACK[START_INDEX.yellow]).toEqual({ row: 8, col: 13 });
-    expect(TRACK[START_INDEX.blue]).toEqual({ row: 13, col: 6 });
+    // Corners: green top-left, yellow top-right, blue bottom-right, red bottom-left.
+    expect(TRACK[START_INDEX.green]).toEqual({ row: 6, col: 1 });
+    expect(TRACK[START_INDEX.yellow]).toEqual({ row: 1, col: 8 });
+    expect(TRACK[START_INDEX.blue]).toEqual({ row: 8, col: 13 });
+    expect(TRACK[START_INDEX.red]).toEqual({ row: 13, col: 6 });
+  });
+
+  it('puts each yard in the corner its start square leads out of', () => {
+    for (const color of COLORS) {
+      const start = TRACK[START_INDEX[color]];
+      const yard = YARD_ORIGIN[color];
+      // The start square is within a cell of the yard's 6x6 block.
+      expect(start.row).toBeGreaterThanOrEqual(yard.row - 1);
+      expect(start.row).toBeLessThanOrEqual(yard.row + 6);
+      expect(start.col).toBeGreaterThanOrEqual(yard.col - 1);
+      expect(start.col).toBeLessThanOrEqual(yard.col + 6);
+    }
   });
 
   it('spaces the four starts evenly around the loop', () => {
@@ -97,20 +112,30 @@ describe('per-color paths', () => {
     }
   });
 
-  it('gives every color a 6-cell home column that ends beside the center', () => {
+  it('gives every color a home column that ends against the goal block', () => {
     const seen = new Set<string>();
+    /** How far outside the 3x3 goal block a cell lies, per axis. */
+    const outside = (value: number, origin: number) =>
+      Math.max(0, origin - value, value - (origin + CENTER_SIZE - 1));
+
     for (const color of COLORS) {
       const column = HOME_COLUMN[color];
       expect(column).toHaveLength(HOME_COLUMN_LENGTH);
       for (const cell of column) {
         expect(seen.has(key(cell))).toBe(false);
         seen.add(key(cell));
+        // No home cell may stray into the goal block itself.
+        const insideGoal =
+          outside(cell.row, CENTER_ORIGIN.row) === 0 && outside(cell.col, CENTER_ORIGIN.col) === 0;
+        expect(insideGoal).toBe(false);
       }
+
       const innermost = column[HOME_COLUMN_LENGTH - 1];
-      const dr = Math.abs(innermost.row - CENTER.row);
-      const dc = Math.abs(innermost.col - CENTER.col);
-      expect(dr + dc).toBe(1);
+      const gap =
+        outside(innermost.row, CENTER_ORIGIN.row) + outside(innermost.col, CENTER_ORIGIN.col);
+      expect(gap).toBe(1);
     }
+    expect(seen.size).toBe(HOME_COLUMN_LENGTH * COLORS.length);
   });
 
   it('walks a continuous, non-repeating path from start to center', () => {
@@ -123,7 +148,9 @@ describe('per-color paths', () => {
           expect(seen.has(key(cell))).toBe(false);
           seen.add(key(cell));
         }
-        if (p > 1) {
+        // The final step crosses into the middle of the 3x3 goal block, so it
+        // is the one hop wider than a single cell.
+        if (p > 1 && p < FINISH) {
           const prev = progressToCell(color, p - 1)!;
           expect(Math.abs(cell.row - prev.row)).toBeLessThanOrEqual(1);
           expect(Math.abs(cell.col - prev.col)).toBeLessThanOrEqual(1);

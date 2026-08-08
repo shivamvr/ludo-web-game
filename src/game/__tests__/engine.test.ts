@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FINISH, MAIN_TRACK_STEPS, absoluteTrackIndex, isSafeIndex } from '../board';
+import { FINISH, MAIN_TRACK_STEPS, START_INDEX, absoluteTrackIndex, isSafeIndex } from '../board';
 import {
   applyMove,
   createGame,
@@ -51,7 +51,7 @@ describe('leaving the yard', () => {
 
     const moved = applyMove(rolled, 'red-0');
     expect(progressOf(moved, 'red-0')).toBe(1);
-    expect(absoluteTrackIndex('red', 1)).toBe(0);
+    expect(absoluteTrackIndex('red', 1)).toBe(START_INDEX.red);
   });
 
   it('passes the turn when a non-6 leaves every token stuck in the yard', () => {
@@ -89,7 +89,7 @@ describe('sixes', () => {
       'red-0': FINISH,
       'red-1': FINISH,
       'red-2': FINISH,
-      'red-3': 55,
+      'red-3': FINISH - 3,
     });
     const rolled = rollDice({ ...stuck, rngSeed: findSeed([6]) });
 
@@ -222,7 +222,7 @@ describe('own tokens block', () => {
 
   it('lets friendly tokens pile up on the center', () => {
     const game = awaitingMove(
-      gameWith(['red', 'green'], { 'red-0': FINISH, 'red-1': 55 }),
+      gameWith(['red', 'green'], { 'red-0': FINISH, 'red-1': FINISH - 3 }),
       3,
     );
     const move = getLegalMoves(game).find((m) => m.tokenId === 'red-1')!;
@@ -233,13 +233,13 @@ describe('own tokens block', () => {
 
 describe('exact count to finish', () => {
   it('accepts the exact roll into the center', () => {
-    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 55 }), 3);
+    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': FINISH - 3 }), 3);
     const move = getLegalMoves(game).find((m) => m.tokenId === 'red-0')!;
-    expect(move).toMatchObject({ from: 55, to: FINISH, kind: 'finish' });
+    expect(move).toMatchObject({ from: FINISH - 3, to: FINISH, kind: 'finish' });
   });
 
   it('refuses to move a token that would overshoot the center', () => {
-    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 55 }), 4);
+    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': FINISH - 3 }), 4);
     expect(getLegalMoves(game).map((m) => m.tokenId)).not.toContain('red-0');
   });
 
@@ -263,13 +263,13 @@ describe('turn order', () => {
       'red-0': FINISH,
       'red-1': FINISH,
       'red-2': FINISH,
-      'red-3': 55,
+      'red-3': FINISH - 3,
     });
     const rolled = rollDice({ ...stuck, rngSeed: findSeed([5]) });
 
     expect(rolled.lastEvent).toEqual({ type: 'noLegalMove', color: 'red', value: 5 });
     expect(currentTurn(rolled).color).toBe('green');
-    expect(progressOf(rolled, 'red-3')).toBe(55);
+    expect(progressOf(rolled, 'red-3')).toBe(FINISH - 3);
   });
 
   it('skips players who have already brought every token home', () => {
@@ -394,7 +394,7 @@ describe('winning', () => {
         'red-0': FINISH,
         'red-1': FINISH,
         'red-2': FINISH,
-        'red-3': 55,
+        'red-3': FINISH - 3,
       }),
       3,
     );
@@ -415,7 +415,7 @@ describe('winning', () => {
         'red-0': FINISH,
         'red-1': FINISH,
         'red-2': FINISH,
-        'red-3': 52,
+        'red-3': FINISH - 6,
       }),
       6,
     );

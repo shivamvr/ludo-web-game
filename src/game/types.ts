@@ -7,7 +7,12 @@
 
 export type Color = 'red' | 'green' | 'yellow' | 'blue';
 
-/** Seat order around the board, clockwise. Also the turn order. */
+/**
+ * Seat order around the board, and the turn order. Red starts, and the cycle
+ * runs clockwise from its corner: red bottom-left, green top-left, yellow
+ * top-right, blue bottom-right. Each colour's start square sits a quarter of
+ * the way around the track from the one before it.
+ */
 export const COLORS: readonly Color[] = ['red', 'green', 'yellow', 'blue'];
 
 /**

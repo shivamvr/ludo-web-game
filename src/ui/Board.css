@@ -35,6 +35,25 @@
   border: 1px solid var(--board-line);
 }
 
+/* --- arm-tip arrows, pointing into each colour's home column --- */
+
+.cell--arrow::before {
+  content: '';
+  position: absolute;
+  inset: 26%;
+  background: currentColor;
+}
+
+.cell--arrow-green { color: var(--green); }
+.cell--arrow-yellow { color: var(--yellow); }
+.cell--arrow-blue { color: var(--blue); }
+.cell--arrow-red { color: var(--red); }
+
+.cell--arrow-right::before { clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.cell--arrow-left::before { clip-path: polygon(100% 0, 0 50%, 100% 100%); }
+.cell--arrow-down::before { clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.cell--arrow-up::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+
 .cell--yard.cell--red { background: var(--red); }
 .cell--yard.cell--green { background: var(--green); }
 .cell--yard.cell--yellow { background: var(--yellow); }
@@ -45,46 +64,42 @@
 .cell--home.cell--yellow { background: var(--yellow); }
 .cell--home.cell--blue { background: var(--blue); }
 
-.cell--start.cell--red { background: var(--red-soft); }
-.cell--start.cell--green { background: var(--green-soft); }
-.cell--start.cell--yellow { background: var(--yellow-soft); }
-.cell--start.cell--blue { background: var(--blue-soft); }
+/* Start squares are left white, as on the printed board: the arrow at the arm
+   tip is the only marking, and the safe squares carry stars. */
 
-/* Star squares and colored starts are the safe squares. */
-.cell--star::after,
-.cell--start::after {
-  content: '';
+/* Star safe squares, drawn as an outline like the printed board. */
+.cell--star::after {
+  content: '★';
   position: absolute;
-  inset: 22%;
-  background: var(--board-line);
-  clip-path: polygon(
-    50% 0%, 61% 35%, 98% 35%, 68% 57%,
-    79% 91%, 50% 70%, 21% 91%, 32% 57%,
-    2% 35%, 39% 35%
-  );
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: min(2.4vw, 13px);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px #2b2f3a;
 }
 
-.cell--start.cell--red::after { background: var(--red); }
-.cell--start.cell--green::after { background: var(--green); }
-.cell--start.cell--yellow::after { background: var(--yellow); }
-.cell--start.cell--blue::after { background: var(--blue); }
-
-.cell--goalCorner {
-  background: #eceff6;
+/* The centre cells are blank; the goal is drawn as one overlay across them. */
+.goal {
+  position: absolute;
+  pointer-events: none;
 }
 
-/* The center goal: four triangles meeting in the middle. */
-.cell--center {
-  background:
-    conic-gradient(
-      from 45deg,
-      var(--yellow) 0deg 90deg,
-      var(--blue) 90deg 180deg,
-      var(--red) 180deg 270deg,
-      var(--green) 270deg 360deg
-    );
-  border: 1px solid var(--board-line);
+.goal__wedge {
+  position: absolute;
+  inset: 0;
 }
+
+.goal__wedge--up { clip-path: polygon(0 0, 100% 0, 50% 50%); }
+.goal__wedge--right { clip-path: polygon(100% 0, 100% 100%, 50% 50%); }
+.goal__wedge--down { clip-path: polygon(100% 100%, 0 100%, 50% 50%); }
+.goal__wedge--left { clip-path: polygon(0 100%, 0 0, 50% 50%); }
+
+.goal__wedge--green { background: var(--green); }
+.goal__wedge--yellow { background: var(--yellow); }
+.goal__wedge--blue { background: var(--blue); }
+.goal__wedge--red { background: var(--red); }
 
 /* Highlight for squares a legal move can reach. */
 .cell--target::before {
@@ -145,10 +160,8 @@
   translate: -50% -50%;
   scale: var(--scale, 1);
   border-radius: 50%;
-  border: 2px solid rgb(0 0 0 / 0.45);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 0.35);
+  border: 1px solid rgb(0 0 0 / 0.22);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.28);
   transition: left 0.22s ease, top 0.22s ease, scale 0.15s ease;
   z-index: 2;
 }
@@ -157,13 +170,6 @@
 .token--green { background: var(--green); }
 .token--yellow { background: var(--yellow); }
 .token--blue { background: var(--blue); }
-
-.token__dot {
-  width: 34%;
-  height: 34%;
-  border-radius: 50%;
-  background: rgb(255 255 255 / 0.85);
-}
 
 .token--movable {
   pointer-events: auto;

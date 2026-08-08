@@ -39,15 +39,22 @@ export const GRID_SIZE = 15;
 export const TRACK_LENGTH = 52;
 /** How many track cells a token visits, from its start square inclusive. */
 export const MAIN_TRACK_STEPS = 51;
-/** Colored cells in each player's own home column. */
-export const HOME_COLUMN_LENGTH = 6;
+/**
+ * Coloured cells in each player's own home column. Five, because the centre
+ * goal occupies the whole 3x3 block where the four arms meet.
+ */
+export const HOME_COLUMN_LENGTH = 5;
 
-/** progress values: 0 = yard, 1..51 = track, 52..57 = home column, 58 = center. */
+/** progress values: 0 = yard, 1..51 = track, 52..56 = home column, 57 = center. */
 export const YARD: number = 0;
 export const HOME_COLUMN_START: number = MAIN_TRACK_STEPS + 1; // 52
-export const FINISH: number = MAIN_TRACK_STEPS + HOME_COLUMN_LENGTH + 1; // 58
+export const FINISH: number = MAIN_TRACK_STEPS + HOME_COLUMN_LENGTH + 1; // 57
 
 export const CENTER: Cell = { row: 7, col: 7 };
+
+/** The 3x3 block of cells the centre goal is drawn across. */
+export const CENTER_ORIGIN: Cell = { row: 6, col: 6 };
+export const CENTER_SIZE = 3;
 
 /**
  * The 52 track cells in clockwise order, starting at red's start square (6,1).
@@ -92,12 +99,27 @@ export const TRACK: readonly Cell[] = [
   { row: 6, col: 0 },
 ];
 
-/** Where each color joins the track. Also its safe start square. */
+/**
+ * Where each colour joins the track — also its safe start square. The values
+ * place each colour's yard in its corner: green top-left, yellow top-right,
+ * blue bottom-right, red bottom-left.
+ */
 export const START_INDEX: Record<Color, number> = {
-  red: 0,
-  green: 13,
-  yellow: 26,
-  blue: 39,
+  green: 0,
+  yellow: 13,
+  blue: 26,
+  red: 39,
+};
+
+/**
+ * The last track cell a colour stands on — the tip of its arm, where it turns
+ * into its home column. Drawn with an arrow pointing inward.
+ */
+export const HOME_ENTRY_INDEX: Record<Color, number> = {
+  green: (START_INDEX.green + MAIN_TRACK_STEPS - 1) % TRACK_LENGTH,
+  yellow: (START_INDEX.yellow + MAIN_TRACK_STEPS - 1) % TRACK_LENGTH,
+  blue: (START_INDEX.blue + MAIN_TRACK_STEPS - 1) % TRACK_LENGTH,
+  red: (START_INDEX.red + MAIN_TRACK_STEPS - 1) % TRACK_LENGTH,
 };
 
 /** Star safe squares: 8 steps past each start square. */
@@ -111,20 +133,20 @@ export const SAFE_INDICES: readonly number[] = [
 
 const SAFE_SET = new Set(SAFE_INDICES);
 
-/** The 6 colored home-column cells for each color, ordered from outside in. */
+/** The 5 coloured home-column cells for each colour, ordered from outside in. */
 export const HOME_COLUMN: Record<Color, readonly Cell[]> = {
-  red: [1, 2, 3, 4, 5, 6].map((col) => ({ row: 7, col })),
-  green: [1, 2, 3, 4, 5, 6].map((row) => ({ row, col: 7 })),
-  yellow: [13, 12, 11, 10, 9, 8].map((col) => ({ row: 7, col })),
-  blue: [13, 12, 11, 10, 9, 8].map((row) => ({ row, col: 7 })),
+  green: [1, 2, 3, 4, 5].map((col) => ({ row: 7, col })),
+  yellow: [1, 2, 3, 4, 5].map((row) => ({ row, col: 7 })),
+  blue: [13, 12, 11, 10, 9].map((col) => ({ row: 7, col })),
+  red: [13, 12, 11, 10, 9].map((row) => ({ row, col: 7 })),
 };
 
 /** Top-left corner of each 6x6 yard. */
 export const YARD_ORIGIN: Record<Color, Cell> = {
-  red: { row: 0, col: 0 },
-  green: { row: 0, col: 9 },
-  yellow: { row: 9, col: 9 },
-  blue: { row: 9, col: 0 },
+  green: { row: 0, col: 0 },
+  yellow: { row: 0, col: 9 },
+  blue: { row: 9, col: 9 },
+  red: { row: 9, col: 0 },
 };
 
 /**

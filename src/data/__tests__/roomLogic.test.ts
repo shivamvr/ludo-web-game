@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { FINISH } from '../../game/board';
 import { applyMove, getLegalMoves, isGameOver, rollDice } from '../../game/engine';
 import type { GameState } from '../../game/types';
 import { seatGame } from '../rooms';
@@ -253,7 +254,7 @@ describe('turn writes', () => {
       dice: 1,
       players: state.players.map((p) =>
         p.color === 'red'
-          ? { ...p, tokens: p.tokens.map((t, i) => ({ ...t, progress: i < 3 ? 58 : 57 })) }
+          ? { ...p, tokens: p.tokens.map((t, i) => ({ ...t, progress: i < 3 ? FINISH : FINISH - 1 })) }
           : p,
       ),
     };

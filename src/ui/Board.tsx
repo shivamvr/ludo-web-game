@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import {
-  CENTER,
+  CENTER_ORIGIN,
+  CENTER_SIZE,
   GRID_SIZE,
   HOME_COLUMN,
+  HOME_ENTRY_INDEX,
   STAR_INDICES,
   START_INDEX,
   TRACK,
@@ -18,14 +20,27 @@ import { COLORS } from '../game/types';
 import TokenPiece from './TokenPiece';
 import './Board.css';
 
-type CellKind = 'empty' | 'yard' | 'track' | 'home' | 'center' | 'goalCorner';
+type CellKind = 'empty' | 'yard' | 'track' | 'home' | 'center';
+
+type Arrow = 'up' | 'down' | 'left' | 'right';
 
 interface CellInfo {
   kind: CellKind;
   color?: Color;
   isStart?: boolean;
   isStar?: boolean;
+  /** Drawn on each arm tip, pointing into that colour's home column. */
+  arrow?: Arrow;
+  arrowColor?: Color;
 }
+
+/** Which way the arrow on a colour's arm tip points, toward the centre. */
+const ARROW_DIRECTION: Record<Color, Arrow> = {
+  green: 'right',
+  yellow: 'down',
+  blue: 'left',
+  red: 'up',
+};
 
 const cellKey = (c: Cell | Point) => `${c.row},${c.col}`;
 
@@ -51,12 +66,18 @@ const GRID: CellInfo[] = (() => {
   const startColor = new Map<number, Color>(
     COLORS.map((color) => [START_INDEX[color], color] as const),
   );
+  const entryColor = new Map<number, Color>(
+    COLORS.map((color) => [HOME_ENTRY_INDEX[color], color] as const),
+  );
   TRACK.forEach((cell, index) => {
+    const arrowFor = entryColor.get(index);
     grid[at(cell.row, cell.col)] = {
       kind: 'track',
       color: startColor.get(index),
       isStart: startColor.has(index),
       isStar: STAR_INDICES.includes(index) && isSafeIndex(index),
+      arrow: arrowFor && ARROW_DIRECTION[arrowFor],
+      arrowColor: arrowFor,
     };
   });
 
@@ -66,14 +87,12 @@ const GRID: CellInfo[] = (() => {
     }
   }
 
-  grid[at(CENTER.row, CENTER.col)] = { kind: 'center' };
-  for (const [r, c] of [
-    [6, 6],
-    [6, 8],
-    [8, 6],
-    [8, 8],
-  ]) {
-    grid[at(r, c)] = { kind: 'goalCorner' };
+  // The whole 3x3 block is the goal; the triangles are drawn as one overlay on
+  // top, so these cells only need to stay blank.
+  for (let r = CENTER_ORIGIN.row; r < CENTER_ORIGIN.row + CENTER_SIZE; r++) {
+    for (let c = CENTER_ORIGIN.col; c < CENTER_ORIGIN.col + CENTER_SIZE; c++) {
+      grid[at(r, c)] = { kind: 'center' };
+    }
   }
 
   return grid;
@@ -154,9 +173,27 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
           if (info.color) classes.push(`cell--${info.color}`);
           if (info.isStart) classes.push('cell--start');
           if (info.isStar) classes.push('cell--star');
+          if (info.arrow) classes.push(`cell--arrow cell--arrow-${info.arrow}`);
+          if (info.arrowColor) classes.push(`cell--arrow-${info.arrowColor}`);
           if (targets.has(`${row},${col}`)) classes.push('cell--target');
           return <div key={i} className={classes.join(' ')} />;
         })}
+      </div>
+
+      {/* The centre goal: four triangles meeting in the middle of the 3x3 block. */}
+      <div
+        className="goal"
+        style={{
+          left: `${CENTER_ORIGIN.col * UNIT}%`,
+          top: `${CENTER_ORIGIN.row * UNIT}%`,
+          width: `${CENTER_SIZE * UNIT}%`,
+          height: `${CENTER_SIZE * UNIT}%`,
+        }}
+        aria-hidden="true"
+      >
+        {(['up', 'right', 'down', 'left'] as const).map((side, i) => (
+          <span key={side} className={`goal__wedge goal__wedge--${['yellow', 'blue', 'red', 'green'][i]} goal__wedge--${side}`} />
+        ))}
       </div>
 
       {/*
