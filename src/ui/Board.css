@@ -49,6 +49,16 @@
   stroke-width: 1;
 }
 
+/* Heavier and darker than the grid so it carries over the coloured wedges —
+   see GOAL_OUTLINE. Qualified by the layer so it outranks the rule above; a
+   bare class would lose to `.board__lines path` on specificity. */
+.board__lines .board__goal-outline {
+  stroke: var(--board-line-strong);
+  /* Same width as every other line on the board; only the colour differs, to
+     hold contrast against the wedges. */
+  stroke-width: 1;
+}
+
 /* --- arm-tip arrows, pointing into each colour's home column --- */
 
 .cell--arrow::before {

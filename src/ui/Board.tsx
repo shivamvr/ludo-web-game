@@ -131,6 +131,27 @@ const GRID_LINES: string = (() => {
   return [...edges].join('');
 })();
 
+/**
+ * The two diagonals splitting the goal block into its four wedges.
+ *
+ * Drawn separately from GRID_LINES, and a little darker, because these lines sit
+ * on saturated colour rather than on white. Measured against the wedges, a
+ * hairline in the grid's colour keeps only a third to a half of the contrast it
+ * has on a white square — enough that the diagonals meeting the pale yellow
+ * wedge looked outlined while the ones between green, blue and red appeared to
+ * be missing.
+ *
+ * They also want the opposite rendering hint to the grid: snapping a diagonal to
+ * the pixel grid would leave it visibly stepped, so these stay antialiased.
+ */
+const GOAL_OUTLINE: string = (() => {
+  const { row, col } = CENTER_ORIGIN;
+  const n = CENTER_SIZE;
+  // Only the diagonals: the block's border already comes from the grid, and
+  // drawing it again here stacked a heavier line on top of a crisp one.
+  return `M${col} ${row}l${n} ${n}M${col + n} ${row}l${-n} ${n}`;
+})();
+
 interface Props {
   state: GameState;
   legalMoves: Move[];
@@ -240,6 +261,7 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
         aria-hidden="true"
       >
         <path d={GRID_LINES} vectorEffect="non-scaling-stroke" shapeRendering="crispEdges" />
+        <path className="board__goal-outline" d={GOAL_OUTLINE} vectorEffect="non-scaling-stroke" />
       </svg>
 
       {/*
