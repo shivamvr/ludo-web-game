@@ -1,0 +1,102 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "rooms": {
+      "$roomId": {
+        // Readable by anyone signed in while the room is still open to joiners,
+        // and thereafter only by the people sitting at it. A room that does not
+        // exist reads as null rather than as a permission error, so entering a
+        // wrong code shows "no such room" instead of a scary failure.
+        ".read": "auth != null && (!data.exists() || data.child('status').val() === 'waiting' || data.child('players').hasChild(auth.uid))",
+
+        // Create a room by seating yourself as host, or write to a room you are
+        // already in. A waiting room also accepts the write from someone who is
+        // joining it in that same write.
+        ".write": "auth != null && ((!data.exists() && newData.child('hostId').val() === auth.uid && newData.child('status').val() === 'waiting') || (data.exists() && (data.child('players').hasChild(auth.uid) || (data.child('status').val() === 'waiting' && newData.child('players').hasChild(auth.uid)))))",
+
+        ".validate": "newData.hasChildren(['hostId', 'status', 'players', 'createdAt'])",
+
+        "hostId": {
+          ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())"
+        },
+
+        "createdAt": {
+          ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val())"
+        },
+
+        // Only the host may start the game. Anyone at the table may finish it —
+        // the winning move and the abandonment watchdog both need to.
+        "status": {
+          ".validate": "newData.isString() && newData.val().matches(/^(waiting|playing|finished)$/) && (!data.exists() || newData.val() === data.val() || (data.val() === 'waiting' && newData.val() === 'playing' && newData.parent().child('hostId').val() === auth.uid) || (data.val() === 'playing' && newData.val() === 'finished'))"
+        },
+
+        "endedReason": {
+          ".validate": "newData.isString() && newData.val().matches(/^(won|abandoned)$/)"
+        },
+
+        "players": {
+          "$playerUid": {
+            ".validate": "newData.hasChildren(['name', 'color', 'joinedAt'])",
+
+            // Your own seat is yours to edit; everyone else's fields must come
+            // through a write unchanged.
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24 && ($playerUid === auth.uid || newData.val() === data.val())"
+            },
+            // Your colour is yours to change, but only in the lobby — once the
+            // game is under way a seat's colour is what binds it to the board.
+            "color": {
+              ".validate": "newData.isString() && newData.val().matches(/^(red|green|yellow|blue)$/) && (newData.val() === data.val() || ($playerUid === auth.uid && (!data.exists() || root.child('rooms').child($roomId).child('status').val() === 'waiting')))"
+            },
+            "joinedAt": {
+              ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val())"
+            },
+            "connected": {
+              ".validate": "newData.isBoolean() && ($playerUid === auth.uid || newData.val() === data.val())"
+            },
+            "disconnectedAt": {
+              ".validate": "newData.isNumber() && ($playerUid === auth.uid || newData.val() === data.val())"
+            },
+            "$other": { ".validate": false }
+          }
+        },
+
+        // Turn ownership, and the heart of these rules. A change to the game
+        // state is only accepted from the player who held the turn in the
+        // PREVIOUS state — or, when that player has dropped off the network,
+        // from anyone else at the table, which is what lets the game play on
+        // without them. Writes that leave the state untouched (version
+        // unchanged) are allowed, so presence and status updates may carry the
+        // whole room node.
+        "gameState": {
+          ".validate": "newData.hasChildren(['players', 'turnIndex', 'phase', 'version']) && ((!data.exists() && newData.parent().child('hostId').val() === auth.uid) || newData.child('version').val() === data.child('version').val() || (data.parent().child('status').val() === 'playing' && newData.child('version').val() > data.child('version').val() && (data.child('players').child('' + data.child('turnIndex').val()).child('uid').val() === auth.uid || root.child('rooms').child($roomId).child('players').child('' + data.child('players').child('' + data.child('turnIndex').val()).child('uid').val()).child('connected').val() === false)))",
+
+          "turnIndex": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3" },
+          "version": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "phase": { ".validate": "newData.isString() && newData.val().matches(/^(awaiting-roll|awaiting-move|game-over)$/)" },
+          "rngSeed": { ".validate": "newData.isNumber()" },
+          "dice": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" },
+          "lastRoll": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" },
+          "consecutiveSixes": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 2" },
+
+          "players": {
+            "$seat": {
+              ".validate": "newData.hasChildren(['color', 'tokens'])",
+              "uid": { ".validate": "newData.isString()" },
+              "color": { ".validate": "newData.isString() && newData.val().matches(/^(red|green|yellow|blue)$/)" },
+              "tokens": {
+                "$token": {
+                  "progress": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 58" }
+                }
+              }
+            }
+          }
+        },
+
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
