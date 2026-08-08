@@ -96,10 +96,9 @@
   background: var(--blue);
 }
 
-/* Start squares are left white, as on the printed board: the arrow at the arm
-   tip is the only marking, and the safe squares carry stars. */
-
-/* Star safe squares, drawn as an outline like the printed board. */
+/* Safe squares, drawn as an outline star like the printed board. Both kinds get
+   one: the four entry squares where tokens come out, and the four mid-arm
+   squares eight steps on. */
 .cell--star::after {
   content: "★";
   position: absolute;

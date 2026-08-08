@@ -5,7 +5,6 @@ import {
   GRID_SIZE,
   HOME_COLUMN,
   HOME_ENTRY_INDEX,
-  STAR_INDICES,
   START_INDEX,
   TRACK,
   YARD_ORIGIN,
@@ -75,7 +74,9 @@ const GRID: CellInfo[] = (() => {
       kind: 'track',
       color: startColor.get(index),
       isStart: startColor.has(index),
-      isStar: STAR_INDICES.includes(index) && isSafeIndex(index),
+      // Every safe square gets a star, entry squares included — a token standing
+      // on one cannot be captured, so the marking has to say so consistently.
+      isStar: isSafeIndex(index),
       arrow: arrowFor && ARROW_DIRECTION[arrowFor],
       arrowColor: arrowFor,
     };
