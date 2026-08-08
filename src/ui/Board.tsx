@@ -175,11 +175,11 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
           );
         })}
         {COLORS.flatMap((color) =>
-          YARD_SLOTS[color].map((cell, i) => (
+          YARD_SLOT_CENTERS[color].map((point, i) => (
             <div
               key={`slot-${color}-${i}`}
               className={`yard-slot yard-slot--${color}`}
-              style={{ gridArea: `${cell.row + 1} / ${cell.col + 1} / span 1 / span 1` }}
+              style={{ left: `${point.col * UNIT}%`, top: `${point.row * UNIT}%` }}
             />
           )),
         )}

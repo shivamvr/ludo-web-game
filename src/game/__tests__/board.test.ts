@@ -10,7 +10,8 @@ import {
   START_INDEX,
   TRACK,
   TRACK_LENGTH,
-  YARD_SLOTS,
+  YARD_ORIGIN,
+  YARD_SLOT_CENTERS,
   absoluteTrackIndex,
   isSafeIndex,
   progressToCell,
@@ -161,12 +162,44 @@ describe('yards', () => {
   it('gives every color four distinct parking slots in its own corner', () => {
     const seen = new Set<string>();
     for (const color of COLORS) {
-      expect(YARD_SLOTS[color]).toHaveLength(4);
-      for (const cell of YARD_SLOTS[color]) {
-        expect(seen.has(key(cell))).toBe(false);
-        seen.add(key(cell));
+      expect(YARD_SLOT_CENTERS[color]).toHaveLength(4);
+      for (const point of YARD_SLOT_CENTERS[color]) {
+        expect(seen.has(key(point))).toBe(false);
+        seen.add(key(point));
       }
     }
     expect(seen.size).toBe(16);
+  });
+
+  it('keeps every slot clear of the yard pad it sits on', () => {
+    // The white pad covers cells 1..4 of the 6x6 yard, grown by a tenth on each
+    // side, and a token is a little under one cell across. Every slot centre
+    // must leave room for the token plus a visible margin.
+    const padMargin = (4 * 1.1 - 4) / 2; // how far the pad grows past cell 1..4
+    const tokenRadius = 0.86 / 2;
+
+    for (const color of COLORS) {
+      const origin = YARD_ORIGIN[color];
+      const padStart = origin.row + 1 - padMargin;
+      const padEnd = origin.row + 5 + padMargin;
+
+      for (const point of YARD_SLOT_CENTERS[color]) {
+        for (const axis of [point.row, point.col] as const) {
+          const start = axis === point.row ? padStart : origin.col + 1 - padMargin;
+          const end = axis === point.row ? padEnd : origin.col + 5 + padMargin;
+          expect(axis - tokenRadius - start).toBeGreaterThan(0.25);
+          expect(end - (axis + tokenRadius)).toBeGreaterThan(0.25);
+        }
+      }
+    }
+  });
+
+  it('keeps the four tokens in a yard well apart', () => {
+    for (const color of COLORS) {
+      const [first, , , last] = YARD_SLOT_CENTERS[color];
+      // Opposite corners of the 2x2 arrangement.
+      expect(last.row - first.row).toBeGreaterThan(1.5);
+      expect(last.col - first.col).toBeGreaterThan(1.5);
+    }
   });
 });

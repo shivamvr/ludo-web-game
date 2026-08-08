@@ -104,15 +104,20 @@
 
 /* --- yards --- */
 
+/* Grown slightly past its 4x4 grid area so the tokens are not pressed against
+   the inner border. Paired with the inset applied to the slot centres. */
 .yard-pad {
   border-radius: 8px;
   background: var(--board);
+  scale: 1.1;
 }
 
+/* Positioned by centre, like the tokens that park on them. */
 .yard-slot {
-  place-self: center;
-  width: 78%;
-  height: 78%;
+  position: absolute;
+  width: calc(100% / 15 * 0.78);
+  aspect-ratio: 1;
+  translate: -50% -50%;
   border-radius: 50%;
   border: 2px solid;
   opacity: 0.55;
