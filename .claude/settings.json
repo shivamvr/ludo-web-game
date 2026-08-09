@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(\"--- tests ---\")",
+      "PowerShell(npx vitest run src/game/__tests__/repro.test.ts --reporter=verbose 2>&1)"
+    ]
+  }
+}

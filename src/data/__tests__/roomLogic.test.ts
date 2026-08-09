@@ -3,7 +3,7 @@ import { FINISH, OPPOSITE_CORNER } from '../../game/board';
 import { applyMove, getLegalMoves, isGameOver, rollDice } from '../../game/engine';
 import type { GameState } from '../../game/types';
 import { seatGame } from '../rooms';
-import { toGameState, type RoomPlayer } from '../serialize';
+import { forDatabase, toGameState, type RoomPlayer } from '../serialize';
 import {
   currentSeatUid,
   decideColor,
@@ -14,6 +14,7 @@ import {
   type StoredRoom,
 } from '../roomLogic';
 import { FakeRoomNode } from './rtdb';
+import { awaitingMove, gameWith } from '../../game/__tests__/helpers';
 
 const player = (name: string, color: RoomPlayer['color'], joinedAt = 1): RoomPlayer => ({
   name,
@@ -294,6 +295,47 @@ describe('turn writes', () => {
 
   it('rejects a write from someone with no seat at all', () => {
     expectDenied(decideTurn(playingRoom(), 'uid-stranger', rollDice), 'not-your-turn');
+  });
+
+  it('carries an earned roll across the write that lands in between', () => {
+    // Online, every move is written out and read back before the next one. A
+    // reward banked on one move and taken on the next has to survive that trip.
+    const start = awaitingMove(
+      gameWith(['red', 'green'], { 'red-0': FINISH - 2, 'red-1': 10 }),
+      [6, 2],
+    );
+    const seated: GameState = {
+      ...start,
+      players: start.players.map((p, i) => ({
+        ...p,
+        uid: i === 0 ? 'uid-a' : 'uid-b',
+        connected: true,
+      })),
+    };
+    const room: StoredRoom = {
+      ...waitingRoom({
+        'uid-a': player('Ana', 'red'),
+        'uid-b': player('Bo', 'green'),
+      }),
+      status: 'playing',
+      gameState: forDatabase(seated),
+    };
+
+    // Finish a token with the 2, leaving the 6 in hand.
+    const first = decideTurn(room, 'uid-a', (s) => applyMove(s, 'red-0', 2));
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(toGameState(first.value.gameState)!.bonusRolls).toBe(1);
+
+    // Spend the 6 — the turn must stay with red for the roll it earned.
+    const second = decideTurn(first.value, 'uid-a', (s) => applyMove(s, 'red-1', 6));
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+
+    const end = toGameState(second.value.gameState)!;
+    expect(end.dice).toEqual([]);
+    expect(end.bonusRolls).toBe(1);
+    expect(currentSeatUid(end)).toBe('uid-a');
   });
 
   it('rejects writes once the room is finished', () => {

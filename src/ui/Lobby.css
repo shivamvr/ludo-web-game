@@ -103,11 +103,28 @@
   font-weight: 700;
 }
 
+/* A button, because tapping it copies the code — but it stays the big plain
+   display it has always been rather than growing into a control. */
 .room-code {
+  display: block;
+  width: 100%;
+  padding: 2px 0;
   font-size: 46px;
   font-weight: 800;
   letter-spacing: 0.18em;
   text-indent: 0.18em;
+  border-radius: 12px;
+  transition: background 0.15s ease;
+}
+
+.room-code:active {
+  background: var(--surface-2);
+}
+
+/* The selection fallback, for when the clipboard cannot be reached. */
+.room-code::selection {
+  background: #4d74dd;
+  color: #fff;
 }
 
 /* --- notices --- */

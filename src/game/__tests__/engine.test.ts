@@ -387,6 +387,40 @@ describe('exact count to finish', () => {
     expect(currentTurn(after).color).toBe('red');
   });
 
+  it('keeps the earned roll while other numbers are still in hand', () => {
+    // The reward is banked on the finishing move but only taken once the hand
+    // is empty, so the number left over must not wash it away.
+    const game = awaitingMove(
+      gameWith(['red', 'green'], { 'red-0': FINISH - 2, 'red-1': 10 }),
+      [6, 2],
+    );
+
+    const finished = applyMove(game, 'red-0', 2);
+    expect(finished.bonusRolls).toBe(1);
+    expect(finished.dice).toEqual([6]);
+    expect(finished.phase).toBe('awaiting-move');
+
+    const spent = applyMove(finished, 'red-1', 6);
+    expect(spent.dice).toEqual([]);
+    expect(spent.bonusRolls).toBe(1);
+    expect(spent.phase).toBe('awaiting-roll');
+    expect(currentTurn(spent).color).toBe('red');
+  });
+
+  it('keeps it whichever order the numbers are spent in', () => {
+    const game = awaitingMove(
+      gameWith(['red', 'green'], { 'red-0': FINISH - 2, 'red-1': 10 }),
+      [6, 2],
+    );
+    // The six first this time, finishing second.
+    const moved = applyMove(game, 'red-1', 6);
+    expect(moved.bonusRolls).toBe(0);
+
+    const finished = applyMove(moved, 'red-0', 2);
+    expect(finished.bonusRolls).toBe(1);
+    expect(currentTurn(finished).color).toBe('red');
+  });
+
   it('gives no roll when the last token home ends the player', () => {
     const nearlyDone = gameWith(['red', 'green', 'yellow'], {
       'red-0': FINISH,
