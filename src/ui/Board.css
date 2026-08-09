@@ -3,7 +3,7 @@
   width: 100%;
   aspect-ratio: 1;
   border: 1px solid var(--board-line);
-  border-radius: 10px;
+  border-radius: 34px;
   overflow: hidden;
   background: var(--board);
   box-shadow: 0 6px 24px rgb(0 0 0 / 0.45);

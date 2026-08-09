@@ -4,7 +4,6 @@
   gap: 10px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 12px;
   padding: 10px 12px;
 }
 
@@ -29,10 +28,18 @@
   border: 2px solid rgb(0 0 0 / 0.35);
 }
 
-.turn-chip--red .turn-chip__dot { background: var(--red); }
-.turn-chip--green .turn-chip__dot { background: var(--green); }
-.turn-chip--yellow .turn-chip__dot { background: var(--yellow); }
-.turn-chip--blue .turn-chip__dot { background: var(--blue); }
+.turn-chip--red .turn-chip__dot {
+  background: var(--red);
+}
+.turn-chip--green .turn-chip__dot {
+  background: var(--green);
+}
+.turn-chip--yellow .turn-chip__dot {
+  background: var(--yellow);
+}
+.turn-chip--blue .turn-chip__dot {
+  background: var(--blue);
+}
 
 /* --- the tray of dice held this turn --- */
 
@@ -51,7 +58,9 @@
   border-radius: 12px;
   /* A ring rather than a border, so selecting one never shifts the row. */
   box-shadow: 0 0 0 0 transparent;
-  transition: box-shadow 0.15s ease, opacity 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
 }
 
 /* Three dice, a name and a button have to share a phone's width, so the faces
@@ -114,13 +123,21 @@
 }
 
 @keyframes die-tumble {
-  0% { transform: rotate(-38deg) scale(0.72); }
-  55% { transform: rotate(12deg) scale(1.09); }
-  100% { transform: rotate(0deg) scale(1); }
+  0% {
+    transform: rotate(-38deg) scale(0.72);
+  }
+  55% {
+    transform: rotate(12deg) scale(1.09);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .die--rolled { animation: none; }
+  .die--rolled {
+    animation: none;
+  }
 }
 
 .die__pip {
@@ -144,7 +161,7 @@
   min-height: 46px;
   min-width: 108px;
   padding: 0 18px;
-  border-radius: 10px;
+  /* border-radius: 10px; */
   background: var(--surface-2);
   border: 1px solid var(--line);
   font-weight: 650;
