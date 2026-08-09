@@ -10,7 +10,7 @@ describe('GameState round-trip through Realtime Database', () => {
   it('survives a fresh game, holes and all', () => {
     const game = createGame(['red', 'green'], ['Ana', 'Bo'], 99);
     // These are exactly the fields RTDB would silently drop.
-    expect(game.dice).toBeNull();
+    expect(game.dice).toEqual([]);
     expect(game.lastEvent).toBeNull();
     expect(game.winnerOrder).toEqual([]);
 
@@ -36,7 +36,10 @@ describe('GameState round-trip through Realtime Database', () => {
         state =
           state.phase === 'awaiting-roll'
             ? rollDice(state)
-            : applyMove(state, getLegalMoves(state)[0].tokenId);
+            : (() => {
+                const move = getLegalMoves(state)[0];
+                return applyMove(state, move.tokenId, move.die);
+              })();
 
         const restored = roundTrip(state);
         expect(restored).toEqual(state);
@@ -52,7 +55,7 @@ describe('GameState round-trip through Realtime Database', () => {
       lastEvent: {
         type: 'moved',
         color: 'red',
-        move: { tokenId: 'red-0', from: 1, to: 4, kind: 'advance', captures: [] },
+        move: { tokenId: 'red-0', die: 3, from: 1, to: 4, kind: 'advance', captures: [] },
       },
     };
     const restored = roundTrip(moved)!;

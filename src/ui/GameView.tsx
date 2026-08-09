@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { currentTurn, standings } from '../game/engine';
 import type { GameEvent, GameState, Move } from '../game/types';
 import Board from './Board';
@@ -33,7 +33,8 @@ interface Props {
   legalMoves: Move[];
   canRoll: boolean;
   onRoll: () => void;
-  onTokenClick: (tokenId: string) => void;
+  /** The die is passed back because a token can often be moved by either number. */
+  onTokenClick: (tokenId: string, die: number) => void;
   /** Overrides the roll button's text — "Waiting…" while it is someone else's turn. */
   rollLabel?: string;
   /** Shown between the header and the board: whose turn it is, connection notices. */
@@ -62,6 +63,27 @@ export default function GameView({
 }: Props) {
   const won = state.phase === 'game-over';
   const over = won || ended !== undefined;
+
+  /**
+   * Which held number the player is about to spend. Only the numbers that can
+   * actually be used are offered, so a held six with nowhere to go never
+   * swallows a tap.
+   */
+  const playableDice = useMemo(
+    () => [...new Set(legalMoves.map((m) => m.die))].sort((a, b) => a - b),
+    [legalMoves],
+  );
+  const [chosen, setChosen] = useState<number | null>(null);
+  // Any change to the position invalidates the choice; the default below then
+  // falls back to the first number that can be played.
+  useEffect(() => setChosen(null), [state.version]);
+
+  const selectedDie =
+    chosen !== null && playableDice.includes(chosen) ? chosen : playableDice[0] ?? null;
+  const movesForDie = useMemo(
+    () => legalMoves.filter((m) => m.die === selectedDie),
+    [legalMoves, selectedDie],
+  );
 
   // One sound per state transition, driven off the version counter so a
   // re-render never replays a cue and every client hears the same events.
@@ -101,7 +123,11 @@ export default function GameView({
       {banner}
 
       <div className="app__board">
-        <Board state={state} legalMoves={legalMoves} onTokenClick={onTokenClick} />
+        <Board
+          state={state}
+          legalMoves={movesForDie}
+          onTokenClick={(tokenId) => selectedDie !== null && onTokenClick(tokenId, selectedDie)}
+        />
         {over && (
           <div className="result">
             <p className="result__title">
@@ -132,6 +158,9 @@ export default function GameView({
         player={player}
         canRoll={canRoll}
         awaitingMove={state.phase === 'awaiting-move'}
+        selectedDie={selectedDie}
+        playableDice={playableDice}
+        onSelectDie={setChosen}
         rollLabel={rollLabel}
         onRoll={onRoll}
       />

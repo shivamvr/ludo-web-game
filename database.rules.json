@@ -88,8 +88,18 @@
           "version": { ".validate": "newData.isNumber() && newData.val() >= 0" },
           "phase": { ".validate": "newData.isString() && newData.val().matches(/^(awaiting-roll|awaiting-move|game-over)$/)" },
           "rngSeed": { ".validate": "newData.isNumber()" },
-          "dice": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" },
-          "lastRoll": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" },
+
+          // Both are lists now: a six is held rather than played, so a turn can
+          // carry several numbers at once. Three is the ceiling, because a third
+          // six forfeits the turn before a fourth roll can happen.
+          "dice": {
+            ".validate": "newData.hasChildren() && !newData.hasChild('3')",
+            "$slot": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" }
+          },
+          "lastRoll": {
+            ".validate": "newData.hasChildren() && !newData.hasChild('3')",
+            "$slot": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" }
+          },
           "consecutiveSixes": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 2" },
 
           "players": {

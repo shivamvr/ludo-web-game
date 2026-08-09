@@ -29,6 +29,13 @@ const waitingRoom = (players: Record<string, RoomPlayer>): StoredRoom => ({
   createdAt: 1,
 });
 
+/** Play whatever the engine offers first, spending the number that move names. */
+const advance = (s: GameState): GameState => {
+  if (s.phase === 'awaiting-roll') return rollDice(s);
+  const move = getLegalMoves(s)[0];
+  return applyMove(s, move.tokenId, move.die);
+};
+
 const expectDenied = (decision: Decision, error: string) => {
   expect(decision.ok).toBe(false);
   if (!decision.ok) expect(decision.error).toBe(error);
@@ -320,7 +327,7 @@ describe('turn writes', () => {
     const nearlyWon: GameState = {
       ...state,
       phase: 'awaiting-move',
-      dice: 1,
+      dice: [1],
       players: state.players.map((p) =>
         p.color === 'red'
           ? { ...p, tokens: p.tokens.map((t, i) => ({ ...t, progress: i < 3 ? FINISH : FINISH - 1 })) }
@@ -331,7 +338,7 @@ describe('turn writes', () => {
     const decision = decideTurn(
       { ...room, gameState: nearlyWon },
       'uid-a',
-      (s) => applyMove(s, 'red-3'),
+      (s) => applyMove(s, 'red-3', 1),
     );
     expect(decision.ok).toBe(true);
     if (!decision.ok) return;
@@ -367,8 +374,6 @@ describe('a full game across three clients', () => {
       if (isGameOver(state)) break;
 
       const owner = currentSeatUid(state)!;
-      const advance = (s: GameState) =>
-        s.phase === 'awaiting-roll' ? rollDice(s) : applyMove(s, getLegalMoves(s)[0].tokenId);
 
       // Every other client tries the same write first — all must be refused.
       for (const uid of uids.filter((u) => u !== owner)) {
@@ -412,7 +417,7 @@ describe('a full game across three clients', () => {
       const decision = decideTurn(
         room,
         'uid-a',
-        (s) => (s.phase === 'awaiting-roll' ? rollDice(s) : applyMove(s, getLegalMoves(s)[0].tokenId)),
+        (s) => advance(s),
       );
       if (!decision.ok) break;
       node.write(decision.value);

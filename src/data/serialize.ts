@@ -50,6 +50,10 @@ const num = (value: unknown, fallback: number): number =>
 const str = (value: unknown, fallback: string): string =>
   typeof value === 'string' ? value : fallback;
 
+/** A list of dice faces, however the database chose to store it. */
+const toNumbers = (value: unknown): number[] =>
+  toArray(value).filter((n): n is number => typeof n === 'number' && Number.isFinite(n));
+
 const isColor = (value: unknown): value is Color =>
   typeof value === 'string' && (COLORS as readonly string[]).includes(value);
 
@@ -98,6 +102,7 @@ function toMove(value: unknown): Move | null {
   if (!isRecord(value) || typeof value.tokenId !== 'string') return null;
   return {
     tokenId: value.tokenId,
+    die: num(value.die, 0),
     from: num(value.from, 0),
     to: num(value.to, 0),
     kind: (value.kind as Move['kind']) ?? 'advance',
@@ -131,7 +136,7 @@ function toEvent(value: unknown): GameEvent | null {
       return isColor(value.color) ? { type: 'skipped', color: value.color } : null;
     case 'noLegalMove':
       return isColor(value.color)
-        ? { type: 'noLegalMove', color: value.color, value: num(value.value, 0) }
+        ? { type: 'noLegalMove', color: value.color, values: toNumbers(value.values) }
         : null;
     case 'finishedToken':
       return isColor(value.color)
@@ -165,8 +170,10 @@ export function toGameState(value: unknown): GameState | null {
     players,
     turnIndex: Math.min(num(value.turnIndex, 0), players.length - 1),
     phase,
-    dice: typeof value.dice === 'number' ? value.dice : null,
-    lastRoll: typeof value.lastRoll === 'number' ? value.lastRoll : null,
+    // Both are lists now, and an empty one is stored as nothing at all, so a
+    // missing key has to come back as [] rather than as a hole.
+    dice: toNumbers(value.dice),
+    lastRoll: toNumbers(value.lastRoll),
     consecutiveSixes: num(value.consecutiveSixes, 0),
     winnerOrder: toArray(value.winnerOrder).filter(isColor),
     rngSeed: num(value.rngSeed, 0),

@@ -36,10 +36,10 @@ export default function LocalGame({ onExit }: { onExit: () => void }) {
     setState(rollDice(state));
   };
 
-  const move = (tokenId: string) => {
+  const move = (tokenId: string, die: number) => {
     if (state.phase !== 'awaiting-move') return;
-    if (!legalMoves.some((m) => m.tokenId === tokenId)) return;
-    setState(applyMove(state, tokenId));
+    if (!legalMoves.some((m) => m.tokenId === tokenId && m.die === die)) return;
+    setState(applyMove(state, tokenId, die));
   };
 
   return (

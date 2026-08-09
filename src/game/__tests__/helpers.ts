@@ -42,9 +42,13 @@ export function gameWith(
   };
 }
 
-/** Force a state into "a roll of `dice` has happened, now choose a move". */
-export function awaitingMove(state: GameState, dice: number): GameState {
-  return { ...state, phase: 'awaiting-move', dice };
+/**
+ * Force a state into "these numbers have been rolled, now choose a move".
+ * Takes either a single number or the whole held hand.
+ */
+export function awaitingMove(state: GameState, dice: number | number[]): GameState {
+  const held = Array.isArray(dice) ? dice : [dice];
+  return { ...state, phase: 'awaiting-move', dice: held, lastRoll: held };
 }
 
 export function progressOf(state: GameState, tokenId: string): number {

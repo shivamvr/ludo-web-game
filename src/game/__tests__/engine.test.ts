@@ -29,7 +29,7 @@ describe('createGame', () => {
       expect(player.finished).toBe(false);
     }
     expect(game.phase).toBe('awaiting-roll');
-    expect(game.dice).toBeNull();
+    expect(game.dice).toEqual([]);
     expect(currentTurn(game).color).toBe('red');
   });
 
@@ -80,17 +80,22 @@ describe('createGame', () => {
 
 describe('leaving the yard', () => {
   it('opens the yard only on a 6, landing on the start square', () => {
-    const game = createGame(['red', 'green'], [], findSeed([6]));
-    const rolled = rollDice(game);
+    // A six is held rather than played, so the hand is only complete after the
+    // follow-up roll.
+    const game = createGame(['red', 'green'], [], findSeed([6, 3]));
+    const rolled = rollDice(rollDice(game));
 
-    expect(rolled.dice).toBe(6);
+    expect(rolled.dice).toEqual([6, 3]);
     expect(rolled.phase).toBe('awaiting-move');
 
+    // Only the six opens the yard; the three can do nothing from there.
     const moves = getLegalMoves(rolled);
     expect(moves).toHaveLength(4);
-    expect(moves.every((m) => m.kind === 'leaveHome' && m.from === 0 && m.to === 1)).toBe(true);
+    expect(
+      moves.every((m) => m.die === 6 && m.kind === 'leaveHome' && m.from === 0 && m.to === 1),
+    ).toBe(true);
 
-    const moved = applyMove(rolled, 'red-0');
+    const moved = applyMove(rolled, 'red-0', 6);
     expect(progressOf(moved, 'red-0')).toBe(1);
     expect(absoluteTrackIndex('red', 1)).toBe(START_INDEX.red);
   });
@@ -100,10 +105,10 @@ describe('leaving the yard', () => {
     const rolled = rollDice(game);
 
     expect(rolled.phase).toBe('awaiting-roll');
-    expect(rolled.dice).toBeNull();
+    expect(rolled.dice).toEqual([]);
     // The face still shows what came up, even though it could not be used.
-    expect(rolled.lastRoll).toBe(3);
-    expect(rolled.lastEvent).toEqual({ type: 'noLegalMove', color: 'red', value: 3 });
+    expect(rolled.lastRoll).toEqual([3]);
+    expect(rolled.lastEvent).toEqual({ type: 'noLegalMove', color: 'red', values: [3] });
     expect(currentTurn(rolled).color).toBe('green');
   });
 
@@ -115,17 +120,47 @@ describe('leaving the yard', () => {
 });
 
 describe('sixes', () => {
-  it('grants another roll after moving on a 6', () => {
-    const game = createGame(['red', 'green'], [], findSeed([6]));
-    const moved = applyMove(rollDice(game), 'red-0');
+  it('holds a six and rolls again instead of playing it', () => {
+    const game = createGame(['red', 'green'], [], findSeed([6, 3]));
 
-    expect(currentTurn(moved).color).toBe('red');
-    expect(moved.phase).toBe('awaiting-roll');
-    expect(moved.consecutiveSixes).toBe(1);
+    const first = rollDice(game);
+    expect(first.phase).toBe('awaiting-roll');
+    expect(first.dice).toEqual([6]);
+    expect(first.consecutiveSixes).toBe(1);
+    expect(currentTurn(first).color).toBe('red');
+
+    const second = rollDice(first);
+    expect(second.phase).toBe('awaiting-move');
+    expect(second.dice).toEqual([6, 3]);
+    expect(second.lastRoll).toEqual([6, 3]);
   });
 
-  it('re-rolls on a 6 that has no usable move', () => {
-    // Every token home except one that would overshoot the center on a 6.
+  it('offers both held numbers on a token, and plays them in either order', () => {
+    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 5 }), [6, 3]);
+
+    const forToken = getLegalMoves(game).filter((m) => m.tokenId === 'red-0');
+    expect(forToken.map((m) => m.die).sort()).toEqual([3, 6]);
+
+    // Spend the three first - the six is still in hand afterwards.
+    const afterThree = applyMove(game, 'red-0', 3);
+    expect(afterThree.dice).toEqual([6]);
+    expect(afterThree.phase).toBe('awaiting-move');
+    expect(progressOf(afterThree, 'red-0')).toBe(8);
+    expect(currentTurn(afterThree).color).toBe('red');
+
+    const afterSix = applyMove(afterThree, 'red-0', 6);
+    expect(afterSix.dice).toEqual([]);
+    expect(progressOf(afterSix, 'red-0')).toBe(14);
+    expect(currentTurn(afterSix).color).toBe('green');
+  });
+
+  it('refuses to guess which number to spend when either would do', () => {
+    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 5 }), [6, 3]);
+    expect(() => applyMove(game, 'red-0')).toThrow(/say which/);
+  });
+
+  it('holds a six even when it has no usable move, and rolls again', () => {
+    // Every token home except one that would overshoot the center on a six.
     const stuck = gameWith(['red', 'green'], {
       'red-0': FINISH,
       'red-1': FINISH,
@@ -134,34 +169,35 @@ describe('sixes', () => {
     });
     const rolled = rollDice({ ...stuck, rngSeed: findSeed([6]) });
 
-    expect(rolled.lastEvent).toEqual({ type: 'noLegalMove', color: 'red', value: 6 });
-    expect(currentTurn(rolled).color).toBe('red');
+    expect(rolled.phase).toBe('awaiting-roll');
+    expect(rolled.dice).toEqual([6]);
     expect(rolled.consecutiveSixes).toBe(1);
+    expect(currentTurn(rolled).color).toBe('red');
   });
 
-  it('forfeits the turn on a third consecutive 6 without applying its move', () => {
+  it('forfeits the whole turn on a third consecutive six, held numbers and all', () => {
     const game = createGame(['red', 'green'], [], findSeed([6, 6, 6]));
 
-    const first = applyMove(rollDice(game), 'red-0'); // red-0: yard -> 1
-    expect(first.consecutiveSixes).toBe(1);
-
-    const second = applyMove(rollDice(first), 'red-0'); // red-0: 1 -> 7
+    const second = rollDice(rollDice(game));
+    expect(second.dice).toEqual([6, 6]);
     expect(second.consecutiveSixes).toBe(2);
-    expect(progressOf(second, 'red-0')).toBe(7);
+    expect(second.phase).toBe('awaiting-roll');
 
     const third = rollDice(second);
     expect(third.lastEvent).toEqual({ type: 'threeSixes', color: 'red' });
     expect(third.phase).toBe('awaiting-roll');
+    expect(third.dice).toEqual([]);
     expect(third.consecutiveSixes).toBe(0);
     expect(currentTurn(third).color).toBe('green');
-    // The third six's move was never applied.
-    expect(progressOf(third, 'red-0')).toBe(7);
+    // Nothing held was ever played.
+    expect(progressOf(third, 'red-0')).toBe(0);
   });
 
   it('resets the six counter once the turn passes', () => {
     const game = createGame(['red', 'green'], [], findSeed([6, 2]));
-    const afterSix = applyMove(rollDice(game), 'red-0');
-    const afterTwo = applyMove(rollDice(afterSix), 'red-0');
+    const held = rollDice(rollDice(game));
+    const afterSix = applyMove(held, 'red-0', 6);
+    const afterTwo = applyMove(afterSix, 'red-0', 2);
 
     expect(afterTwo.consecutiveSixes).toBe(0);
     expect(currentTurn(afterTwo).color).toBe('green');
@@ -308,7 +344,7 @@ describe('turn order', () => {
     });
     const rolled = rollDice({ ...stuck, rngSeed: findSeed([5]) });
 
-    expect(rolled.lastEvent).toEqual({ type: 'noLegalMove', color: 'red', value: 5 });
+    expect(rolled.lastEvent).toEqual({ type: 'noLegalMove', color: 'red', values: [5] });
     expect(currentTurn(rolled).color).toBe('green');
     expect(progressOf(rolled, 'red-3')).toBe(FINISH - 3);
   });
@@ -335,41 +371,42 @@ describe('turn order', () => {
       ),
     };
 
-    const after = applyMove(withFinishedGreen, 'red-0');
+    const after = applyMove(withFinishedGreen, 'red-0', 3);
     expect(currentTurn(after).color).toBe('yellow');
   });
 
   it('refuses to roll while a move is pending, and to move before a roll', () => {
     const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 5 }), 3);
     expect(() => rollDice(game)).toThrow(/phase/);
-    expect(() => applyMove({ ...game, phase: 'awaiting-roll' }, 'red-0')).toThrow(/phase/);
-    expect(() => applyMove(game, 'red-1')).toThrow(/No legal move/);
+    expect(() => applyMove({ ...game, phase: 'awaiting-roll' }, 'red-0', 3)).toThrow(/phase/);
+    expect(() => applyMove(game, 'red-1', 3)).toThrow(/No legal move/);
   });
 });
 
 describe('the face on show', () => {
   it('records every roll, usable or not', () => {
     const game = createGame(['red', 'green'], [], findSeed([6, 3]));
-    expect(game.lastRoll).toBeNull();
+    expect(game.lastRoll).toEqual([]);
 
+    // Both rolls of the turn accumulate on the tray.
     const six = rollDice(game);
-    expect(six.lastRoll).toBe(6);
-    expect(six.dice).toBe(6);
+    expect(six.lastRoll).toEqual([6]);
+    const both = rollDice(six);
+    expect(both.lastRoll).toEqual([6, 3]);
+    expect(both.dice).toEqual([6, 3]);
 
-    // Moving clears the pending roll but leaves the face alone.
-    const moved = applyMove(six, 'red-0');
-    expect(moved.dice).toBeNull();
-    expect(moved.lastRoll).toBe(6);
+    // Spending a number takes it out of the hand but leaves the tray alone.
+    const moved = applyMove(both, 'red-0', 6);
+    expect(moved.dice).toEqual([3]);
+    expect(moved.lastRoll).toEqual([6, 3]);
   });
 
   it('keeps the face through a forfeited third six', () => {
     const game = createGame(['red', 'green'], [], findSeed([6, 6, 6]));
-    const first = applyMove(rollDice(game), 'red-0');
-    const second = applyMove(rollDice(first), 'red-0');
-    const third = rollDice(second);
+    const third = rollDice(rollDice(rollDice(game)));
 
     expect(third.lastEvent).toEqual({ type: 'threeSixes', color: 'red' });
-    expect(third.lastRoll).toBe(6);
+    expect(third.lastRoll).toEqual([6, 6, 6]);
   });
 });
 
@@ -380,7 +417,7 @@ describe('skipping a turn', () => {
 
     expect(currentTurn(after).color).toBe('green');
     expect(after.phase).toBe('awaiting-roll');
-    expect(after.dice).toBeNull();
+    expect(after.dice).toEqual([]);
     expect(after.lastEvent).toEqual({ type: 'skipped', color: 'red' });
     expect(progressOf(after, 'red-0')).toBe(7);
     expect(progressOf(after, 'green-0')).toBe(3);
@@ -472,11 +509,11 @@ describe('winning', () => {
 
 describe('purity', () => {
   it('leaves the input state untouched', () => {
-    const game = createGame(['red', 'green'], [], findSeed([6]));
+    const game = createGame(['red', 'green'], [], findSeed([6, 3]));
     const snapshot = JSON.parse(JSON.stringify(game));
 
-    const rolled = rollDice(game);
-    applyMove(rolled, 'red-0');
+    const rolled = rollDice(rollDice(game));
+    applyMove(rolled, 'red-0', 6);
 
     expect(game).toEqual(snapshot);
     expect(rolled.version).toBeGreaterThan(game.version);
@@ -501,7 +538,7 @@ describe('full game simulation', () => {
             moves.find((m) => m.kind === 'finish') ??
             moves.find((m) => m.captures.length > 0) ??
             moves.reduce((a, b) => (b.from > a.from ? b : a));
-          state = applyMove(state, pick.tokenId);
+          state = applyMove(state, pick.tokenId, pick.die);
         }
 
         // Invariants that must hold after every single transition.

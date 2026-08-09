@@ -61,8 +61,8 @@ export function createGame(
     players,
     turnIndex: 0,
     phase: 'awaiting-roll',
-    dice: null,
-    lastRoll: null,
+    dice: [],
+    lastRoll: [],
     consecutiveSixes: 0,
     winnerOrder: [],
     rngSeed: seed,
@@ -105,22 +105,32 @@ export function standings(state: GameState): Color[] {
 }
 
 /**
- * Every legal move for the current player with the current roll. Empty unless
- * the state is awaiting a move.
+ * Every legal move for the current player, across every number still held.
+ * Empty unless the state is awaiting a move.
  */
 export function getLegalMoves(state: GameState): Move[] {
-  if (state.phase !== 'awaiting-move' || state.dice === null) return [];
+  if (state.phase !== 'awaiting-move') return [];
   return legalMovesFor(state, state.turnIndex, state.dice);
 }
 
-function legalMovesFor(state: GameState, turnIndex: number, dice: number): Move[] {
+function legalMovesFor(state: GameState, turnIndex: number, dice: number[]): Move[] {
   const player = state.players[turnIndex];
   const moves: Move[] = [];
-  for (const token of player.tokens) {
-    const move = resolveMove(state, player, token, dice);
-    if (move) moves.push(move);
+  // Held numbers are deduplicated: two sixes offer the same moves as one, and
+  // spending either leaves the same state, so listing both only doubles up.
+  for (const die of new Set(dice)) {
+    for (const token of player.tokens) {
+      const move = resolveMove(state, player, token, die);
+      if (move) moves.push(move);
+    }
   }
   return moves;
+}
+
+/** A copy of `dice` with one occurrence of `die` removed. */
+function spend(dice: number[], die: number): number[] {
+  const at = dice.indexOf(die);
+  return at === -1 ? [...dice] : [...dice.slice(0, at), ...dice.slice(at + 1)];
 }
 
 /**
@@ -155,7 +165,14 @@ function resolveMove(
     return null;
   }
 
-  return { tokenId: token.id, from: token.progress, to, kind, captures: capturesAt(state, player.color, to) };
+  return {
+    tokenId: token.id,
+    die: dice,
+    from: token.progress,
+    to,
+    kind,
+    captures: capturesAt(state, player.color, to),
+  };
 }
 
 /** Opponent tokens sent home by landing on `to`. Empty off the shared track. */
@@ -182,9 +199,12 @@ function capturesAt(state: GameState, color: Color, to: number): string[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Roll for the current player. Resolves everything that needs no decision:
- * a third consecutive six forfeits the turn, and a roll with no legal move
- * passes (or, on a six, re-rolls). Otherwise the state lands in 'awaiting-move'.
+ * Roll for the current player.
+ *
+ * A six is not played immediately: it is held and rolled on top of, so the
+ * player finishes rolling with every number in hand and decides afterwards how
+ * to spend them. Rolling only stops on a number other than six, or on the third
+ * six — which still forfeits the whole turn, held numbers and all.
  */
 export function rollDice(state: GameState): GameState {
   if (state.phase !== 'awaiting-roll') {
@@ -194,50 +214,74 @@ export function rollDice(state: GameState): GameState {
   const { value, nextSeed } = rollDie(state.rngSeed);
   const color = currentTurn(state).color;
   const sixes = value === 6 ? state.consecutiveSixes + 1 : 0;
+  const held = [...state.dice, value];
+  // Anything already held means this is a re-roll within the same turn, so the
+  // display accumulates; otherwise the turn starts a fresh row of dice.
+  const rolled = state.dice.length > 0 ? [...state.lastRoll, value] : [value];
   // lastRoll is set on every branch, including the ones that hand the turn on,
-  // so the face that was actually rolled stays on screen.
-  const base = { ...state, rngSeed: nextSeed, lastRoll: value, version: state.version + 1 };
+  // so what was actually rolled stays on screen.
+  const base = { ...state, rngSeed: nextSeed, lastRoll: rolled, version: state.version + 1 };
 
-  // Three sixes in one turn: the third roll's move is never applied.
+  // Three sixes in one turn: nothing held is ever played.
   if (sixes === MAX_CONSECUTIVE_SIXES) {
     return passTurn(base, { type: 'threeSixes', color });
   }
 
-  const moves = legalMovesFor(state, state.turnIndex, value);
+  if (value === 6) {
+    return {
+      ...base,
+      phase: 'awaiting-roll',
+      dice: held,
+      consecutiveSixes: sixes,
+      lastEvent: { type: 'rolled', color, value },
+    };
+  }
 
-  if (moves.length === 0) {
-    const event: GameEvent = { type: 'noLegalMove', color, value };
-    // A six still buys another roll even when it cannot be used.
-    if (value === 6) {
-      return { ...base, phase: 'awaiting-roll', dice: null, consecutiveSixes: sixes, lastEvent: event };
-    }
-    return passTurn(base, event);
+  if (legalMovesFor(state, state.turnIndex, held).length === 0) {
+    return passTurn(base, { type: 'noLegalMove', color, values: held });
   }
 
   return {
     ...base,
     phase: 'awaiting-move',
-    dice: value,
+    dice: held,
     consecutiveSixes: sixes,
     lastEvent: { type: 'rolled', color, value },
   };
 }
 
 /**
- * Apply the current player's chosen move. `tokenId` must name a token with a
- * legal move for the current roll.
+ * Apply the current player's chosen move: this token, spending this number.
+ *
+ * `die` may be left out only when the token can be moved by exactly one of the
+ * held numbers. With a real choice on the table, guessing on the player's behalf
+ * would throw away the move they meant to make.
  */
-export function applyMove(state: GameState, tokenId: string): GameState {
+export function applyMove(state: GameState, tokenId: string, die?: number): GameState {
   if (state.phase !== 'awaiting-move') {
     throw new Error(`Cannot move while phase is "${state.phase}"`);
   }
-  const move = getLegalMoves(state).find((m) => m.tokenId === tokenId);
-  if (!move) {
-    throw new Error(`No legal move for token "${tokenId}" with a roll of ${state.dice}`);
+  const forToken = getLegalMoves(state).filter(
+    (m) => m.tokenId === tokenId && (die === undefined || m.die === die),
+  );
+  if (forToken.length === 0) {
+    throw new Error(
+      `No legal move for token "${tokenId}"` +
+        (die === undefined ? ` with ${state.dice.join(' or ')}` : ` using ${die}`),
+    );
   }
+  if (forToken.length > 1) {
+    throw new Error(
+      `Token "${tokenId}" can be moved by ${forToken
+        .map((m) => m.die)
+        .join(' or ')} — say which`,
+    );
+  }
+  const move = forToken[0];
 
   const mover = currentTurn(state);
   const captured = new Set(move.captures);
+  const remaining = spend(state.dice, move.die);
 
   const players = state.players.map((player) => {
     const tokens = player.tokens.map((token) => {
@@ -258,22 +302,27 @@ export function applyMove(state: GameState, tokenId: string): GameState {
     winnerOrder,
     version: state.version + 1,
     lastEvent: describe(move, mover.color, justFinished, winnerOrder),
-    dice: null,
+    dice: remaining,
   };
 
   if (isGameOver(next)) {
-    return { ...next, phase: 'game-over', consecutiveSixes: 0 };
+    return { ...next, phase: 'game-over', dice: [], consecutiveSixes: 0 };
   }
 
-  // Rolling a six earns another roll — unless that move just brought the
-  // player's last token home, in which case there is nothing left to move.
-  if (state.dice === 6 && !justFinished) {
-    return { ...next, phase: 'awaiting-roll' };
+  // Play on while numbers are still held and any of them can be used. A player
+  // whose last token just came home has nothing left to move them with.
+  if (
+    !justFinished &&
+    remaining.length > 0 &&
+    legalMovesFor(next, moverIndex, remaining).length > 0
+  ) {
+    return { ...next, phase: 'awaiting-move' };
   }
 
   return {
     ...next,
     phase: 'awaiting-roll',
+    dice: [],
     turnIndex: nextTurnIndex(next, moverIndex),
     consecutiveSixes: 0,
   };
@@ -312,7 +361,7 @@ function passTurn(state: GameState, event: GameEvent): GameState {
   return {
     ...state,
     phase: 'awaiting-roll',
-    dice: null,
+    dice: [],
     consecutiveSixes: 0,
     turnIndex: nextTurnIndex(state, state.turnIndex),
     lastEvent: event,

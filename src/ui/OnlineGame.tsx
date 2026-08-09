@@ -84,10 +84,12 @@ export default function OnlineGame({ room, state, uid, presence, onLeave }: Prop
     void commit(rollDice);
   };
 
-  const move = (tokenId: string) => {
+  const move = (tokenId: string, die: number) => {
     if (state.phase !== 'awaiting-move') return;
-    if (!legalMoves.some((m) => m.tokenId === tokenId)) return;
-    void commit((s) => applyMove(s, tokenId));
+    if (!legalMoves.some((m) => m.tokenId === tokenId && m.die === die)) return;
+    // The die travels into the transaction: it re-runs against fresh server
+    // data, where the same token may well be movable by either number.
+    void commit((s) => applyMove(s, tokenId, die));
   };
 
   const turnName = state.players[state.turnIndex]?.name ?? 'Someone';

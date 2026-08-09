@@ -57,6 +57,8 @@ export type MoveKind = 'leaveHome' | 'advance' | 'finish';
  */
 export interface Move {
   tokenId: string;
+  /** Which of the held numbers this move spends. */
+  die: number;
   from: Progress;
   to: Progress;
   kind: MoveKind;
@@ -77,7 +79,8 @@ export type GameEvent =
   | { type: 'moved'; color: Color; move: Move }
   | { type: 'captured'; by: Color; tokenIds: string[] }
   | { type: 'threeSixes'; color: Color }
-  | { type: 'noLegalMove'; color: Color; value: number }
+  /** Nothing could be done with any of the numbers held. */
+  | { type: 'noLegalMove'; color: Color; values: number[] }
   /** The turn passed because this player was away. */
   | { type: 'skipped'; color: Color }
   | { type: 'finishedToken'; color: Color; tokenId: string }
@@ -89,13 +92,21 @@ export interface GameState {
   /** Index into `players` — whose turn it is. */
   turnIndex: number;
   phase: TurnPhase;
-  /** The current roll, or null while awaiting a roll. */
-  dice: number | null;
   /**
-   * The face last rolled, kept for display. Unlike `dice` this survives a roll
-   * that could not be used, so the die never blanks out mid-game.
+   * Numbers rolled this turn and not yet spent, oldest first.
+   *
+   * A six is held rather than played, and the player rolls again on top of it,
+   * so a turn can end up holding several numbers at once. They may then be
+   * played in any order, on any legal token — which is the whole point: the
+   * choice of pairing is what creates the chance to line up a capture or an
+   * exact finish.
    */
-  lastRoll: number | null;
+  dice: number[];
+  /**
+   * Everything rolled this turn, spent or not, kept for display. Unlike `dice`
+   * this survives a roll that could not be used, so the panel never blanks out.
+   */
+  lastRoll: number[];
   /** Consecutive sixes rolled in this turn (0..3). Resets on a non-six. */
   consecutiveSixes: number;
   /** Finish order by color. */

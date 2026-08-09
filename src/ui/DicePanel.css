@@ -34,6 +34,64 @@
 .turn-chip--yellow .turn-chip__dot { background: var(--yellow); }
 .turn-chip--blue .turn-chip__dot { background: var(--blue); }
 
+/* --- the tray of dice held this turn --- */
+
+.dice-tray {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.dice-tray__slot {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 12px;
+  /* A ring rather than a border, so selecting one never shifts the row. */
+  box-shadow: 0 0 0 0 transparent;
+  transition: box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+/* Three dice, a name and a button have to share a phone's width, so the faces
+   shrink as the row grows rather than pushing the button off screen. */
+.dice-tray--2 .die {
+  width: 40px;
+  height: 40px;
+  padding: 5px;
+}
+
+.dice-tray--3 .die {
+  width: 34px;
+  height: 34px;
+  padding: 4px;
+  gap: 1px;
+}
+
+.dice-tray--3 .die__pip {
+  width: 5px;
+  height: 5px;
+}
+
+/* Already played: still shown, so the turn's whole roll stays readable. */
+.dice-tray__slot--spent {
+  opacity: 0.32;
+}
+
+.dice-tray__slot--selectable {
+  cursor: pointer;
+}
+
+/* Only meaningful while there is a real choice between two numbers. */
+.dice-tray__slot--selectable.dice-tray__slot--selected {
+  box-shadow: 0 0 0 3px #4d74dd;
+}
+
+.dice-tray__slot--selectable:active {
+  transform: translateY(1px);
+}
+
 /* --- die --- */
 
 .die {
