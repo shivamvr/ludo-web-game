@@ -218,10 +218,68 @@ describe('captures', () => {
     expect(move.to).toBe(10);
     expect(move.captures).toEqual(['green-0']);
 
-    const after = applyMove(game, 'red-0');
+    const after = applyMove(game, 'red-0', 5);
     expect(progressOf(after, 'red-0')).toBe(10);
     expect(progressOf(after, 'green-0')).toBe(0);
     expect(after.lastEvent).toEqual({ type: 'captured', by: 'red', tokenIds: ['green-0'] });
+  });
+
+  it('earns another roll for the capturing player', () => {
+    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 5, 'green-0': 49 }), 5);
+    const after = applyMove(game, 'red-0', 5);
+
+    // The hand is empty, yet the turn stays with red instead of passing.
+    expect(after.dice).toEqual([]);
+    expect(after.phase).toBe('awaiting-roll');
+    expect(currentTurn(after).color).toBe('red');
+    expect(after.bonusRolls).toBe(1);
+    // A fresh sequence, so the six counter starts over.
+    expect(after.consecutiveSixes).toBe(0);
+
+    // Taking the roll spends the debt.
+    const rolled = rollDice({ ...after, rngSeed: findSeed([2]) });
+    expect(rolled.bonusRolls).toBe(0);
+  });
+
+  it('does not cut a turn short: held numbers are played before the earned roll', () => {
+    // Red captures with the 5 while a 2 is still in hand.
+    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 5, 'green-0': 49 }), [5, 2]);
+    const after = applyMove(game, 'red-0', 5);
+
+    expect(after.bonusRolls).toBe(1);
+    expect(after.dice).toEqual([2]);
+    expect(after.phase).toBe('awaiting-move');
+    expect(currentTurn(after).color).toBe('red');
+
+    // Only once the 2 is spent does the earned roll come due.
+    const spent = applyMove(after, 'red-0', 2);
+    expect(spent.dice).toEqual([]);
+    expect(spent.phase).toBe('awaiting-roll');
+    expect(currentTurn(spent).color).toBe('red');
+    expect(spent.bonusRolls).toBe(1);
+  });
+
+  it('gives nothing for a move that captures nothing', () => {
+    const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 5 }), 2);
+    const after = applyMove(game, 'red-0', 2);
+
+    expect(after.bonusRolls).toBe(0);
+    expect(currentTurn(after).color).toBe('green');
+  });
+
+  it('forfeits an earned roll along with the rest of a third-six turn', () => {
+    const captured = applyMove(
+      awaitingMove(gameWith(['red', 'green'], { 'red-0': 5, 'green-0': 49 }), 5),
+      'red-0',
+      5,
+    );
+    expect(captured.bonusRolls).toBe(1);
+
+    // Take the earned roll, and run it into three sixes.
+    const third = rollDice(rollDice(rollDice({ ...captured, rngSeed: findSeed([6, 6, 6]) })));
+    expect(third.lastEvent).toEqual({ type: 'threeSixes', color: 'red' });
+    expect(third.bonusRolls).toBe(0);
+    expect(currentTurn(third).color).toBe('green');
   });
 
   it('does not capture on a star square', () => {
@@ -313,6 +371,35 @@ describe('exact count to finish', () => {
     const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': FINISH - 3 }), 3);
     const move = getLegalMoves(game).find((m) => m.tokenId === 'red-0')!;
     expect(move).toMatchObject({ from: FINISH - 3, to: FINISH, kind: 'finish' });
+  });
+
+  it('earns another roll for bringing a token home', () => {
+    // Two tokens still out, so finishing one does not finish the player.
+    const game = awaitingMove(
+      gameWith(['red', 'green'], { 'red-0': FINISH - 3, 'red-1': 10 }),
+      3,
+    );
+    const after = applyMove(game, 'red-0', 3);
+
+    expect(progressOf(after, 'red-0')).toBe(FINISH);
+    expect(after.bonusRolls).toBe(1);
+    expect(after.phase).toBe('awaiting-roll');
+    expect(currentTurn(after).color).toBe('red');
+  });
+
+  it('gives no roll when the last token home ends the player', () => {
+    const nearlyDone = gameWith(['red', 'green', 'yellow'], {
+      'red-0': FINISH,
+      'red-1': FINISH,
+      'red-2': FINISH,
+      'red-3': FINISH - 2,
+    });
+    const after = applyMove(awaitingMove(nearlyDone, 2), 'red-3', 2);
+
+    // Red is finished; there is nothing left for an extra roll to move.
+    expect(after.players[0].finished).toBe(true);
+    expect(after.bonusRolls).toBe(0);
+    expect(currentTurn(after).color).not.toBe('red');
   });
 
   it('refuses to move a token that would overshoot the center', () => {

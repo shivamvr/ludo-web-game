@@ -101,6 +101,10 @@
             "$slot": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" }
           },
           "consecutiveSixes": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 2" },
+          // Extra rolls earned by capturing or by bringing a token home. These
+          // queue across a turn, and an earned roll can earn more, so there is
+          // no tight bound worth restating here — this only rejects nonsense.
+          "bonusRolls": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 64" },
 
           "players": {
             "$seat": {

@@ -109,6 +109,17 @@ export interface GameState {
   lastRoll: number[];
   /** Consecutive sixes rolled in this turn (0..3). Resets on a non-six. */
   consecutiveSixes: number;
+  /**
+   * Extra rolls earned this turn and still unspent — one for sending an
+   * opponent's token home, one for bringing your own token all the way in.
+   *
+   * Earned the moment the move lands, but only taken once every held number has
+   * been played, so a capture with numbers still in hand does not cut the rest
+   * of the turn short. They queue: a hand that both captures and finishes is
+   * owed two. Forfeited along with everything else if the turn ends on a third
+   * six, or if the move brought the player's last token home.
+   */
+  bonusRolls: number;
   /** Finish order by color. */
   winnerOrder: Color[];
   /** Serializable RNG state, so the whole GameState stays JSON and replayable. */

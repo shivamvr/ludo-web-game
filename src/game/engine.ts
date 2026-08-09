@@ -64,6 +64,7 @@ export function createGame(
     dice: [],
     lastRoll: [],
     consecutiveSixes: 0,
+    bonusRolls: 0,
     winnerOrder: [],
     rngSeed: seed,
     lastEvent: null,
@@ -215,12 +216,21 @@ export function rollDice(state: GameState): GameState {
   const color = currentTurn(state).color;
   const sixes = value === 6 ? state.consecutiveSixes + 1 : 0;
   const held = [...state.dice, value];
+  const opening = state.dice.length === 0;
   // Anything already held means this is a re-roll within the same turn, so the
   // display accumulates; otherwise the turn starts a fresh row of dice.
-  const rolled = state.dice.length > 0 ? [...state.lastRoll, value] : [value];
+  const rolled = opening ? [value] : [...state.lastRoll, value];
   // lastRoll is set on every branch, including the ones that hand the turn on,
   // so what was actually rolled stays on screen.
-  const base = { ...state, rngSeed: nextSeed, lastRoll: rolled, version: state.version + 1 };
+  const base = {
+    ...state,
+    rngSeed: nextSeed,
+    lastRoll: rolled,
+    version: state.version + 1,
+    // An owed roll is only spent when a fresh sequence opens; rolling on top of
+    // a held six is part of the same one.
+    bonusRolls: opening && state.bonusRolls > 0 ? state.bonusRolls - 1 : state.bonusRolls,
+  };
 
   // Three sixes in one turn: nothing held is ever played.
   if (sixes === MAX_CONSECUTIVE_SIXES) {
@@ -303,10 +313,16 @@ export function applyMove(state: GameState, tokenId: string, die?: number): Game
     version: state.version + 1,
     lastEvent: describe(move, mover.color, justFinished, winnerOrder),
     dice: remaining,
+    // Two ways to earn another roll: send an opponent home, or bring one of
+    // your own all the way in. Both are taken once the hand is empty. They
+    // cannot happen on the same move — the center is not a capturable square —
+    // but the sum keeps that an observation rather than an assumption.
+    bonusRolls:
+      state.bonusRolls + (move.captures.length > 0 ? 1 : 0) + (move.kind === 'finish' ? 1 : 0),
   };
 
   if (isGameOver(next)) {
-    return { ...next, phase: 'game-over', dice: [], consecutiveSixes: 0 };
+    return { ...next, phase: 'game-over', dice: [], consecutiveSixes: 0, bonusRolls: 0 };
   }
 
   // Play on while numbers are still held and any of them can be used. A player
@@ -319,12 +335,19 @@ export function applyMove(state: GameState, tokenId: string, die?: number): Game
     return { ...next, phase: 'awaiting-move' };
   }
 
+  // The hand is spent. An earned roll keeps the turn with the same player, on a
+  // clean sheet — the six counter belongs to the sequence just finished.
+  if (!justFinished && next.bonusRolls > 0) {
+    return { ...next, phase: 'awaiting-roll', dice: [], consecutiveSixes: 0 };
+  }
+
   return {
     ...next,
     phase: 'awaiting-roll',
     dice: [],
     turnIndex: nextTurnIndex(next, moverIndex),
     consecutiveSixes: 0,
+    bonusRolls: 0,
   };
 }
 
@@ -363,6 +386,8 @@ function passTurn(state: GameState, event: GameEvent): GameState {
     phase: 'awaiting-roll',
     dice: [],
     consecutiveSixes: 0,
+    // A turn that is handed on takes nothing with it, earned rolls included.
+    bonusRolls: 0,
     turnIndex: nextTurnIndex(state, state.turnIndex),
     lastEvent: event,
   };

@@ -100,7 +100,15 @@ export default function DicePanel({
       </div>
 
       <button type="button" className="roll-button" onClick={onRoll} disabled={!canRoll}>
-        {rollLabel ?? (awaitingMove ? (choosing ? 'Pick a die' : 'Tap a token') : 'Roll')}
+        {rollLabel ??
+          (awaitingMove
+            ? choosing
+              ? 'Pick a die'
+              : 'Tap a token'
+            : // Naming the earned roll explains why the turn did not pass on.
+              state.bonusRolls > 0
+              ? 'Roll again'
+              : 'Roll')}
       </button>
     </div>
   );

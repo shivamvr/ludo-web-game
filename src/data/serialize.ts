@@ -175,6 +175,7 @@ export function toGameState(value: unknown): GameState | null {
     dice: toNumbers(value.dice),
     lastRoll: toNumbers(value.lastRoll),
     consecutiveSixes: num(value.consecutiveSixes, 0),
+    bonusRolls: num(value.bonusRolls, 0),
     winnerOrder: toArray(value.winnerOrder).filter(isColor),
     rngSeed: num(value.rngSeed, 0),
     lastEvent: toEvent(value.lastEvent),
