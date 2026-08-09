@@ -2,7 +2,23 @@
   "permissions": {
     "allow": [
       "PowerShell(\"--- tests ---\")",
-      "PowerShell(npx vitest run src/game/__tests__/repro.test.ts --reporter=verbose 2>&1)"
+      "PowerShell(npx vitest run src/game/__tests__/repro.test.ts --reporter=verbose 2>&1)",
+      "Bash(python -c ' *)",
+      "Bash(DPR=2.75 W=412 OUT=home.png node seams.mjs)",
+      "PowerShell(taskkill /PID 14104 /T /F 2>&1)",
+      "Bash(ls \"/c/Program Files/Google/Chrome/Application/chrome.exe\" \"/c/Program Files \\(x86\\)/Google/Chrome/Application/chrome.exe\" \"/c/Program Files/Microsoft/Edge/Application/msedge.exe\" 2>/dev/null)",
+      "Read(//c/Program Files/Google/Chrome/Application/**)",
+      "Bash(DPR=3 W=412 OUT=wedge-3.png node wedge.mjs)",
+      "Bash(DPR=1 SCALE=10 W=412 OUT=goal-now.png node goalzoom2.mjs)",
+      "Bash(DPR=1 W=412 OUT=wedge-1.png node wedge.mjs)",
+      "Bash(DPR=1 SCALE=10 W=412 OUT=goal-seam.png node goalzoom2.mjs)",
+      "Bash(DPR=2.75 W=412 OUT=wedge-275b.png node wedge.mjs)",
+      "Bash(DPR=2.75 SCALE=1 PAD=6 W=412 OUT=board-seam.png node goalzoom2.mjs)",
+      "Bash(DPR=1 W=412 OUT=noline-1.png node wedge.mjs)",
+      "Bash(DPR=1 SCALE=10 W=412 OUT=goal-plain.png node goalzoom2.mjs)",
+      "Bash(DPR=2.75 SCALE=1 PAD=6 W=412 OUT=board-plain.png node goalzoom2.mjs)",
+      "Bash(DPR=3 W=412 OUT=C:/Users/shiva/AppData/Local/Temp/claude/c--Users-shiva-OneDrive-Documents-dev-ludo/d8a05daf-d72b-4a32-9825-ebf075e83c57/scratchpad/area-3.png node C:/Users/shiva/AppData/Local/Temp/claude/c--Users-shiva-OneDrive-Documents-dev-ludo/d8a05daf-d72b-4a32-9825-ebf075e83c57/scratchpad/wedgearea.mjs)",
+      "Bash(DPR=1 SCALE=10 PAD=0.15 W=412 OUT=C:/Users/shiva/AppData/Local/Temp/claude/c--Users-shiva-OneDrive-Documents-dev-ludo/d8a05daf-d72b-4a32-9825-ebf075e83c57/scratchpad/goal-eq.png node C:/Users/shiva/AppData/Local/Temp/claude/c--Users-shiva-OneDrive-Documents-dev-ludo/d8a05daf-d72b-4a32-9825-ebf075e83c57/scratchpad/goalzoom2.mjs)"
     ]
   }
 }

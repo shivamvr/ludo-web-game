@@ -49,16 +49,6 @@
   stroke-width: 1;
 }
 
-/* Heavier and darker than the grid so it carries over the coloured wedges —
-   see GOAL_OUTLINE. Qualified by the layer so it outranks the rule above; a
-   bare class would lose to `.board__lines path` on specificity. */
-.board__lines .board__goal-outline {
-  stroke: var(--board-line-strong);
-  /* Same width as every other line on the board; only the colour differs, to
-     hold contrast against the wedges. */
-  stroke-width: 1;
-}
-
 /* --- arm-tip arrows, pointing into each colour's home column --- */
 
 .cell--arrow::before {
@@ -94,18 +84,7 @@
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
-.cell--yard.cell--red {
-  background: var(--red);
-}
-.cell--yard.cell--green {
-  background: var(--green);
-}
-.cell--yard.cell--yellow {
-  background: var(--yellow);
-}
-.cell--yard.cell--blue {
-  background: var(--blue);
-}
+/* Yard colour comes from one block per corner — see .yard-block. */
 
 .cell--home.cell--red {
   background: var(--red);
@@ -146,14 +125,28 @@
   inset: 0;
 }
 
+/* Cut every wedge exactly on the diagonals it shares and both clip edges along
+   a join are antialiased: neither covers its pixel fully and the white board
+   leaks through between them. So along each join the wedge painted FIRST
+   reaches 1.2% past it and the one painted after keeps the true diagonal,
+   laying its soft edge over solid colour that has nothing to leak.
+   The overhang is always hidden, so all four wedges show an exact quarter —
+   widening both edges of each wedge instead would hand every wedge whatever
+   its later neighbours did not claim, and the last one painted would win a
+   visibly larger triangle.
+   Paint order is up, right, down, left, hence: up overhangs both of its edges,
+   right and down overhang only the edge they share with the wedge after them,
+   and left, painted last, is exact on both.
+   Vertices outside the box only carry an offset edge out to it — clip-path
+   cannot paint past the border box anyway. */
 .goal__wedge--up {
-  clip-path: polygon(0 0, 100% 0, 50% 50%);
+  clip-path: polygon(-1.2% 0, 101.2% 0, 50% 51.2%);
 }
 .goal__wedge--right {
-  clip-path: polygon(100% 0, 100% 100%, 50% 50%);
+  clip-path: polygon(100% 0, 100% 101.2%, 49.4% 50.6%);
 }
 .goal__wedge--down {
-  clip-path: polygon(100% 100%, 0 100%, 50% 50%);
+  clip-path: polygon(100% 100%, -1.2% 100%, 49.4% 49.4%);
 }
 .goal__wedge--left {
   clip-path: polygon(0 100%, 0 0, 50% 50%);
@@ -191,6 +184,27 @@
 }
 
 /* --- yards --- */
+
+/* One element per corner, so there are no internal edges to fall between
+   device pixels. Nudged half a pixel outwards for the same reason: its own
+   outer edge would otherwise leave a hairline against the neighbouring cells. */
+.yard-block {
+  /* margin: -0.5px; */
+  background: var(--board);
+}
+
+.yard-block--red {
+  background: var(--red);
+}
+.yard-block--green {
+  background: var(--green);
+}
+.yard-block--yellow {
+  background: var(--yellow);
+}
+.yard-block--blue {
+  background: var(--blue);
+}
 
 /* Grown slightly past its 4x4 grid area so the tokens are not pressed against
    the inner border. Paired with the inset applied to the slot centres. */

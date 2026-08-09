@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import {
   CENTER_ORIGIN,
   CENTER_SIZE,
@@ -12,16 +12,16 @@ import {
   isSafeIndex,
   progressToCell,
   yardSlots,
-} from '../game/board';
-import type { Cell, Point } from '../game/board';
-import type { Color, GameState, Move } from '../game/types';
-import { COLORS } from '../game/types';
-import TokenPiece from './TokenPiece';
-import './Board.css';
+} from "../game/board";
+import type { Cell, Point } from "../game/board";
+import type { Color, GameState, Move } from "../game/types";
+import { COLORS } from "../game/types";
+import TokenPiece from "./TokenPiece";
+import "./Board.css";
 
-type CellKind = 'empty' | 'yard' | 'track' | 'home' | 'center';
+type CellKind = "empty" | "yard" | "track" | "home" | "center";
 
-type Arrow = 'up' | 'down' | 'left' | 'right';
+type Arrow = "up" | "down" | "left" | "right";
 
 interface CellInfo {
   kind: CellKind;
@@ -35,10 +35,10 @@ interface CellInfo {
 
 /** Which way the arrow on a colour's arm tip points, toward the centre. */
 const ARROW_DIRECTION: Record<Color, Arrow> = {
-  green: 'right',
-  yellow: 'down',
-  blue: 'left',
-  red: 'up',
+  green: "right",
+  yellow: "down",
+  blue: "left",
+  red: "up",
 };
 
 const cellKey = (c: Cell | Point) => `${c.row},${c.col}`;
@@ -48,16 +48,19 @@ const UNIT = 100 / GRID_SIZE;
 
 /** Classify all 225 grid squares once — this never changes. */
 const GRID: CellInfo[] = (() => {
-  const grid: CellInfo[] = Array.from({ length: GRID_SIZE * GRID_SIZE }, () => ({
-    kind: 'empty' as CellKind,
-  }));
+  const grid: CellInfo[] = Array.from(
+    { length: GRID_SIZE * GRID_SIZE },
+    () => ({
+      kind: "empty" as CellKind,
+    }),
+  );
   const at = (row: number, col: number) => row * GRID_SIZE + col;
 
   for (const color of COLORS) {
     const o = YARD_ORIGIN[color];
     for (let r = o.row; r < o.row + 6; r++) {
       for (let c = o.col; c < o.col + 6; c++) {
-        grid[at(r, c)] = { kind: 'yard', color };
+        grid[at(r, c)] = { kind: "yard", color };
       }
     }
   }
@@ -71,7 +74,7 @@ const GRID: CellInfo[] = (() => {
   TRACK.forEach((cell, index) => {
     const arrowFor = entryColor.get(index);
     grid[at(cell.row, cell.col)] = {
-      kind: 'track',
+      kind: "track",
       color: startColor.get(index),
       isStart: startColor.has(index),
       // Every safe square gets a star, entry squares included — a token standing
@@ -84,7 +87,7 @@ const GRID: CellInfo[] = (() => {
 
   for (const color of COLORS) {
     for (const cell of HOME_COLUMN[color]) {
-      grid[at(cell.row, cell.col)] = { kind: 'home', color };
+      grid[at(cell.row, cell.col)] = { kind: "home", color };
     }
   }
 
@@ -92,7 +95,7 @@ const GRID: CellInfo[] = (() => {
   // top, so these cells only need to stay blank.
   for (let r = CENTER_ORIGIN.row; r < CENTER_ORIGIN.row + CENTER_SIZE; r++) {
     for (let c = CENTER_ORIGIN.col; c < CENTER_ORIGIN.col + CENTER_SIZE; c++) {
-      grid[at(r, c)] = { kind: 'center' };
+      grid[at(r, c)] = { kind: "center" };
     }
   }
 
@@ -119,7 +122,7 @@ const GRID_LINES: string = (() => {
       // Yards are solid blocks of colour, and the goal is drawn as one shape,
       // so only the track and the home columns are ruled into squares. The goal
       // still gets an outline: the cells ringing it contribute those edges.
-      if (kind !== 'track' && kind !== 'home') continue;
+      if (kind !== "track" && kind !== "home") continue;
 
       if (row > 0) edges.add(`M${col} ${row}h1`);
       if (row < GRID_SIZE - 1) edges.add(`M${col} ${row + 1}h1`);
@@ -128,28 +131,7 @@ const GRID_LINES: string = (() => {
     }
   }
 
-  return [...edges].join('');
-})();
-
-/**
- * The two diagonals splitting the goal block into its four wedges.
- *
- * Drawn separately from GRID_LINES, and a little darker, because these lines sit
- * on saturated colour rather than on white. Measured against the wedges, a
- * hairline in the grid's colour keeps only a third to a half of the contrast it
- * has on a white square — enough that the diagonals meeting the pale yellow
- * wedge looked outlined while the ones between green, blue and red appeared to
- * be missing.
- *
- * They also want the opposite rendering hint to the grid: snapping a diagonal to
- * the pixel grid would leave it visibly stepped, so these stay antialiased.
- */
-const GOAL_OUTLINE: string = (() => {
-  const { row, col } = CENTER_ORIGIN;
-  const n = CENTER_SIZE;
-  // Only the diagonals: the block's border already comes from the grid, and
-  // drawing it again here stacked a heavier line on top of a crisp one.
-  return `M${col} ${row}l${n} ${n}M${col + n} ${row}l${-n} ${n}`;
+  return [...edges].join("");
 })();
 
 interface Props {
@@ -178,7 +160,7 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
   /** Tokens sent home by the move that just happened, so they can flash. */
   const justCaptured = useMemo(() => {
     const event = state.lastEvent;
-    return new Set(event?.type === 'captured' ? event.tokenIds : []);
+    return new Set(event?.type === "captured" ? event.tokenIds : []);
   }, [state.lastEvent]);
 
   /**
@@ -229,14 +211,14 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
         {GRID.map((info, i) => {
           const row = Math.floor(i / GRID_SIZE);
           const col = i % GRID_SIZE;
-          const classes = ['cell', `cell--${info.kind}`];
+          const classes = ["cell", `cell--${info.kind}`];
           if (info.color) classes.push(`cell--${info.color}`);
-          if (info.isStart) classes.push('cell--start');
-          if (info.isStar) classes.push('cell--star');
+          if (info.isStart) classes.push("cell--start");
+          if (info.isStar) classes.push("cell--star");
           if (info.arrow) classes.push(`cell--arrow cell--arrow-${info.arrow}`);
           if (info.arrowColor) classes.push(`cell--arrow-${info.arrowColor}`);
-          if (targets.has(`${row},${col}`)) classes.push('cell--target');
-          return <div key={i} className={classes.join(' ')} />;
+          if (targets.has(`${row},${col}`)) classes.push("cell--target");
+          return <div key={i} className={classes.join(" ")} />;
         })}
       </div>
 
@@ -251,14 +233,17 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
         }}
         aria-hidden="true"
       >
-        {(['up', 'right', 'down', 'left'] as const).map((side, i) => (
-          <span key={side} className={`goal__wedge goal__wedge--${['yellow', 'blue', 'red', 'green'][i]} goal__wedge--${side}`} />
+        {(["up", "right", "down", "left"] as const).map((side, i) => (
+          <span
+            key={side}
+            className={`goal__wedge goal__wedge--${["yellow", "blue", "red", "green"][i]} goal__wedge--${side}`}
+          />
         ))}
       </div>
 
       {/*
-        Drawn over the goal, so the block is outlined but stays free of the
-        lines that would otherwise run across it.
+        Drawn over the goal, so the block keeps its outer border while the four
+        triangles inside it meet with nothing drawn between them.
       */}
       <svg
         className="board__lines"
@@ -266,8 +251,11 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <path d={GRID_LINES} vectorEffect="non-scaling-stroke" shapeRendering="crispEdges" />
-        <path className="board__goal-outline" d={GOAL_OUTLINE} vectorEffect="non-scaling-stroke" />
+        <path
+          d={GRID_LINES}
+          vectorEffect="non-scaling-stroke"
+          shapeRendering="crispEdges"
+        />
       </svg>
 
       {/*
@@ -275,13 +263,33 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
         in the cell grid would displace the auto-placed squares.
       */}
       <div className="board__overlay" aria-hidden="true">
+        {/*
+          Each yard is painted as one block rather than as its 36 cells. Adjacent
+          cells cannot be relied on to meet: at a fractional device pixel ratio
+          their edges land between pixels and the board shows through as a white
+          grid. One element has no internal edges to split.
+        */}
+        {COLORS.map((color) => {
+          const o = YARD_ORIGIN[color];
+          return (
+            <div
+              key={`yard-${color}`}
+              className={`yard-block yard-block--${color}`}
+              style={{
+                gridArea: `${o.row + 1} / ${o.col + 1} / span 6 / span 6`,
+              }}
+            />
+          );
+        })}
         {COLORS.map((color) => {
           const o = YARD_ORIGIN[color];
           return (
             <div
               key={`pad-${color}`}
               className="yard-pad"
-              style={{ gridArea: `${o.row + 2} / ${o.col + 2} / span 4 / span 4` }}
+              style={{
+                gridArea: `${o.row + 2} / ${o.col + 2} / span 4 / span 4`,
+              }}
             />
           );
         })}
@@ -290,7 +298,10 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
             <div
               key={`slot-${color}-${i}`}
               className={`yard-slot yard-slot--${color}`}
-              style={{ left: `${point.col * UNIT}%`, top: `${point.row * UNIT}%` }}
+              style={{
+                left: `${point.col * UNIT}%`,
+                top: `${point.row * UNIT}%`,
+              }}
             />
           )),
         )}
