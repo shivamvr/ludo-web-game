@@ -89,15 +89,16 @@
           "phase": { ".validate": "newData.isString() && newData.val().matches(/^(awaiting-roll|awaiting-move|game-over)$/)" },
           "rngSeed": { ".validate": "newData.isNumber()" },
 
-          // Both are lists now: a six is held rather than played, so a turn can
-          // carry several numbers at once. Three is the ceiling, because a third
-          // six forfeits the turn before a fourth roll can happen.
+          // Both are lists: a six is held rather than played, so a turn carries
+          // several numbers at once. There is no tight ceiling — an earned roll
+          // is taken with numbers still in hand, and it can earn another — so
+          // these only reject nonsense rather than pinning an exact length.
           "dice": {
-            ".validate": "newData.hasChildren() && !newData.hasChild('3')",
+            ".validate": "newData.hasChildren() && !newData.hasChild('64')",
             "$slot": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" }
           },
           "lastRoll": {
-            ".validate": "newData.hasChildren() && !newData.hasChild('3')",
+            ".validate": "newData.hasChildren() && !newData.hasChild('64')",
             "$slot": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" }
           },
           "consecutiveSixes": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 2" },

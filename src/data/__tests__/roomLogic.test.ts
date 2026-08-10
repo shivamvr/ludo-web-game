@@ -14,7 +14,7 @@ import {
   type StoredRoom,
 } from '../roomLogic';
 import { FakeRoomNode } from './rtdb';
-import { awaitingMove, gameWith } from '../../game/__tests__/helpers';
+import { awaitingMove, findSeed, gameWith } from '../../game/__tests__/helpers';
 
 const player = (name: string, color: RoomPlayer['color'], joinedAt = 1): RoomPlayer => ({
   name,
@@ -321,20 +321,28 @@ describe('turn writes', () => {
       gameState: forDatabase(seated),
     };
 
-    // Finish a token with the 2, leaving the 6 in hand.
+    // Finish a token with the 2. The roll it earns is due at once, and the 6
+    // has to still be in hand on the far side of the write.
     const first = decideTurn(room, 'uid-a', (s) => applyMove(s, 'red-0', 2));
     expect(first.ok).toBe(true);
     if (!first.ok) return;
-    expect(toGameState(first.value.gameState)!.bonusRolls).toBe(1);
 
-    // Spend the 6 — the turn must stay with red for the roll it earned.
-    const second = decideTurn(first.value, 'uid-a', (s) => applyMove(s, 'red-1', 6));
+    const mid = toGameState(first.value.gameState)!;
+    expect(mid.bonusRolls).toBe(1);
+    expect(mid.phase).toBe('awaiting-roll');
+    expect(mid.dice).toEqual([6]);
+    expect(currentSeatUid(mid)).toBe('uid-a');
+
+    // Take it — the new number joins the 6 rather than replacing it.
+    const second = decideTurn(first.value, 'uid-a', (s) =>
+      rollDice({ ...s, rngSeed: findSeed([1]) }),
+    );
     expect(second.ok).toBe(true);
     if (!second.ok) return;
 
     const end = toGameState(second.value.gameState)!;
-    expect(end.dice).toEqual([]);
-    expect(end.bonusRolls).toBe(1);
+    expect(end.dice).toEqual([6, 1]);
+    expect(end.bonusRolls).toBe(0);
     expect(currentSeatUid(end)).toBe('uid-a');
   });
 

@@ -112,10 +112,30 @@ describe('leaving the yard', () => {
     expect(currentTurn(rolled).color).toBe('green');
   });
 
-  it('will not stack a second token onto an occupied start square', () => {
+  it('opens onto a start square a friendly token is already standing on', () => {
     const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 1 }), 6);
     const movable = getLegalMoves(game).map((m) => m.tokenId);
-    expect(movable).toEqual(['red-0']);
+    // The one already out can advance, and all three still in the yard can come
+    // out onto the square it is holding.
+    expect(movable).toEqual(['red-0', 'red-1', 'red-2', 'red-3']);
+  });
+
+  it('spends two sixes on two tokens, both landing on the start square', () => {
+    const game = awaitingMove(gameWith(['red', 'green'], {}), [6, 6, 3]);
+
+    const first = applyMove(game, 'red-0', 6);
+    expect(progressOf(first, 'red-0')).toBe(1);
+    expect(first.dice).toEqual([6, 3]);
+    expect(first.phase).toBe('awaiting-move');
+
+    // The spare six is still good for the yard: the first token out is not in
+    // the doorway of the second.
+    expect(getLegalMoves(first).some((m) => m.kind === 'leaveHome')).toBe(true);
+
+    const second = applyMove(first, 'red-1', 6);
+    expect(progressOf(second, 'red-1')).toBe(1);
+    expect(progressOf(second, 'red-0')).toBe(1);
+    expect(second.dice).toEqual([3]);
   });
 });
 
@@ -241,22 +261,24 @@ describe('captures', () => {
     expect(rolled.bonusRolls).toBe(0);
   });
 
-  it('does not cut a turn short: held numbers are played before the earned roll', () => {
-    // Red captures with the 5 while a 2 is still in hand.
+  it('hands the dice straight back, with unspent numbers still in hand', () => {
+    // Red captures with the 5 while a 2 is still to be spent.
     const game = awaitingMove(gameWith(['red', 'green'], { 'red-0': 5, 'green-0': 49 }), [5, 2]);
     const after = applyMove(game, 'red-0', 5);
 
     expect(after.bonusRolls).toBe(1);
+    expect(after.phase).toBe('awaiting-roll');
+    // The 2 is not washed away by the reward: it waits for the new number.
     expect(after.dice).toEqual([2]);
-    expect(after.phase).toBe('awaiting-move');
     expect(currentTurn(after).color).toBe('red');
 
-    // Only once the 2 is spent does the earned roll come due.
-    const spent = applyMove(after, 'red-0', 2);
-    expect(spent.dice).toEqual([]);
-    expect(spent.phase).toBe('awaiting-roll');
-    expect(currentTurn(spent).color).toBe('red');
-    expect(spent.bonusRolls).toBe(1);
+    // Taking the roll adds to the hand rather than replacing it.
+    const rolled = rollDice({ ...after, rngSeed: findSeed([4]) });
+    expect(rolled.dice).toEqual([2, 4]);
+    expect(rolled.lastRoll).toEqual([5, 2, 4]);
+    expect(rolled.bonusRolls).toBe(0);
+    expect(rolled.phase).toBe('awaiting-move');
+    expect(currentTurn(rolled).color).toBe('red');
   });
 
   it('gives nothing for a move that captures nothing', () => {
@@ -325,7 +347,7 @@ describe('captures', () => {
     expect(progressOf(applyMove(game, 'red-0'), 'green-0')).toBe(53);
   });
 
-  it('clears every opponent token sharing the landing square', () => {
+  it('sends home the lone tokens on the square but spares a colour standing two deep', () => {
     const game = awaitingMove(
       gameWith(['red', 'green', 'yellow'], {
         'red-0': 5,
@@ -338,21 +360,89 @@ describe('captures', () => {
     expect(absoluteTrackIndex('yellow', 36)).toBe(absoluteTrackIndex('red', 10));
 
     const after = applyMove(game, 'red-0');
-    expect(progressOf(after, 'green-0')).toBe(0);
-    expect(progressOf(after, 'green-1')).toBe(0);
+    // Green's pair defends itself; yellow, standing alone, does not.
+    expect(progressOf(after, 'green-0')).toBe(49);
+    expect(progressOf(after, 'green-1')).toBe(49);
     expect(progressOf(after, 'yellow-0')).toBe(0);
+  });
+
+  it('counts the pile per colour, not per square', () => {
+    // Two colours, one token each: neither is protected by the other's company.
+    const game = awaitingMove(
+      gameWith(['red', 'green', 'yellow'], {
+        'red-0': 5,
+        'green-0': 49,
+        'yellow-0': 36,
+      }),
+      5,
+    );
+    const after = applyMove(game, 'red-0');
+    expect(progressOf(after, 'green-0')).toBe(0);
+    expect(progressOf(after, 'yellow-0')).toBe(0);
+  });
+
+  it('earns no extra roll when the pile it landed on was safe', () => {
+    const game = awaitingMove(
+      gameWith(['red', 'green'], { 'red-0': 5, 'green-0': 49, 'green-1': 49 }),
+      5,
+    );
+    const move = getLegalMoves(game).find((m) => m.tokenId === 'red-0')!;
+    expect(move.captures).toEqual([]);
+
+    const after = applyMove(game, 'red-0', 5);
+    expect(after.bonusRolls).toBe(0);
+    expect(currentTurn(after).color).toBe('green');
   });
 });
 
-describe('own tokens block', () => {
-  it('refuses to land on a square held by a friendly token', () => {
+describe('own tokens stack', () => {
+  it('lands on a square a friendly token is already holding', () => {
     const game = awaitingMove(
       gameWith(['red', 'green'], { 'red-0': 10, 'red-1': 5 }),
       5,
     );
     const movable = getLegalMoves(game).map((m) => m.tokenId);
-    expect(movable).not.toContain('red-1');
+    expect(movable).toContain('red-1');
     expect(movable).toContain('red-0');
+
+    const after = applyMove(game, 'red-1', 5);
+    expect(progressOf(after, 'red-1')).toBe(10);
+    expect(progressOf(after, 'red-0')).toBe(10);
+  });
+
+  it('makes a pile of two safe from an opponent landing on it', () => {
+    // Green's turn; its token reaches the square red is holding two deep.
+    const game = awaitingMove(
+      gameWith(
+        ['red', 'green'],
+        { 'red-0': 10, 'red-1': 10, 'green-0': 44 },
+        { turnIndex: 1 },
+      ),
+      5,
+    );
+    const move = getLegalMoves(game).find((m) => m.tokenId === 'green-0')!;
+    expect(move.to).toBe(49);
+    expect(move.captures).toEqual([]);
+
+    const after = applyMove(game, 'green-0', 5);
+    expect(progressOf(after, 'red-0')).toBe(10);
+    expect(progressOf(after, 'red-1')).toBe(10);
+    // Nothing was taken, so nothing is owed.
+    expect(after.bonusRolls).toBe(0);
+  });
+
+  it('leaves a pile capturable again once it thins back to one', () => {
+    const game = awaitingMove(
+      gameWith(
+        ['red', 'green'],
+        { 'red-0': 10, 'red-1': 20, 'green-0': 44 },
+        { turnIndex: 1 },
+      ),
+      5,
+    );
+    const after = applyMove(game, 'green-0', 5);
+    expect(progressOf(after, 'red-0')).toBe(0);
+    expect(after.bonusRolls).toBe(1);
   });
 
   it('lets friendly tokens pile up on the center', () => {
@@ -387,9 +477,7 @@ describe('exact count to finish', () => {
     expect(currentTurn(after).color).toBe('red');
   });
 
-  it('keeps the earned roll while other numbers are still in hand', () => {
-    // The reward is banked on the finishing move but only taken once the hand
-    // is empty, so the number left over must not wash it away.
+  it('hands the dice back at once, keeping the numbers still in hand', () => {
     const game = awaitingMove(
       gameWith(['red', 'green'], { 'red-0': FINISH - 2, 'red-1': 10 }),
       [6, 2],
@@ -397,14 +485,14 @@ describe('exact count to finish', () => {
 
     const finished = applyMove(game, 'red-0', 2);
     expect(finished.bonusRolls).toBe(1);
+    expect(finished.phase).toBe('awaiting-roll');
     expect(finished.dice).toEqual([6]);
-    expect(finished.phase).toBe('awaiting-move');
+    expect(currentTurn(finished).color).toBe('red');
 
-    const spent = applyMove(finished, 'red-1', 6);
-    expect(spent.dice).toEqual([]);
-    expect(spent.bonusRolls).toBe(1);
-    expect(spent.phase).toBe('awaiting-roll');
-    expect(currentTurn(spent).color).toBe('red');
+    const rolled = rollDice({ ...finished, rngSeed: findSeed([1]) });
+    expect(rolled.dice).toEqual([6, 1]);
+    expect(rolled.bonusRolls).toBe(0);
+    expect(currentTurn(rolled).color).toBe('red');
   });
 
   it('keeps it whichever order the numbers are spent in', () => {
@@ -662,25 +750,23 @@ describe('full game simulation', () => {
           state = applyMove(state, pick.tokenId, pick.die);
         }
 
-        // Invariants that must hold after every single transition.
+        // Invariants that must hold after every single transition. Friendly
+        // tokens are free to share a square now, so position is all there is
+        // left to check.
         for (const player of state.players) {
-          const onTrack = new Map<number, number>();
           for (const token of player.tokens) {
             expect(token.progress).toBeGreaterThanOrEqual(0);
             expect(token.progress).toBeLessThanOrEqual(FINISH);
-            const index = absoluteTrackIndex(player.color, token.progress);
-            if (index !== null) {
-              onTrack.set(index, (onTrack.get(index) ?? 0) + 1);
-            }
           }
-          // No two friendly tokens ever share a track square.
-          for (const count of onTrack.values()) expect(count).toBe(1);
         }
       }
 
+      // A turn can now roll again on a capture or a finish, so a game takes
+      // more transitions than it used to — but it must still terminate.
+      expect(steps).toBeLessThan(20_000);
       expect(isGameOver(state)).toBe(true);
       expect(state.phase).toBe('game-over');
       expect(standings(state)).toHaveLength(4);
     }
-  });
+  }, 30_000);
 });

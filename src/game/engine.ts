@@ -161,10 +161,9 @@ function resolveMove(
     kind = to === FINISH ? 'finish' : 'advance';
   }
 
-  // Own tokens block, except at the center where all four end up together.
-  if (to !== FINISH && player.tokens.some((t) => t.id !== token.id && t.progress === to)) {
-    return null;
-  }
+  // Your own tokens never block you: they pile up on the square instead, and a
+  // pile of two or more defends itself — see capturesAt. This is what lets two
+  // sixes open two tokens, since both land on the same start square.
 
   return {
     tokenId: token.id,
@@ -176,7 +175,13 @@ function resolveMove(
   };
 }
 
-/** Opponent tokens sent home by landing on `to`. Empty off the shared track. */
+/**
+ * Opponent tokens sent home by landing on `to`. Empty off the shared track.
+ *
+ * A colour standing two or more deep on the square is safe: one arriving token
+ * is not enough to shift a pile. Only a lone token is sent home, so stacking is
+ * a defensive move and not merely a way to share a space.
+ */
 function capturesAt(state: GameState, color: Color, to: number): string[] {
   if (to < 1 || to > MAIN_TRACK_STEPS) return [];
   const target = absoluteTrackIndex(color, to)!;
@@ -186,11 +191,12 @@ function capturesAt(state: GameState, color: Color, to: number): string[] {
   const captured: string[] = [];
   for (const other of state.players) {
     if (other.color === color) continue;
-    for (const token of other.tokens) {
-      if (absoluteTrackIndex(other.color, token.progress) === target) {
-        captured.push(token.id);
-      }
-    }
+    // Counted per colour: two colours each with a lone token on the square are
+    // two separate captures, not a pile that protects either of them.
+    const standing = other.tokens.filter(
+      (token) => absoluteTrackIndex(other.color, token.progress) === target,
+    );
+    if (standing.length === 1) captured.push(standing[0].id);
   }
   return captured;
 }
@@ -216,10 +222,16 @@ export function rollDice(state: GameState): GameState {
   const color = currentTurn(state).color;
   const sixes = value === 6 ? state.consecutiveSixes + 1 : 0;
   const held = [...state.dice, value];
-  const opening = state.dice.length === 0;
   // Anything already held means this is a re-roll within the same turn, so the
-  // display accumulates; otherwise the turn starts a fresh row of dice.
-  const rolled = opening ? [value] : [...state.lastRoll, value];
+  // display accumulates; otherwise the turn starts a fresh row of dice. Numbers
+  // can be carried over two ways now — held sixes, and whatever was still
+  // unspent when a roll was earned — so this asks about the hand, not the cause.
+  const rolled = state.dice.length === 0 ? [value] : [...state.lastRoll, value];
+  // Rolling on top of a six continues the same sequence and costs nothing. Any
+  // other roll made with credit in hand is that credit being taken, whether or
+  // not numbers are still held: an earned roll resets the six counter, so this
+  // tells the two apart where the size of the hand no longer can.
+  const continuingSixes = state.consecutiveSixes > 0;
   // lastRoll is set on every branch, including the ones that hand the turn on,
   // so what was actually rolled stays on screen.
   const base = {
@@ -227,9 +239,8 @@ export function rollDice(state: GameState): GameState {
     rngSeed: nextSeed,
     lastRoll: rolled,
     version: state.version + 1,
-    // An owed roll is only spent when a fresh sequence opens; rolling on top of
-    // a held six is part of the same one.
-    bonusRolls: opening && state.bonusRolls > 0 ? state.bonusRolls - 1 : state.bonusRolls,
+    bonusRolls:
+      !continuingSixes && state.bonusRolls > 0 ? state.bonusRolls - 1 : state.bonusRolls,
   };
 
   // Three sixes in one turn: nothing held is ever played.
@@ -325,6 +336,15 @@ export function applyMove(state: GameState, tokenId: string, die?: number): Game
     return { ...next, phase: 'game-over', dice: [], consecutiveSixes: 0, bonusRolls: 0 };
   }
 
+  // An earned roll is taken at once, and its number joins whatever is still
+  // held — the same container a six fills. Holding it back until the hand was
+  // empty made a capture look ignored whenever a six was still to be spent,
+  // since the turn carried on asking for a move instead of offering the dice.
+  // The six counter restarts: the sequence that earned this roll is over.
+  if (!justFinished && next.bonusRolls > 0) {
+    return { ...next, phase: 'awaiting-roll', consecutiveSixes: 0 };
+  }
+
   // Play on while numbers are still held and any of them can be used. A player
   // whose last token just came home has nothing left to move them with.
   if (
@@ -333,12 +353,6 @@ export function applyMove(state: GameState, tokenId: string, die?: number): Game
     legalMovesFor(next, moverIndex, remaining).length > 0
   ) {
     return { ...next, phase: 'awaiting-move' };
-  }
-
-  // The hand is spent. An earned roll keeps the turn with the same player, on a
-  // clean sheet — the six counter belongs to the sequence just finished.
-  if (!justFinished && next.bonusRolls > 0) {
-    return { ...next, phase: 'awaiting-roll', dice: [], consecutiveSixes: 0 };
   }
 
   return {
