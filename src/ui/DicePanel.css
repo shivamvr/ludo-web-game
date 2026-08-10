@@ -18,8 +18,8 @@
 }
 
 .dice-panel__hint {
-  color: var(--muted);
-  font-size: 13px;
+  color: #b6bed6;
+  font-size: 13.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -32,33 +32,26 @@
   align-items: center;
   gap: 7px;
   min-width: 0;
-  font-weight: 650;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 17px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* The name carries the colour too. A 14px dot is easy to miss on a phone. */
+  color: var(--turn, var(--text));
 }
 
 .turn-chip__dot {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   flex: none;
   border-radius: 50%;
+  background: var(--turn);
   border: 2px solid rgb(0 0 0 / 0.35);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--turn) 60%, transparent);
 }
 
-.turn-chip--red .turn-chip__dot {
-  background: var(--red);
-}
-.turn-chip--green .turn-chip__dot {
-  background: var(--green);
-}
-.turn-chip--yellow .turn-chip__dot {
-  background: var(--yellow);
-}
-.turn-chip--blue .turn-chip__dot {
-  background: var(--blue);
-}
+/* Colour comes from --turn on the panel — see DicePanel. */
 
 /* --- the tray of dice held this turn --- */
 
@@ -76,27 +69,36 @@
 }
 
 /* Throwing is done by tapping the dice themselves. The halo pulses out to say
-   they are waiting on you, since nothing else on the panel now does. */
+   they are waiting on you, since nothing else on the panel now does — and it
+   pulses in the colour of whoever is playing, so the panel says whose turn it
+   is as loudly as it says there is something to tap. A fixed blue read as a
+   dull grey ring against the dark surface whatever colour was up. */
 .dice-tray--roll {
   cursor: pointer;
-  border-color: #4d74dd;
-  background: var(--surface-2);
-  animation: dice-invite 1.7s ease-in-out infinite;
+  border-color: var(--turn);
+  background: color-mix(in srgb, var(--turn) 22%, var(--surface-2));
+  animation: dice-invite 1.5s ease-in-out infinite;
 }
 
+/* Two shadows: a ring travelling outwards, and a steady bloom under it that
+   keeps the tray lit between pulses rather than dropping back to flat. */
 @keyframes dice-invite {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(77 116 221 / 0.5);
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--turn) 75%, transparent),
+      0 0 16px color-mix(in srgb, var(--turn) 50%, transparent);
   }
   65% {
-    box-shadow: 0 0 0 11px rgb(77 116 221 / 0);
+    box-shadow:
+      0 0 0 13px transparent,
+      0 0 24px color-mix(in srgb, var(--turn) 24%, transparent);
   }
 }
 
 .dice-tray--roll:active {
   transform: translateY(1px);
-  background: #33559f;
+  background: color-mix(in srgb, var(--turn) 45%, var(--surface-2));
   animation: none;
 }
 
@@ -164,9 +166,12 @@
   padding: 6px 8px;
 }
 
-/* Already played: still shown, so the turn's whole roll stays readable. */
+/* Already played: still shown, so the turn's whole roll stays readable. Fading
+   a white die over a dark panel turns it grey, and once a hand is spent every
+   die in the tray is one of these — which left the panel looking dead just as
+   it was asking to be tapped. Dimmed only enough to rank below a live die. */
 .dice-tray__slot--spent {
-  opacity: 0.32;
+  opacity: 0.72;
 }
 
 .dice-tray__slot--selectable {
@@ -193,9 +198,17 @@
   gap: 2px;
   padding: 6px;
   border-radius: 10px;
-  background: #f6f7fb;
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
+  background: #fdfdff;
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.14);
   place-items: center;
+}
+
+/* A live number is the one to act on, so it is the brightest thing in the
+   tray — a rim of light separates it from any spent die beside it. */
+.dice-tray__slot:not(.dice-tray__slot--spent) .die {
+  box-shadow:
+    inset 0 -2px 0 rgb(0 0 0 / 0.14),
+    0 0 0 1.5px rgb(255 255 255 / 0.55);
 }
 
 /* The throw, on the same clock as the sound — see ROLL_TIMING. Each keyframe
@@ -253,8 +266,9 @@
 
 .die__idle {
   grid-area: 1 / 1 / span 3 / span 3;
-  color: #9aa2b8;
-  font-size: 22px;
-  font-weight: 700;
+  /* Against the near-white face, the old grey was barely there. */
+  color: #5c6480;
+  font-size: 24px;
+  font-weight: 800;
 }
 

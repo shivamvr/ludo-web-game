@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { GameState, Player } from '../game/types';
 import Die from './Die';
 import './DicePanel.css';
@@ -115,7 +116,10 @@ export default function DicePanel({
   }`;
 
   return (
-    <div className="dice-panel">
+    // Whoever is playing colours the whole panel. A single variable rather than
+    // a class per colour, so every rule below — border, glow, tint — stays one
+    // rule instead of four.
+    <div className="dice-panel" style={{ '--turn': `var(--${player.color})` } as CSSProperties}>
       <span className="dice-panel__who">
         <span className={`turn-chip turn-chip--${player.color}`}>
           <span className="turn-chip__dot" />
