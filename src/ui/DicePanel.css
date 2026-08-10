@@ -7,11 +7,30 @@
   padding: 10px 12px;
 }
 
+/* Whose turn it is, and what they should do — the words the roll button used
+   to carry, now that the dice are the thing you tap. */
+.dice-panel__who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dice-panel__hint {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Held even when empty, so the row does not jump as the hint changes. */
+  min-height: 1.2em;
+}
+
 .turn-chip {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  flex: 1;
   min-width: 0;
   font-weight: 650;
   font-size: 16px;
@@ -48,6 +67,43 @@
   align-items: center;
   gap: 6px;
   flex: none;
+  padding: 7px 11px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+
+/* Throwing is done by tapping the dice themselves. The halo pulses out to say
+   they are waiting on you, since nothing else on the panel now does. */
+.dice-tray--roll {
+  cursor: pointer;
+  border-color: #4d74dd;
+  background: var(--surface-2);
+  animation: dice-invite 1.7s ease-in-out infinite;
+}
+
+@keyframes dice-invite {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(77 116 221 / 0.5);
+  }
+  65% {
+    box-shadow: 0 0 0 11px rgb(77 116 221 / 0);
+  }
+}
+
+.dice-tray--roll:active {
+  transform: translateY(1px);
+  background: #33559f;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dice-tray--roll {
+    animation: none;
+  }
 }
 
 .dice-tray__slot {
@@ -63,24 +119,49 @@
     opacity 0.15s ease;
 }
 
-/* Three dice, a name and a button have to share a phone's width, so the faces
-   shrink as the row grows rather than pushing the button off screen. */
+/* A hand can hold several numbers at once, so the faces shrink as the row grows
+   rather than pushing the name off the side of a phone. There is more room for
+   them than there was: the roll button used to take a third of the row. */
 .dice-tray--2 .die {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   padding: 5px;
 }
 
 .dice-tray--3 .die {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   padding: 4px;
   gap: 1px;
 }
 
 .dice-tray--3 .die__pip {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
+}
+
+/* Past three the row is a bonus roll stacked on a held hand; keep it on screen. */
+.dice-tray--4 .die,
+.dice-tray--5 .die,
+.dice-tray--6 .die {
+  width: 30px;
+  height: 30px;
+  padding: 3px;
+  gap: 1px;
+}
+
+.dice-tray--4 .die__pip,
+.dice-tray--5 .die__pip,
+.dice-tray--6 .die__pip {
+  width: 4px;
+  height: 4px;
+}
+
+.dice-tray--4,
+.dice-tray--5,
+.dice-tray--6 {
+  gap: 4px;
+  padding: 6px 8px;
 }
 
 /* Already played: still shown, so the turn's whole roll stays readable. */
@@ -177,29 +258,3 @@
   font-weight: 700;
 }
 
-/* --- roll button --- */
-
-.roll-button {
-  flex: none;
-  min-height: 46px;
-  min-width: 108px;
-  padding: 0 18px;
-  /* border-radius: 10px; */
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  font-weight: 650;
-}
-
-.roll-button:not(:disabled) {
-  background: #3b62c9;
-  border-color: #4d74dd;
-}
-
-.roll-button:not(:disabled):active {
-  transform: translateY(1px);
-  background: #33559f;
-}
-
-.roll-button:disabled {
-  color: var(--muted);
-}
