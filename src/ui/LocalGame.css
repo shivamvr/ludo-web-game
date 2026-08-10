@@ -19,11 +19,6 @@
   font-weight: 700;
   letter-spacing: 0.02em;
 }
-@media (max-width: 768px) {
-  .app__title {
-    font-size: 20px;
-  }
-}
 
 .app__bar {
   gap: 8px;
@@ -223,4 +218,17 @@
   background: #3b62c9;
   border: 1px solid #4d74dd;
   font-weight: 650;
+}
+
+@media (max-width: 768px) {
+  .app {
+    padding: 48px 12px calc(12px + env(safe-area-inset-bottom));
+    gap: 24px;
+  }
+  .app__title {
+    font-size: 20px;
+  }
+  .banner {
+    margin-top: 32px;
+  }
 }
