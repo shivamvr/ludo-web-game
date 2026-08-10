@@ -87,14 +87,21 @@ export default function GameView({
 
   // One sound per state transition, driven off the version counter so a
   // re-render never replays a cue and every client hears the same events.
+  //
+  // The cue waits for the board to finish acting the move out. A capture should
+  // be heard when the tokens collide, not when the write lands — and with a
+  // token walking a square at a time those are up to half a second apart. The
+  // board reports arrival at once when there is nothing to walk, so a roll or a
+  // skipped turn still sounds immediately.
   const sound = useSound();
+  const [played, setPlayed] = useState(state.version);
   const heard = useRef(state.version);
   useEffect(() => {
-    if (state.version === heard.current) return;
+    if (played !== state.version || heard.current === state.version) return;
     heard.current = state.version;
     const cue = cueFor(state.lastEvent);
     if (cue) sound.play(cue);
-  }, [state.version, state.lastEvent, sound]);
+  }, [played, state.version, state.lastEvent, sound]);
   // Once the game is decided, the chip names the winner rather than whoever
   // happened to move last.
   const player = won
@@ -127,6 +134,8 @@ export default function GameView({
           state={state}
           legalMoves={movesForDie}
           onTokenClick={(tokenId) => selectedDie !== null && onTokenClick(tokenId, selectedDie)}
+          onStep={() => sound.play('step')}
+          onArrive={() => setPlayed(state.version)}
         />
         {over && (
           <div className="result">
@@ -160,7 +169,10 @@ export default function GameView({
         awaitingMove={state.phase === 'awaiting-move'}
         selectedDie={selectedDie}
         playableDice={playableDice}
-        onSelectDie={setChosen}
+        onSelectDie={(die) => {
+          setChosen(die);
+          sound.play('select');
+        }}
         rollLabel={rollLabel}
         onRoll={onRoll}
       />

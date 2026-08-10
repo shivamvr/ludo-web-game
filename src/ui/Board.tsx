@@ -17,6 +17,7 @@ import type { Cell, Point } from "../game/board";
 import type { Color, GameState, Move } from "../game/types";
 import { COLORS } from "../game/types";
 import TokenPiece from "./TokenPiece";
+import { FLIGHT_MS, HOP_MS, useTokenTravel } from "./useTokenTravel";
 import "./Board.css";
 
 type CellKind = "empty" | "yard" | "track" | "home" | "center";
@@ -138,9 +139,22 @@ interface Props {
   state: GameState;
   legalMoves: Move[];
   onTokenClick: (tokenId: string) => void;
+  /** One square of a walk was crossed. */
+  onStep: () => void;
+  /** This state's movement has finished playing out — see useTokenTravel. */
+  onArrive: () => void;
 }
 
-export default function Board({ state, legalMoves, onTokenClick }: Props) {
+export default function Board({
+  state,
+  legalMoves,
+  onTokenClick,
+  onStep,
+  onArrive,
+}: Props) {
+  /** Movement in flight: tokens mid-walk, and tokens being thrown back home. */
+  const travel = useTokenTravel(state, onStep, onArrive);
+
   const movable = useMemo(
     () => new Map(legalMoves.map((m) => [m.tokenId, m] as const)),
     [legalMoves],
@@ -156,12 +170,6 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
     }
     return set;
   }, [legalMoves, state.players, state.turnIndex]);
-
-  /** Tokens sent home by the move that just happened, so they can flash. */
-  const justCaptured = useMemo(() => {
-    const event = state.lastEvent;
-    return new Set(event?.type === "captured" ? event.tokenIds : []);
-  }, [state.lastEvent]);
 
   /**
    * Tokens per player, read off the game rather than passed in — every player
@@ -308,19 +316,25 @@ export default function Board({ state, legalMoves, onTokenClick }: Props) {
       </div>
 
       <div className="board__tokens">
-        {placed.map((p) => (
-          <TokenPiece
-            key={p.id}
-            color={p.color}
-            left={p.left}
-            top={p.top}
-            scale={p.scale}
-            movable={movable.has(p.id)}
-            captured={justCaptured.has(p.id)}
-            captureKey={state.version}
-            onClick={() => onTokenClick(p.id)}
-          />
-        ))}
+        {placed.map((p) => {
+          // A token mid-walk is drawn where the walk has reached, not where the
+          // state already puts it, and unfanned: the fan belongs to the square
+          // it will end on, not to each one it passes over.
+          const walking = travel.spots.get(p.id);
+          return (
+            <TokenPiece
+              key={p.id}
+              color={p.color}
+              left={walking?.left ?? p.left}
+              top={walking?.top ?? p.top}
+              scale={walking ? 1 : p.scale}
+              hopMs={walking ? HOP_MS : undefined}
+              flightMs={travel.returning.has(p.id) ? FLIGHT_MS : undefined}
+              movable={movable.has(p.id)}
+              onClick={() => onTokenClick(p.id)}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -32,6 +32,9 @@ function faces(state: GameState): { value: number; spent: boolean }[] {
   });
 }
 
+/** Events that mean a die was actually thrown, and so should be seen landing. */
+const THROWN = new Set(['rolled', 'noLegalMove', 'threeSixes']);
+
 export default function DicePanel({
   state,
   player,
@@ -46,6 +49,9 @@ export default function DicePanel({
   const rolled = faces(state);
   // More than one number to spend is the only time the choice matters.
   const choosing = awaitingMove && playableDice.length > 1;
+  // Only the die just thrown tumbles. The ones already held keep their faces,
+  // or a six would appear to be re-rolled every time it is rolled on top of.
+  const newest = state.lastEvent && THROWN.has(state.lastEvent.type) ? rolled.length - 1 : -1;
 
   return (
     <div className="dice-panel">
@@ -88,11 +94,11 @@ export default function DicePanel({
                 aria-pressed={selected}
                 aria-label={`Play the ${face.value}`}
               >
-                <Die value={face.value} roll={state.version} />
+                <Die value={face.value} roll={state.version} tumble={i === newest} />
               </button>
             ) : (
               <span key={i} className={className}>
-                <Die value={face.value} roll={state.version} />
+                <Die value={face.value} roll={state.version} tumble={i === newest} />
               </span>
             );
           })

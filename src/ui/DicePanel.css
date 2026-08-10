@@ -117,25 +117,48 @@
   place-items: center;
 }
 
-/* A short tumble each time a new roll lands. */
-.die--rolled {
-  animation: die-tumble 0.32s cubic-bezier(0.3, 1.4, 0.5, 1);
+/* The throw, on the same clock as the sound — see ROLL_TIMING. Each keyframe
+   up to 72% is one of the five knocks in the rattle, so the die kicks as each
+   is heard; 72% is where the settle knock lands (settle / (settle + bounce)),
+   and everything after it is the die bedding down. The face showing changes on
+   those same beats, which Die schedules in JavaScript. */
+.die--tumbling {
+  animation: die-tumble var(--tumble) cubic-bezier(0.33, 0.8, 0.4, 1);
 }
 
 @keyframes die-tumble {
   0% {
-    transform: rotate(-38deg) scale(0.72);
+    transform: translateY(0) rotate(0deg) scale(1);
   }
-  55% {
-    transform: rotate(12deg) scale(1.09);
+  13% {
+    transform: translateY(-10px) rotate(-27deg) scale(1.07);
+  }
+  26% {
+    transform: translateY(-2px) rotate(21deg) scale(0.95);
+  }
+  38% {
+    transform: translateY(-9px) rotate(-17deg) scale(1.06);
+  }
+  51% {
+    transform: translateY(-2px) rotate(12deg) scale(0.96);
+  }
+  64% {
+    transform: translateY(-7px) rotate(-6deg) scale(1.03);
+  }
+  /* The landing: squashed wide on impact. */
+  72% {
+    transform: translateY(0) rotate(0deg) scale(1.14, 0.86);
+  }
+  86% {
+    transform: translateY(-3px) rotate(0deg) scale(0.97, 1.05);
   }
   100% {
-    transform: rotate(0deg) scale(1);
+    transform: translateY(0) rotate(0deg) scale(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .die--rolled {
+  .die--tumbling {
     animation: none;
   }
 }
