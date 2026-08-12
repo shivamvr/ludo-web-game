@@ -29,18 +29,22 @@ import {
   decideAbandon,
   decideColor,
   decideJoin,
+  decideRematchRules,
+  decideRematchStart,
+  decideRematchVote,
   decideSkipTurn,
   decideStart,
   decideTurn,
   freeColor,
   isPresent,
   presentUids,
+  rematchLineup,
   seatsOf,
   type Decision,
   type RoomError,
   type StoredRoom,
 } from './roomLogic';
-import { forDatabase, type Room, type RoomPlayer } from './serialize';
+import { forDatabase, type Rematch, type RematchVote, type Room, type RoomPlayer } from './serialize';
 
 const CODE_LENGTH = 4;
 /** No I/O/0/1 — these get read aloud and typed on phones. */
@@ -217,6 +221,31 @@ export function startGame(roomId: string, uid: string): Promise<Result<void>> {
   return commit(roomId, (current) => decideStart(current, uid, seatGame));
 }
 
+/**
+ * The rematch offered on the win screen. Everyone at the table answers; only
+ * the host sets the rules and starts it.
+ */
+export function voteRematch(
+  roomId: string,
+  uid: string,
+  vote: RematchVote,
+): Promise<Result<void>> {
+  return commit(roomId, (current) => decideRematchVote(current, uid, vote));
+}
+
+export function setRematchRules(
+  roomId: string,
+  uid: string,
+  tokenCount: number,
+  yardExit: YardExit,
+): Promise<Result<void>> {
+  return commit(roomId, (current) => decideRematchRules(current, uid, tokenCount, yardExit));
+}
+
+export function startRematch(roomId: string, uid: string): Promise<Result<void>> {
+  return commit(roomId, (current) => decideRematchStart(current, uid, seatGame));
+}
+
 export function commitTurn(
   roomId: string,
   uid: string,
@@ -268,6 +297,7 @@ export {
   freeColor,
   isPresent,
   presentUids,
+  rematchLineup,
   seatsOf,
 };
-export type { Room, RoomError, RoomPlayer };
+export type { Rematch, RematchVote, Room, RoomError, RoomPlayer };

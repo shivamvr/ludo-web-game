@@ -41,6 +41,21 @@ export interface RoomPlayer {
 /** Why a finished room finished — a real result, or everyone leaving. */
 export type EndedReason = 'won' | 'abandoned';
 
+/** A player's answer to a rematch: playing again, or sitting this one out. */
+export type RematchVote = 'in' | 'out';
+
+/**
+ * The next game being put together on the win screen. The host may change the
+ * rules here without touching the game just played, and everyone else answers
+ * with a vote. Always present, so the panel has something to offer before
+ * anybody has said anything: last game's rules and no votes yet.
+ */
+export interface Rematch {
+  tokenCount: number;
+  yardExit: YardExit;
+  votes: Record<string, RematchVote>;
+}
+
 export interface Room {
   id: string;
   hostId: string;
@@ -53,6 +68,8 @@ export interface Room {
   tokenCount: number;
   /** Which numbers open the yard, chosen by the host alongside the count. */
   yardExit: YardExit;
+  /** The rematch on offer once the room is finished — see Rematch. */
+  rematch: Rematch;
 }
 
 type Raw = Record<string, unknown>;
@@ -213,6 +230,27 @@ function toRoomPlayer(value: unknown): RoomPlayer | null {
   return player;
 }
 
+/**
+ * The rematch on offer, falling back to the rules of the game just played for
+ * anything the host has not touched.
+ */
+function toRematch(value: unknown, tokenCount: number, yardExit: YardExit): Rematch {
+  const raw = isRecord(value) ? value : {};
+
+  const votes: Record<string, RematchVote> = {};
+  if (isRecord(raw.votes)) {
+    for (const [uid, vote] of Object.entries(raw.votes)) {
+      if (vote === 'in' || vote === 'out') votes[uid] = vote;
+    }
+  }
+
+  return {
+    tokenCount: isTokenCount(raw.tokenCount) ? (raw.tokenCount as number) : tokenCount,
+    yardExit: isYardExit(raw.yardExit) ? raw.yardExit : yardExit,
+    votes,
+  };
+}
+
 /** Rebuild a Room from a database snapshot, or null if the room is missing. */
 export function toRoom(id: string, value: unknown): Room | null {
   if (!isRecord(value)) return null;
@@ -232,6 +270,13 @@ export function toRoom(id: string, value: unknown): Room | null {
   const endedReason =
     value.endedReason === 'won' || value.endedReason === 'abandoned' ? value.endedReason : null;
 
+  // Rooms created before these were a choice have no field; they are four
+  // tokens, out on a six.
+  const tokenCount = isTokenCount(value.tokenCount)
+    ? (value.tokenCount as number)
+    : DEFAULT_TOKEN_COUNT;
+  const yardExit = isYardExit(value.yardExit) ? value.yardExit : DEFAULT_YARD_EXIT;
+
   return {
     id,
     hostId: str(value.hostId, ''),
@@ -240,9 +285,9 @@ export function toRoom(id: string, value: unknown): Room | null {
     gameState: toGameState(value.gameState),
     createdAt: num(value.createdAt, 0),
     endedReason,
-    // Rooms created before this was a choice have no field; they are four.
-    tokenCount: isTokenCount(value.tokenCount) ? (value.tokenCount as number) : DEFAULT_TOKEN_COUNT,
-    yardExit: isYardExit(value.yardExit) ? value.yardExit : DEFAULT_YARD_EXIT,
+    tokenCount,
+    yardExit,
+    rematch: toRematch(value.rematch, tokenCount, yardExit),
   };
 }
 

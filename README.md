@@ -67,3 +67,8 @@ Presence is maintained with `onDisconnect`. If the player whose turn it is has
 been away for 20 seconds, any other client passes the turn on — their seat and
 tokens are kept, and they can rejoin mid-game. If fewer than two players are
 present for 60 seconds the game ends as abandoned.
+
+## Dev scripts
+
+To end game
+node scripts/end-game.mjs 4GK6

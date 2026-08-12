@@ -1,0 +1,159 @@
+/* --- the rematch offer, on top of the result --- */
+
+.rematch {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+  max-width: 320px;
+  padding-top: 10px;
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+}
+
+.rematch__title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.rematch__seats {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.rematch__seat {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 0 11px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgb(255 255 255 / 0.06);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.rematch__seat--red {
+  border-color: var(--red);
+}
+.rematch__seat--green {
+  border-color: var(--green);
+}
+.rematch__seat--yellow {
+  border-color: var(--yellow);
+}
+.rematch__seat--blue {
+  border-color: var(--blue);
+}
+
+.rematch__dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgb(0 0 0 / 0.35);
+}
+
+.rematch__seat--red .rematch__dot {
+  background: var(--red);
+}
+.rematch__seat--green .rematch__dot {
+  background: var(--green);
+}
+.rematch__seat--yellow .rematch__dot {
+  background: var(--yellow);
+}
+.rematch__seat--blue .rematch__dot {
+  background: var(--blue);
+}
+
+.rematch__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rematch__tag {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: var(--muted);
+}
+
+.rematch__tag--in {
+  color: #86e0a8;
+  border-color: #2f6b46;
+  background: #16301f;
+}
+
+.rematch__tag--out {
+  color: #ffa9a9;
+  border-color: #7a3535;
+  background: #2c1a1a;
+}
+
+/* The host's pickers sit in a dark overlay rather than on the lobby's surface,
+   so they take the same treatment as everything else on the result card. */
+.rematch .option-row {
+  gap: 5px;
+  margin: 0;
+}
+
+.rematch .option-row__choice {
+  min-height: 42px;
+  border-width: 1px;
+  background: rgb(255 255 255 / 0.06);
+  font-size: 15px;
+}
+
+.rematch .option-row__choice--on {
+  background: rgb(255 255 255 / 0.16);
+}
+
+.rematch__rules {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.rematch__answer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.rematch__button {
+  min-height: 48px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: rgb(255 255 255 / 0.06);
+  font-weight: 650;
+  opacity: 0.7;
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.rematch__button--on {
+  opacity: 1;
+  border-color: var(--text);
+  background: rgb(255 255 255 / 0.18);
+}
+
+.rematch__pending {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.rematch__error {
+  color: #ff9c9c;
+  font-size: 13px;
+}

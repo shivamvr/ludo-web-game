@@ -37,7 +37,14 @@
       "Bash(sed -i 's/export default function TokenCountPicker\\({/export default function RulePicker\\({/' src/ui/RulePicker.tsx)",
       "PowerShell(try { \\(Invoke-WebRequest -Uri http://localhost:5173 -UseBasicParsing -TimeoutSec 3\\).StatusCode } catch { \"down\" })",
       "PowerShell(node -v; @\\(\"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\",\"C:\\\\Program Files \\(x86\\)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\",\"$env:LOCALAPPDATA\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\"\\) | Where-Object { Test-Path $_ })",
-      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\shot.mjs\" \"$s\\\\board.png\")"
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\shot.mjs\" \"$s\\\\board.png\")",
+      "PowerShell(npx vite build 2>&1)",
+      "PowerShell(try { \\(Invoke-WebRequest -Uri \"https://ludo-ab6cc-default-rtdb.firebaseio.com/rooms.json?shallow=true\" -UseBasicParsing -TimeoutSec 10\\).Content.Substring\\(0,200\\) } catch { \"ERR: \" + $_.Exception.Message })",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\debug.mjs\")",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\rematch.mjs\" \"$s\")",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\rematch.mjs\" \"$s\" 2>&1 | Select-Object -Last 6)",
+      "PowerShell($r = Invoke-WebRequest -Uri \"https://ludo-ab6cc-default-rtdb.firebaseio.com/rooms.json\" -UseBasicParsing -TimeoutSec 20 | ConvertFrom-Json; $r.PSObject.Properties | Where-Object { $_.Value.status -eq 'playing' } | Select-Object -First 5 Name)",
+      "PowerShell(node scripts/end-game.mjs 4GK6; \\(Invoke-WebRequest -Uri \"https://ludo-ab6cc-default-rtdb.firebaseio.com/rooms/4GK6.json?shallow=false\" -UseBasicParsing | ConvertFrom-Json\\) | Select-Object status, endedReason | Format-List; node scripts/end-game.mjs 4GK6)"
     ]
   }
 }

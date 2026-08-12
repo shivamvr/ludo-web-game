@@ -26,24 +26,48 @@
           ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val())"
         },
 
-        // Tokens each player gets. Set once by whoever creates the room and
-        // fixed thereafter — the game state is built from it, so letting it move
-        // mid-room would put the board and the seats out of step.
+        // Tokens each player gets. Set when the room is created and fixed while
+        // it is in use — the game state is built from it, so letting it move
+        // mid-room would put the board and the seats out of step. The host may
+        // change it once a game has finished, which is what a rematch on new
+        // rules is.
         "tokenCount": {
-          ".validate": "newData.isNumber() && newData.val() >= 4 && newData.val() <= 8 && newData.val() % 1 === 0 && (!data.exists() || newData.val() === data.val())"
+          ".validate": "newData.isNumber() && newData.val() >= 4 && newData.val() <= 8 && newData.val() % 1 === 0 && (!data.exists() || newData.val() === data.val() || (data.parent().child('status').val() === 'finished' && data.parent().child('hostId').val() === auth.uid))"
         },
 
         // Which numbers bring a token out of the yard. Fixed for the same
-        // reason: both clients resolve moves from it, so it cannot move once
-        // anyone has rolled.
+        // reason and freed at the same moment: both clients resolve moves from
+        // it, so it cannot move once anyone has rolled.
         "yardExit": {
-          ".validate": "newData.isString() && newData.val().matches(/^(six|one-or-six)$/) && (!data.exists() || newData.val() === data.val())"
+          ".validate": "newData.isString() && newData.val().matches(/^(six|one-or-six)$/) && (!data.exists() || newData.val() === data.val() || (data.parent().child('status').val() === 'finished' && data.parent().child('hostId').val() === auth.uid))"
         },
 
-        // Only the host may start the game. Anyone at the table may finish it —
-        // the winning move and the abandonment watchdog both need to.
+        // Only the host may start a game, first one or rematch. Anyone at the
+        // table may finish one — the winning move and the abandonment watchdog
+        // both need to.
         "status": {
-          ".validate": "newData.isString() && newData.val().matches(/^(waiting|playing|finished)$/) && (!data.exists() || newData.val() === data.val() || (data.val() === 'waiting' && newData.val() === 'playing' && newData.parent().child('hostId').val() === auth.uid) || (data.val() === 'playing' && newData.val() === 'finished'))"
+          ".validate": "newData.isString() && newData.val().matches(/^(waiting|playing|finished)$/) && (!data.exists() || newData.val() === data.val() || ((data.val() === 'waiting' || data.val() === 'finished') && newData.val() === 'playing' && newData.parent().child('hostId').val() === auth.uid) || (data.val() === 'playing' && newData.val() === 'finished'))"
+        },
+
+        // The next game, put together on the win screen while the room sits
+        // finished. Anyone at the table may answer for themselves; the rules
+        // are the host's to set. The offer only exists between games, and
+        // starting one clears it.
+        "rematch": {
+          ".validate": "newData.parent().child('status').val() === 'finished'",
+
+          "tokenCount": {
+            ".validate": "newData.isNumber() && newData.val() >= 4 && newData.val() <= 8 && newData.val() % 1 === 0 && (!data.exists() || newData.val() === data.val() || newData.parent().parent().child('hostId').val() === auth.uid)"
+          },
+          "yardExit": {
+            ".validate": "newData.isString() && newData.val().matches(/^(six|one-or-six)$/) && (!data.exists() || newData.val() === data.val() || newData.parent().parent().child('hostId').val() === auth.uid)"
+          },
+          "votes": {
+            "$voterUid": {
+              ".validate": "newData.isString() && newData.val().matches(/^(in|out)$/) && ($voterUid === auth.uid || newData.val() === data.val())"
+            }
+          },
+          "$other": { ".validate": false }
         },
 
         "endedReason": {
@@ -88,8 +112,12 @@
         // without them. Writes that leave the state untouched (version
         // unchanged) are allowed, so presence and status updates may carry the
         // whole room node.
+        //
+        // The last clause is the rematch: a finished room being set playing
+        // again by its host replaces the state outright, so the version starts
+        // over rather than climbing.
         "gameState": {
-          ".validate": "newData.hasChildren(['players', 'turnIndex', 'phase', 'version']) && ((!data.exists() && newData.parent().child('hostId').val() === auth.uid) || newData.child('version').val() === data.child('version').val() || (data.parent().child('status').val() === 'playing' && newData.child('version').val() > data.child('version').val() && (data.child('players').child('' + data.child('turnIndex').val()).child('uid').val() === auth.uid || root.child('rooms').child($roomId).child('players').child('' + data.child('players').child('' + data.child('turnIndex').val()).child('uid').val()).child('connected').val() === false)))",
+          ".validate": "newData.hasChildren(['players', 'turnIndex', 'phase', 'version']) && ((!data.exists() && newData.parent().child('hostId').val() === auth.uid) || newData.child('version').val() === data.child('version').val() || (data.parent().child('status').val() === 'playing' && newData.child('version').val() > data.child('version').val() && (data.child('players').child('' + data.child('turnIndex').val()).child('uid').val() === auth.uid || root.child('rooms').child($roomId).child('players').child('' + data.child('players').child('' + data.child('turnIndex').val()).child('uid').val()).child('connected').val() === false)) || (data.parent().child('status').val() === 'finished' && newData.parent().child('status').val() === 'playing' && newData.parent().child('hostId').val() === auth.uid))",
 
           "turnIndex": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3" },
           "version": { ".validate": "newData.isNumber() && newData.val() >= 0" },
@@ -109,10 +137,12 @@
             "$slot": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" }
           },
           "consecutiveSixes": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 2" },
-          // Copied from the room when the game is built, and never rewritten:
-          // changing it mid-game would change which moves are legal.
+          // Copied from the room when the game is built, and never rewritten
+          // while that game is being played: changing it mid-game would change
+          // which moves are legal. A rematch is a different game, so it may
+          // arrive under different rules.
           "yardExit": {
-            ".validate": "newData.isString() && newData.val().matches(/^(six|one-or-six)$/) && (!data.exists() || newData.val() === data.val())"
+            ".validate": "newData.isString() && newData.val().matches(/^(six|one-or-six)$/) && (!data.exists() || newData.val() === data.val() || data.parent().parent().child('status').val() === 'finished')"
           },
           // Extra rolls earned by capturing or by bringing a token home. These
           // queue across a turn, and an earned roll can earn more, so there is

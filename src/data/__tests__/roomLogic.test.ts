@@ -8,9 +8,13 @@ import {
   currentSeatUid,
   decideColor,
   decideJoin,
+  decideRematchRules,
+  decideRematchStart,
+  decideRematchVote,
   decideStart,
   decideTurn,
   type Decision,
+  type StoredRematch,
   type StoredRoom,
 } from '../roomLogic';
 import { FakeRoomNode } from './rtdb';
@@ -482,5 +486,165 @@ describe('a full game across three clients', () => {
     );
     expect(currentSeatUid(toGameState(live.gameState)!)).toBe('uid-b');
     expectDenied(decideTurn(live, 'uid-a', rollDice), 'not-your-turn');
+  });
+});
+
+describe('rematching', () => {
+  const finished = (
+    players: Record<string, RoomPlayer>,
+    extra: Partial<StoredRoom> = {},
+  ): StoredRoom => ({
+    hostId: 'uid-a',
+    status: 'finished',
+    players,
+    createdAt: 1,
+    endedReason: 'won',
+    tokenCount: 4,
+    yardExit: 'six',
+    ...extra,
+  });
+
+  const table = () =>
+    finished({
+      'uid-a': player('Ana', 'red'),
+      'uid-b': player('Bo', 'yellow'),
+      'uid-c': player('Cy', 'green'),
+    });
+
+  it('is only on offer once the game is over', () => {
+    const playing = { ...table(), status: 'playing' as const };
+    expectDenied(decideRematchVote(playing, 'uid-b', 'in'), 'nothing-to-do');
+    expectDenied(decideRematchRules(playing, 'uid-a', 6, 'one-or-six'), 'nothing-to-do');
+    expectDenied(decideRematchStart(playing, 'uid-a', seatGame), 'already-started');
+  });
+
+  it('records an answer, and lets it be changed', () => {
+    const asked = decideRematchVote(table(), 'uid-b', 'in');
+    expectWritable(asked);
+    if (!asked.ok) return;
+    expect((asked.value.rematch as StoredRematch).votes).toEqual({ 'uid-b': 'in' });
+
+    const reconsidered = decideRematchVote(asked.value, 'uid-b', 'out');
+    expect(reconsidered.ok).toBe(true);
+    if (!reconsidered.ok) return;
+    expect((reconsidered.value.rematch as StoredRematch).votes).toEqual({ 'uid-b': 'out' });
+
+    // Tapping the same answer twice is not a write worth making.
+    expectDenied(decideRematchVote(reconsidered.value, 'uid-b', 'out'), 'nothing-to-do');
+  });
+
+  it('starts an offer at the rules just played', () => {
+    const room = finished({ 'uid-a': player('Ana', 'red') }, {
+      tokenCount: 7,
+      yardExit: 'one-or-six',
+    });
+    const decision = decideRematchVote(room, 'uid-a', 'in');
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) return;
+
+    const rematch = decision.value.rematch as StoredRematch;
+    expect(rematch.tokenCount).toBe(7);
+    expect(rematch.yardExit).toBe('one-or-six');
+  });
+
+  it('turns away anyone who is not at the table', () => {
+    expectDenied(decideRematchVote(table(), 'uid-stranger', 'in'), 'not-found');
+    expectDenied(decideRematchRules(table(), 'uid-b', 6, 'six'), 'not-host');
+    expectDenied(decideRematchStart(table(), 'uid-b', seatGame), 'not-host');
+  });
+
+  it('lets the host change the rules without touching the finished game', () => {
+    const decision = decideRematchRules(table(), 'uid-a', 8, 'one-or-six');
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) return;
+
+    expect((decision.value.rematch as StoredRematch).tokenCount).toBe(8);
+    expect((decision.value.rematch as StoredRematch).yardExit).toBe('one-or-six');
+    // The game that was played keeps the rules it was played under.
+    expect(decision.value.tokenCount).toBe(4);
+    expect(decision.value.yardExit).toBe('six');
+  });
+
+  it('refuses rules the board cannot be built from', () => {
+    expectDenied(decideRematchRules(table(), 'uid-a', 3, 'six'), 'nothing-to-do');
+    expectDenied(
+      decideRematchRules(table(), 'uid-a', 4, 'whenever' as never),
+      'nothing-to-do',
+    );
+  });
+
+  it('needs somebody else in before it can start', () => {
+    expectDenied(decideRematchStart(table(), 'uid-a', seatGame), 'not-enough-players');
+
+    const declined = decideRematchVote(table(), 'uid-b', 'out');
+    if (!declined.ok) throw new Error('setup failed');
+    expectDenied(decideRematchStart(declined.value, 'uid-a', seatGame), 'not-enough-players');
+  });
+
+  it('seats only the players who said they were in', () => {
+    let room: StoredRoom = table();
+    for (const [uid, vote] of [['uid-b', 'in'], ['uid-c', 'out']] as const) {
+      const decision = decideRematchVote(room, uid, vote);
+      if (!decision.ok) throw new Error('setup failed');
+      room = decision.value;
+    }
+
+    const decision = decideRematchStart(room, 'uid-a', seatGame);
+    expectWritable(decision);
+    if (!decision.ok) return;
+
+    expect(decision.value.status).toBe('playing');
+    const state = toGameState(decision.value.gameState)!;
+    expect(state.players.map((p) => p.uid)).toEqual(['uid-a', 'uid-b']);
+    // Cy keeps their seat at the table and watches.
+    expect(Object.keys(decision.value.players).sort()).toEqual(['uid-a', 'uid-b', 'uid-c']);
+    expect(decision.value.players['uid-c'].color).toBe('green');
+  });
+
+  it('plays the new game by the host\u2019s rules and forgets the old one', () => {
+    let room: StoredRoom = table();
+    for (const step of [
+      (r: StoredRoom) => decideRematchRules(r, 'uid-a', 6, 'one-or-six'),
+      (r: StoredRoom) => decideRematchVote(r, 'uid-b', 'in'),
+    ]) {
+      const decision = step(room);
+      if (!decision.ok) throw new Error('setup failed');
+      room = decision.value;
+    }
+
+    const decision = decideRematchStart(room, 'uid-a', seatGame);
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) return;
+
+    expect(decision.value.tokenCount).toBe(6);
+    expect(decision.value.yardExit).toBe('one-or-six');
+    expect(decision.value.endedReason).toBeUndefined();
+    expect(decision.value.rematch).toBeUndefined();
+
+    const state = toGameState(decision.value.gameState)!;
+    expect(state.version).toBe(0);
+    expect(state.phase).toBe('awaiting-roll');
+    expect(state.yardExit).toBe('one-or-six');
+    for (const seat of state.players) expect(seat.tokens).toHaveLength(6);
+  });
+
+  it('can be played through and then rematched again', () => {
+    const node = new FakeRoomNode();
+    node.write(table());
+
+    const joined = decideRematchVote(node.read(), 'uid-b', 'in');
+    if (!joined.ok) throw new Error('setup failed');
+    node.write(joined.value);
+
+    const started = decideRematchStart(node.read(), 'uid-a', seatGame);
+    if (!started.ok) throw new Error('setup failed');
+    node.write(started.value);
+
+    // The room is a live game again: turns are owned, and the offer is gone.
+    const live = node.read() as StoredRoom;
+    expect(live.status).toBe('playing');
+    expectDenied(decideRematchVote(live, 'uid-b', 'in'), 'nothing-to-do');
+    expectDenied(decideTurn(live, 'uid-b', rollDice), 'not-your-turn');
+    expect(decideTurn(live, 'uid-a', rollDice).ok).toBe(true);
   });
 });

@@ -43,6 +43,8 @@ interface Props {
   ended?: { title: string; subtitle?: string };
   headerAction: { label: string; onClick: () => void };
   resultAction: { label: string; onClick: () => void };
+  /** Shown on the result under the standings — the rematch offer, online. */
+  resultExtra?: ReactNode;
 }
 
 /**
@@ -60,6 +62,7 @@ export default function GameView({
   ended,
   headerAction,
   resultAction,
+  resultExtra,
 }: Props) {
   const won = state.phase === 'game-over';
   const over = won || ended !== undefined;
@@ -155,7 +158,12 @@ export default function GameView({
                 ))}
               </ol>
             )}
-            <button type="button" className="result__again" onClick={resultAction.onClick}>
+            {resultExtra}
+            <button
+              type="button"
+              className={resultExtra ? 'link-button' : 'result__again'}
+              onClick={resultAction.onClick}
+            >
               {resultAction.label}
             </button>
           </div>

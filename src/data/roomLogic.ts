@@ -22,6 +22,7 @@ import {
   forDatabase,
   toGameState,
   type EndedReason,
+  type RematchVote,
   type RoomPlayer,
   type RoomStatus,
 } from './serialize';
@@ -72,6 +73,14 @@ export interface StoredRoom {
   endedReason?: EndedReason;
   tokenCount?: unknown;
   yardExit?: unknown;
+  rematch?: unknown;
+}
+
+/** The rematch being assembled on the win screen, as it is stored. */
+export interface StoredRematch {
+  tokenCount: number;
+  yardExit: YardExit;
+  votes: Record<string, RematchVote>;
 }
 
 export type Decision =
@@ -99,7 +108,53 @@ function asRoom(current: unknown): StoredRoom | null {
   if (raw.endedReason !== undefined) room.endedReason = raw.endedReason;
   if (raw.tokenCount !== undefined) room.tokenCount = raw.tokenCount;
   if (raw.yardExit !== undefined) room.yardExit = raw.yardExit;
+  if (raw.rematch !== undefined) room.rematch = raw.rematch;
   return room;
+}
+
+/** The rules a room is playing by, with the defaults an older room never stored. */
+function rulesOf(room: StoredRoom): { tokenCount: number; yardExit: YardExit } {
+  return {
+    tokenCount: isTokenCount(room.tokenCount) ? (room.tokenCount as number) : DEFAULT_TOKEN_COUNT,
+    yardExit: isYardExit(room.yardExit) ? room.yardExit : DEFAULT_YARD_EXIT,
+  };
+}
+
+/**
+ * The rematch on offer. Anything the host has not changed stands at whatever
+ * the game just played used, so a rematch nobody has touched is a straight
+ * replay of the same game.
+ */
+function rematchOf(room: StoredRoom): StoredRematch {
+  const raw = typeof room.rematch === 'object' && room.rematch !== null
+    ? (room.rematch as Partial<StoredRematch>)
+    : {};
+  const rules = rulesOf(room);
+
+  const votes: Record<string, RematchVote> = {};
+  for (const [uid, vote] of Object.entries(raw.votes ?? {})) {
+    if (vote === 'in' || vote === 'out') votes[uid] = vote;
+  }
+
+  return {
+    tokenCount: isTokenCount(raw.tokenCount) ? (raw.tokenCount as number) : rules.tokenCount,
+    yardExit: isYardExit(raw.yardExit) ? raw.yardExit : rules.yardExit,
+    votes,
+  };
+}
+
+/**
+ * Who a rematch would seat: everyone who said they are in, plus the host, who
+ * is in by virtue of being the one who starts it. Shared with the win screen so
+ * the button that starts the game and the list of who is playing cannot
+ * disagree about who that is.
+ */
+export function rematchLineup(
+  hostId: string,
+  players: Record<string, RoomPlayer>,
+  votes: Record<string, RematchVote>,
+): string[] {
+  return Object.keys(players).filter((uid) => uid === hostId || votes[uid] === 'in');
 }
 
 /** A player counts as present unless presence explicitly says otherwise. */
@@ -242,20 +297,15 @@ export function decideStart(
   // Written back to the lobby seats as well, so the colour a player sees beside
   // their name is the colour they are about to play.
   const players = seatOppositeCorners(room.players, room.hostId);
+  // A room stored before these were a choice, or with values we do not
+  // recognise, plays the defaults rather than refusing to start.
+  const rules = rulesOf(room);
 
   return allow({
     ...room,
     players,
     status: 'playing',
-    gameState: forDatabase(
-      seatGame(
-        seatsOf(players),
-        // A room stored before this was a choice, or with a value we do not
-        // recognise, plays with four rather than refusing to start.
-        isTokenCount(room.tokenCount) ? (room.tokenCount as number) : DEFAULT_TOKEN_COUNT,
-        isYardExit(room.yardExit) ? room.yardExit : DEFAULT_YARD_EXIT,
-      ),
-    ),
+    gameState: forDatabase(seatGame(seatsOf(players), rules.tokenCount, rules.yardExit)),
   });
 }
 
@@ -321,6 +371,98 @@ export function decideSkipTurn(current: unknown, uid: string, now: number): Deci
   if (presentUids(room.players).length < 2) return deny('nothing-to-do');
 
   return allow({ ...room, gameState: forDatabase(skipTurn(state)) });
+}
+
+/**
+ * Answer the rematch. Anyone at the table may, including the host, and an
+ * answer can be changed for as long as the game has not been started — someone
+ * who tapped "no thanks" and then thought better of it is not shut out.
+ *
+ * A vote arriving before anyone has proposed anything is what asking for a
+ * rematch is: it creates the offer, standing at the rules just played.
+ */
+export function decideRematchVote(current: unknown, uid: string, vote: RematchVote): Decision {
+  const room = asRoom(current);
+  if (!room) return deny('not-found');
+  if (room.status !== 'finished') return deny('nothing-to-do');
+  if (!room.players[uid]) return deny('not-found');
+
+  const rematch = rematchOf(room);
+  if (rematch.votes[uid] === vote) return deny('nothing-to-do');
+
+  return allow({
+    ...room,
+    rematch: { ...rematch, votes: { ...rematch.votes, [uid]: vote } },
+  });
+}
+
+/**
+ * The host changes the rules the next game will be played by. Only the offer
+ * moves — the finished game keeps the rules it was played under, so the result
+ * on screen stays the result of the game that produced it.
+ */
+export function decideRematchRules(
+  current: unknown,
+  uid: string,
+  tokenCount: number,
+  yardExit: YardExit,
+): Decision {
+  const room = asRoom(current);
+  if (!room) return deny('not-found');
+  if (room.hostId !== uid) return deny('not-host');
+  if (room.status !== 'finished') return deny('nothing-to-do');
+  if (!isTokenCount(tokenCount) || !isYardExit(yardExit)) return deny('nothing-to-do');
+
+  const rematch = rematchOf(room);
+  if (rematch.tokenCount === tokenCount && rematch.yardExit === yardExit) {
+    return deny('nothing-to-do');
+  }
+
+  return allow({ ...room, rematch: { ...rematch, tokenCount, yardExit } });
+}
+
+/**
+ * Start the rematch. Only the host may, and only players who said they were in
+ * are seated — anyone who declined or never answered stays in the room as a
+ * spectator rather than being dealt into a game they did not ask for.
+ *
+ * The finished game's leftovers are dropped rather than carried over: the new
+ * room has no `endedReason` and no rematch, so the win screen it eventually
+ * shows is about the game being started here.
+ */
+export function decideRematchStart(
+  current: unknown,
+  uid: string,
+  seatGame: (
+    seats: { uid: string; name: string; color: Color }[],
+    tokenCount: number,
+    yardExit: YardExit,
+  ) => GameState,
+): Decision {
+  const room = asRoom(current);
+  if (!room) return deny('not-found');
+  if (room.hostId !== uid) return deny('not-host');
+  if (room.status !== 'finished') return deny('already-started');
+
+  const rematch = rematchOf(room);
+  const lineup = new Set(rematchLineup(room.hostId, room.players, rematch.votes));
+  if (lineup.size < 2) return deny('not-enough-players');
+
+  // Colours are left exactly as they are. The seats were put on opposite
+  // corners when the room first started, and moving one now would collide with
+  // a player who is sitting this game out but still holds their colour.
+  const seats = seatsOf(room.players).filter((seat) => lineup.has(seat.uid));
+
+  const next: StoredRoom = {
+    hostId: room.hostId,
+    status: 'playing',
+    players: room.players,
+    tokenCount: rematch.tokenCount,
+    yardExit: rematch.yardExit,
+    gameState: forDatabase(seatGame(seats, rematch.tokenCount, rematch.yardExit)),
+  };
+  if (room.createdAt !== undefined) next.createdAt = room.createdAt;
+  return allow(next);
 }
 
 /**
