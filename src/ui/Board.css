@@ -272,7 +272,8 @@
   translate: -50% -50%;
   scale: var(--scale, 1);
   border-radius: 50%;
-  border: 1px solid rgb(0 0 0 / 0.22);
+  /* No outline of its own: the artwork draws its own darker rim, and a border
+     over it read as a second, heavier line on a circle 17px across. */
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.28);
   transition:
     left 0.22s ease,
@@ -281,17 +282,32 @@
   z-index: 2;
 }
 
+/*
+ * Drawn tokens rather than flat discs. Each sits in a 200-unit square as a
+ * 164-unit circle, clear of the edges by 18 at the sides and 16 at the top, so
+ * the artwork is blown up by 200/164 and pulled back by that margin — the
+ * circle then lands exactly on this element's edges. Everything that marks a
+ * token measures from those edges: the playable ring, the hit flash, the
+ * rounding, the tap target. The shadow the artwork carries falls outside the
+ * circle and is clipped away, which is why .token keeps one of its own.
+ */
+.token {
+  background-repeat: no-repeat;
+  background-position: 50% 44.5%;
+  background-size: 122%;
+}
+
 .token--red {
-  background: var(--red);
+  background-image: url("../assets/token-red-top.svg");
 }
 .token--green {
-  background: var(--green);
+  background-image: url("../assets/token-green-top.svg");
 }
 .token--yellow {
-  background: var(--yellow);
+  background-image: url("../assets/token-yellow-top.svg");
 }
 .token--blue {
-  background: var(--blue);
+  background-image: url("../assets/token-blue-top.svg");
 }
 
 /* The ring marking a token as playable: a gap in the board's colour, then a
@@ -302,10 +318,6 @@
 .token--movable {
   pointer-events: auto;
   z-index: 3;
-  /* Dropped, or the token's own outline sits a pixel inside the ring above and
-     the two read as one thick band on a circle 16px across. The gap already
-     separates the token from the board. */
-  border-color: transparent;
   box-shadow:
     0 0 0 1.4px var(--board),
     0 0 0 2.6px #111,

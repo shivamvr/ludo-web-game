@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+<defs>
+<linearGradient id="body" x1="0" y1="0" x2="0.25" y2="1"><stop offset="0" stop-color="#FFFFFF"></stop><stop offset=".5" stop-color="#F3F6FB"></stop><stop offset="1" stop-color="#D5DDEA"></stop></linearGradient>
+<radialGradient id="gloss" cx=".32" cy=".18" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".95"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></radialGradient>
+<radialGradient id="pip" cx=".35" cy=".28" r=".95"><stop offset="0" stop-color="#606B7C"></stop><stop offset="1" stop-color="#1F2733"></stop></radialGradient>
+<filter id="ds" x="-40%" y="-40%" width="180%" height="200%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#101A26" flood-opacity=".3"></feDropShadow></filter>
+</defs>
+<g filter="url(#ds)"><rect x="18" y="14" width="164" height="164" rx="36" fill="url(#body)"></rect></g>
+<rect x="18" y="14" width="164" height="164" rx="36" fill="none" stroke="#AFBACB" stroke-opacity=".55" stroke-width="2"></rect>
+<ellipse cx="100" cy="58" rx="60" ry="32" fill="url(#gloss)"></ellipse>
+<circle cx="60" cy="56" r="14" fill="url(#pip)"></circle><circle cx="140" cy="56" r="14" fill="url(#pip)"></circle><circle cx="60" cy="96" r="14" fill="url(#pip)"></circle><circle cx="140" cy="96" r="14" fill="url(#pip)"></circle><circle cx="60" cy="136" r="14" fill="url(#pip)"></circle><circle cx="140" cy="136" r="14" fill="url(#pip)"></circle>
+</svg>

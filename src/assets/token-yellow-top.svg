@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+<defs>
+<radialGradient id="outer" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE071"></stop><stop offset=".6" stop-color="#F2B807"></stop><stop offset="1" stop-color="#A97400"></stop></radialGradient>
+<radialGradient id="inner" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#FFE071"></stop><stop offset="1" stop-color="#D79E04"></stop></radialGradient>
+<radialGradient id="gl" cx=".5" cy=".1" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".85"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></radialGradient>
+<filter id="ds" x="-40%" y="-40%" width="180%" height="200%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#101A26" flood-opacity=".35"></feDropShadow></filter>
+</defs>
+<g filter="url(#ds)"><circle cx="100" cy="98" r="82" fill="url(#outer)"></circle></g>
+<circle cx="100" cy="98" r="82" fill="none" stroke="#A97400" stroke-opacity=".45" stroke-width="3"></circle>
+<circle cx="100" cy="98" r="60" fill="#A97400" fill-opacity=".22"></circle>
+<circle cx="100" cy="98" r="52" fill="url(#inner)"></circle>
+<circle cx="100" cy="98" r="24" fill="#fff" fill-opacity=".92"></circle>
+<circle cx="100" cy="98" r="24" fill="none" stroke="#A97400" stroke-opacity=".2" stroke-width="2"></circle>
+<ellipse cx="100" cy="52" rx="52" ry="26" fill="url(#gl)"></ellipse>
+</svg>

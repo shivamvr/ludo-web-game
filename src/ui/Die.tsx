@@ -1,15 +1,25 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import face1 from '../assets/dice-1.svg';
+import face2 from '../assets/dice-2.svg';
+import face3 from '../assets/dice-3.svg';
+import face4 from '../assets/dice-4.svg';
+import face5 from '../assets/dice-5.svg';
+import face6 from '../assets/dice-6.svg';
 import { reducedMotion } from './motion';
 import { ROLL_TIMING } from './useSound';
 
-/** Pip layout for each face, on a 3x3 grid numbered 1..9. */
-const PIPS: Record<number, number[]> = {
-  1: [5],
-  2: [1, 9],
-  3: [1, 5, 9],
-  4: [1, 3, 7, 9],
-  5: [1, 3, 5, 7, 9],
-  6: [1, 3, 4, 6, 7, 9],
+/**
+ * The drawn faces, from the asset pack. Small enough that the bundler inlines
+ * them, so a face that comes up mid-tumble is already there — nothing is
+ * fetched while the die is in the air.
+ */
+const FACES: Record<number, string> = {
+  1: face1,
+  2: face2,
+  3: face3,
+  4: face4,
+  5: face5,
+  6: face6,
 };
 
 /** A face to flash up mid-tumble. Never the one showing, so every knock reads
@@ -67,22 +77,23 @@ export default function Die({ value, roll = 0, tumble = false }: Props) {
     // the tumble animation for a repeated value such as two sixes in a row.
     <div
       key={roll}
-      className={`die${value === null ? '' : ' die--rolled'}${tumble ? ' die--tumbling' : ''}`}
+      className={`die${value === null ? ' die--blank' : ' die--rolled'}${
+        tumble ? ' die--tumbling' : ''
+      }`}
       style={
         {
           '--tumble': `${ROLL_TIMING.settle + ROLL_TIMING.bounce}ms`,
+          // Quoted, and it has to be: the face is inlined as a data URI, and
+          // the artwork refers to its own gradients as url(#body). Unquoted,
+          // that inner bracket closes this one and the whole declaration is
+          // thrown away — leaving a die with no face at all.
+          ...(showing === null ? {} : { backgroundImage: `url("${FACES[showing]}")` }),
         } as CSSProperties
       }
       aria-label={value ? `Rolled ${value}` : 'No roll yet'}
       aria-live="polite"
     >
-      {showing === null ? (
-        <span className="die__idle">?</span>
-      ) : (
-        Array.from({ length: 9 }, (_, i) => (
-          <span key={i} className={PIPS[showing].includes(i + 1) ? 'die__pip' : ''} />
-        ))
-      )}
+      {showing === null && <span className="die__idle">?</span>}
     </div>
   );
 }

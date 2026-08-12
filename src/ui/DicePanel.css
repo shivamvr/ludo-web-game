@@ -127,19 +127,11 @@
 .dice-tray--2 .die {
   width: 46px;
   height: 46px;
-  padding: 5px;
 }
 
 .dice-tray--3 .die {
   width: 38px;
   height: 38px;
-  padding: 4px;
-  gap: 1px;
-}
-
-.dice-tray--3 .die__pip {
-  width: 6px;
-  height: 6px;
 }
 
 /* Past three the row is a bonus roll stacked on a held hand; keep it on screen. */
@@ -148,15 +140,6 @@
 .dice-tray--6 .die {
   width: 30px;
   height: 30px;
-  padding: 3px;
-  gap: 1px;
-}
-
-.dice-tray--4 .die__pip,
-.dice-tray--5 .die__pip,
-.dice-tray--6 .die__pip {
-  width: 4px;
-  height: 4px;
 }
 
 .dice-tray--4,
@@ -189,25 +172,39 @@
 
 /* --- die --- */
 
+/*
+ * The face is drawn art rather than CSS pips — see Die, which sets the image.
+ *
+ * The artwork frames a 164-unit die body inside a 200-unit square, 18 clear on
+ * each side and 14 above. Blowing it up by 200/164 and pulling that margin back
+ * off puts the body exactly on the slot's edges, which is what everything else
+ * here measures from: the rim of light, the selection ring, the radius. The
+ * shadow the artwork carries falls outside the body and is therefore clipped,
+ * so the die is grounded with a shadow of its own instead.
+ */
 .die {
   width: 46px;
   height: 46px;
   flex: none;
   display: grid;
-  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-  gap: 2px;
-  padding: 6px;
-  border-radius: 10px;
-  background: #fdfdff;
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.14);
   place-items: center;
+  border-radius: 22%;
+  background-repeat: no-repeat;
+  background-position: 50% 39%;
+  background-size: 122%;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.4);
+}
+
+/* Nothing rolled yet: the body of a die with no face on it, under the "?". */
+.die--blank {
+  background-image: linear-gradient(166deg, #ffffff 0%, #f3f6fb 50%, #d5ddea 100%);
 }
 
 /* A live number is the one to act on, so it is the brightest thing in the
    tray — a rim of light separates it from any spent die beside it. */
 .dice-tray__slot:not(.dice-tray__slot--spent) .die {
   box-shadow:
-    inset 0 -2px 0 rgb(0 0 0 / 0.14),
+    0 2px 5px rgb(0 0 0 / 0.4),
     0 0 0 1.5px rgb(255 255 255 / 0.55);
 }
 
@@ -257,15 +254,7 @@
   }
 }
 
-.die__pip {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #1a1d27;
-}
-
 .die__idle {
-  grid-area: 1 / 1 / span 3 / span 3;
   /* Against the near-white face, the old grey was barely there. */
   color: #5c6480;
   font-size: 24px;

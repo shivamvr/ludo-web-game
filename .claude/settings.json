@@ -46,7 +46,19 @@
       "PowerShell($r = Invoke-WebRequest -Uri \"https://ludo-ab6cc-default-rtdb.firebaseio.com/rooms.json\" -UseBasicParsing -TimeoutSec 20 | ConvertFrom-Json; $r.PSObject.Properties | Where-Object { $_.Value.status -eq 'playing' } | Select-Object -First 5 Name)",
       "PowerShell(node scripts/end-game.mjs 4GK6; \\(Invoke-WebRequest -Uri \"https://ludo-ab6cc-default-rtdb.firebaseio.com/rooms/4GK6.json?shallow=false\" -UseBasicParsing | ConvertFrom-Json\\) | Select-Object status, endedReason | Format-List; node scripts/end-game.mjs 4GK6)",
       "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\room-lives-on.mjs\" \"$s\")",
-      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\local.mjs\" \"$s\" 2>&1 | Select-Object -First 3)"
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\local.mjs\" \"$s\" 2>&1 | Select-Object -First 3)",
+      "Read(//c/Users/shiva/Downloads/Ludo game assets/**)",
+      "Bash(ls -la \"/c/Users/shiva/Downloads/Ludo game assets/assets\")",
+      "Read(//c/Users/shiva/Downloads/Ludo game assets/assets/**)",
+      "Bash(cd \"/c/Users/shiva/Downloads/Ludo game assets/assets\" && echo \"=== dice-1 ===\" && cat dice-1.svg && echo && echo \"=== dice-6 ===\" && cat dice-6.svg)",
+      "Bash(cd \"/c/Users/shiva/Downloads/Ludo game assets/assets\" && echo \"=== token-red-top ===\" && cat token-red-top.svg && echo && echo \"=== token-red-3q ===\" && cat token-red-3q.svg)",
+      "Bash(cd \"/c/Users/shiva/Downloads/Ludo game assets/assets\" && cat dice-3d.svg)",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\dbg-dice.mjs\")",
+      "Bash(curl -s -o /dev/null -w \"svg:%{http_code}\\\\n\" \"http://localhost:5173/src/assets/dice-2.svg\")",
+      "Bash(curl -s \"http://localhost:5173/src/ui/Die.tsx\")",
+      "Bash(curl -s \"http://localhost:5173/src/assets/dice-2.svg?import\")",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\dbg-dice.mjs\" 2>&1 | Select-Object -First 4)",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\local.mjs\" \"$s\" | Select-String \"dice held\")"
     ]
   }
 }
