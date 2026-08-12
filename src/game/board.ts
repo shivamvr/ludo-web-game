@@ -153,8 +153,20 @@ export const HOME_ENTRY_INDEX: Record<Color, number> = {
   red: (START_INDEX.red + MAIN_TRACK_STEPS - 1) % TRACK_LENGTH,
 };
 
+/**
+ * The star safe square each colour owns, 8 steps past its start square. That
+ * puts it on the stretch of track running alongside that colour's own yard,
+ * which is why the board paints it in the same colour.
+ */
+export const STAR_INDEX: Record<Color, number> = {
+  green: (START_INDEX.green + 8) % TRACK_LENGTH,
+  yellow: (START_INDEX.yellow + 8) % TRACK_LENGTH,
+  blue: (START_INDEX.blue + 8) % TRACK_LENGTH,
+  red: (START_INDEX.red + 8) % TRACK_LENGTH,
+};
+
 /** Star safe squares: 8 steps past each start square. */
-export const STAR_INDICES: readonly number[] = [8, 21, 34, 47];
+export const STAR_INDICES: readonly number[] = Object.values(STAR_INDEX);
 
 /** All safe absolute track indices: the four starts plus the four stars. */
 export const SAFE_INDICES: readonly number[] = [

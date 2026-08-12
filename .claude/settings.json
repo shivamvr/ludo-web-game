@@ -34,7 +34,10 @@
       "Bash(sed -i 's/box.x - 4/box.x - 8/' C:/Users/shiva/AppData/Local/Temp/claude/c--Users-shiva-OneDrive-Documents-dev-ludo/d8a05daf-d72b-4a32-9825-ebf075e83c57/scratchpad/ringmeasure.mjs)",
       "Bash(git mv *)",
       "Bash(git rm *)",
-      "Bash(sed -i 's/export default function TokenCountPicker\\({/export default function RulePicker\\({/' src/ui/RulePicker.tsx)"
+      "Bash(sed -i 's/export default function TokenCountPicker\\({/export default function RulePicker\\({/' src/ui/RulePicker.tsx)",
+      "PowerShell(try { \\(Invoke-WebRequest -Uri http://localhost:5173 -UseBasicParsing -TimeoutSec 3\\).StatusCode } catch { \"down\" })",
+      "PowerShell(node -v; @\\(\"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\",\"C:\\\\Program Files \\(x86\\)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\",\"$env:LOCALAPPDATA\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\"\\) | Where-Object { Test-Path $_ })",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\shot.mjs\" \"$s\\\\board.png\")"
     ]
   }
 }

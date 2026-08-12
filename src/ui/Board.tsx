@@ -5,6 +5,7 @@ import {
   GRID_SIZE,
   HOME_COLUMN,
   HOME_ENTRY_INDEX,
+  STAR_INDEX,
   START_INDEX,
   TRACK,
   YARD_ORIGIN,
@@ -72,11 +73,16 @@ const GRID: CellInfo[] = (() => {
   const entryColor = new Map<number, Color>(
     COLORS.map((color) => [HOME_ENTRY_INDEX[color], color] as const),
   );
+  // Both safe squares a colour owns are painted in it: the one it comes out on
+  // and the star further along beside its yard.
+  const starColor = new Map<number, Color>(
+    COLORS.map((color) => [STAR_INDEX[color], color] as const),
+  );
   TRACK.forEach((cell, index) => {
     const arrowFor = entryColor.get(index);
     grid[at(cell.row, cell.col)] = {
       kind: "track",
-      color: startColor.get(index),
+      color: startColor.get(index) ?? starColor.get(index),
       isStart: startColor.has(index),
       // Every safe square gets a star, entry squares included — a token standing
       // on one cannot be captured, so the marking has to say so consistently.

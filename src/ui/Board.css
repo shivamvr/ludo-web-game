@@ -99,9 +99,24 @@
   background: var(--blue);
 }
 
-/* Safe squares, drawn as an outline star like the printed board. Both kinds get
-   one: the four entry squares where tokens come out, and the four mid-arm
-   squares eight steps on. */
+/* Safe squares, each painted in the colour of the yard it belongs to. Both
+   kinds get one: the four entry squares where tokens come out, and the four
+   mid-arm squares eight steps on, which run alongside that same yard. */
+.cell--star.cell--red {
+  background: var(--red);
+}
+.cell--star.cell--green {
+  background: var(--green);
+}
+.cell--star.cell--yellow {
+  background: var(--yellow);
+}
+.cell--star.cell--blue {
+  background: var(--blue);
+}
+
+/* Filled rather than hollow, now that it sits on colour rather than on the
+   white board: a dark outline alone all but vanished against red and blue. */
 .cell--star::after {
   content: "★";
   position: absolute;
@@ -110,8 +125,8 @@
   place-items: center;
   font-size: min(3.8vw, 22px);
   line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1.1px #2b2f3a;
+  color: #fff;
+  -webkit-text-stroke: 1.1px rgb(0 0 0 / 0.4);
 }
 
 /* The centre cells are blank; the goal is drawn as one overlay across them. */
