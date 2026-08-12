@@ -3,7 +3,7 @@ import { currentTurn, standings } from '../game/engine';
 import type { GameEvent, GameState, Move } from '../game/types';
 import Board from './Board';
 import DicePanel from './DicePanel';
-import { useSound, type Cue } from './useSound';
+import { useSound, type Cue, type Sound } from './useSound';
 import './LocalGame.css';
 
 /** Which sound, if any, a state transition should make. */
@@ -43,8 +43,14 @@ interface Props {
   ended?: { title: string; subtitle?: string };
   headerAction: { label: string; onClick: () => void };
   resultAction: { label: string; onClick: () => void };
-  /** Shown on the result under the standings — the rematch offer, online. */
-  resultExtra?: ReactNode;
+  /**
+   * A screen of its own for the end of the game, drawn over everything here
+   * rather than in place of it — the board stays mounted underneath, so the
+   * winning move is still walked out and heard before this covers it.
+   *
+   * Given the game's sound, so that muting on the end screen is muting here.
+   */
+  renderOver?: (sound: Sound) => ReactNode;
 }
 
 /**
@@ -62,7 +68,7 @@ export default function GameView({
   ended,
   headerAction,
   resultAction,
-  resultExtra,
+  renderOver,
 }: Props) {
   const won = state.phase === 'game-over';
   const over = won || ended !== undefined;
@@ -140,7 +146,7 @@ export default function GameView({
           onStep={() => sound.play('step')}
           onArrive={() => setPlayed(state.version)}
         />
-        {over && (
+        {over && !renderOver && (
           <div className="result">
             <p className="result__title">
               {ended
@@ -158,12 +164,7 @@ export default function GameView({
                 ))}
               </ol>
             )}
-            {resultExtra}
-            <button
-              type="button"
-              className={resultExtra ? 'link-button' : 'result__again'}
-              onClick={resultAction.onClick}
-            >
+            <button type="button" className="result__again" onClick={resultAction.onClick}>
               {resultAction.label}
             </button>
           </div>
@@ -184,6 +185,10 @@ export default function GameView({
         rollLabel={rollLabel}
         onRoll={onRoll}
       />
+
+      {/* Last, and over everything: the board keeps playing the winning move
+          out behind it. */}
+      {over && renderOver?.(sound)}
     </main>
   );
 }

@@ -12,8 +12,8 @@ import type { Room } from '../data/serialize';
 import type { Presence } from '../data/usePresence';
 import { applyMove, getLegalMoves, rollDice } from '../game/engine';
 import type { GameState } from '../game/types';
+import GameOver from './GameOver';
 import GameView from './GameView';
-import RematchPanel from './RematchPanel';
 import './Lobby.css';
 
 /** How often each client checks whether the table is stuck on an absent player. */
@@ -108,12 +108,15 @@ export default function OnlineGame({ room, state, uid, presence, onLeave }: Prop
           ? { title: 'Game abandoned', subtitle: 'Everyone else left the table.' }
           : undefined
       }
-      // Offered to whoever is still at the table, however the game ended — an
-      // abandoned one is as good a reason to start another as a won one.
-      resultExtra={
-        room.status === 'finished' && uid in room.players ? (
-          <RematchPanel room={room} uid={uid} />
-        ) : undefined
+      // The end screen, for whoever is still at the table — however the game
+      // ended, since an abandoned one is as good a reason to start another as a
+      // won one. Anyone else watching keeps the plain result.
+      renderOver={
+        room.status === 'finished' && uid in room.players
+          ? (sound) => (
+              <GameOver room={room} state={state} uid={uid} sound={sound} onLeave={onLeave} />
+            )
+          : undefined
       }
       banner={
         <div className={`banner${myTurn ? ' banner--active' : ''}`}>

@@ -1,0 +1,1094 @@
+/*
+ * The end of a game, built to the supplied design.
+ *
+ * It covers the whole screen rather than replacing it: the board and its dice
+ * panel stay mounted underneath, so the winning move is walked out and heard
+ * before this fades in over the top of it.
+ *
+ * Everything is prefixed and nothing shared is touched, so the live game, the
+ * waiting room and the home screen are all exactly as they were.
+ */
+
+.over {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  overflow: hidden;
+  font-family: Nunito, system-ui, sans-serif;
+  color: #efe9ff;
+  background: radial-gradient(
+    100% 45% at 50% 10%,
+    #2a1f6e 0%,
+    #1a1354 42%,
+    #120c3d 74%,
+    #0d0830 100%
+  );
+  animation: over-in 0.35s ease both;
+}
+
+@keyframes over-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The game is still mounted underneath and still as tall as it was, which left
+   the page's own scrollbar running down the side of a screen that covers it. */
+body:has(.over) {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .over {
+    animation: none;
+  }
+}
+
+/* --- the ground: two boards lying out of focus --- */
+
+.over__scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.over__board {
+  position: absolute;
+  border-radius: 22px;
+  filter: blur(5px);
+}
+
+.over__board--left {
+  left: -70px;
+  bottom: 0;
+  width: 230px;
+  height: 300px;
+  opacity: 0.4;
+  rotate: -7deg;
+  background: linear-gradient(135deg, #e8e2d2, #7d7398);
+}
+
+.over__board--right {
+  right: -80px;
+  bottom: 40px;
+  width: 230px;
+  height: 320px;
+  opacity: 0.36;
+  rotate: 8deg;
+  background: linear-gradient(135deg, #efe8d6, #8a80a6);
+}
+
+.over__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(16 10 52 / 0.3), rgb(12 8 44 / 0.88));
+}
+
+/* --- the column --- */
+
+.over__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
+}
+
+/* --- the bar --- */
+
+.over__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+}
+
+.over__mark {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  font-family: "Baloo 2", Nunito, system-ui, sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 0.9;
+}
+
+.over__mark span {
+  text-shadow: 0 3px 0 var(--under);
+  color: var(--letter);
+}
+
+.over__mark span:nth-child(2) {
+  --letter: #ffc22e;
+  --under: #c47a05;
+}
+.over__mark span:nth-child(3) {
+  --letter: #5fc23b;
+  --under: #2c7a1c;
+}
+.over__mark span:nth-child(4) {
+  --letter: #2f8ae8;
+  --under: #14549c;
+}
+.over__mark span:nth-child(5) {
+  --letter: #e8402f;
+  --under: #9a1a12;
+}
+
+/* Sits over the U, as in the design. */
+.over__crown {
+  position: absolute;
+  left: 18px;
+  top: -13px;
+  width: 26px;
+  height: 16px;
+}
+
+.over__crown-points {
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  width: 100%;
+  height: 11px;
+  background: linear-gradient(180deg, #ffd24a, #eea20d);
+  clip-path: polygon(0 100%, 0 22%, 20% 55%, 50% 0, 80% 55%, 100% 22%, 100% 100%);
+}
+
+.over__crown-band {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: #f0a70b;
+}
+
+.over__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.over__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  border-radius: 11px;
+  background: rgb(30 20 80 / 0.65);
+  border: 1px solid rgb(150 150 240 / 0.35);
+}
+
+.over__leave {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 11px;
+  background: rgb(100 20 55 / 0.45);
+  border: 1px solid rgb(255 90 140 / 0.45);
+  color: #ff5f8f;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* --- the room strip --- */
+
+.over__room {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 16px 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 11px;
+  background: rgb(26 17 72 / 0.65);
+  border: 1px solid rgb(140 140 235 / 0.22);
+}
+
+.over__room-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.over__room-label {
+  color: #cdc4ee;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.over__code {
+  padding: 3px 9px;
+  border-radius: 7px;
+  background: rgb(255 190 50 / 0.1);
+  border: 1px solid rgb(255 190 50 / 0.55);
+  color: #ffc22e;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.over__you {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  color: var(--tint);
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+/* --- the piece colours, as lit beads --- */
+
+.over-tint--red {
+  --tint: #ff6b5c;
+  --bead: radial-gradient(35% 30% at 35% 30%, #ffb0a5, #d0342c);
+  --glow: rgb(232 64 47 / 0.7);
+  --edge: #e8402f;
+}
+.over-tint--green {
+  --tint: #6fdb6a;
+  --bead: radial-gradient(35% 30% at 35% 30%, #a7f59a, #22a02c);
+  --glow: rgb(60 220 90 / 0.7);
+  --edge: #37c246;
+}
+.over-tint--yellow {
+  --tint: #ffcb4d;
+  --bead: radial-gradient(35% 30% at 35% 30%, #ffe08a, #e0a010);
+  --glow: rgb(255 190 50 / 0.7);
+  --edge: #e8b622;
+}
+.over-tint--blue {
+  --tint: #4da3ff;
+  --bead: radial-gradient(35% 30% at 35% 30%, #8fc4ff, #1f6fe8);
+  --glow: rgb(60 150 255 / 0.7);
+  --edge: #2f7fe8;
+}
+
+.over-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bead);
+  box-shadow: 0 0 9px var(--glow);
+}
+
+/* --- everything that can scroll if it has to --- */
+
+.over__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px calc(12px + env(safe-area-inset-bottom));
+  scrollbar-width: none;
+}
+
+.over__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.over__card {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgb(150 120 235 / 0.3);
+  background: rgb(22 14 64 / 0.7);
+  box-shadow: 0 20px 44px rgb(0 0 0 / 0.5);
+}
+
+/* --- the crest: trophy, name, standings --- */
+
+.over__crest {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 34px 16px 18px;
+  background: radial-gradient(
+    80% 90% at 50% 30%,
+    #6a2fb0 0%,
+    #4a1f92 42%,
+    #2d1470 78%,
+    #241059 100%
+  );
+}
+
+.over__trophy {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 190px;
+  height: 170px;
+}
+
+.over__glow {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 200 80 / 0.35), rgb(255 200 80 / 0) 65%);
+}
+
+.over__ribbon {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 6px 22px;
+  background: linear-gradient(180deg, #b23ce0, #7d19b0);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 14px rgb(0 0 0 / 0.45);
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+}
+
+.over__die {
+  position: absolute;
+  width: 38px;
+}
+
+.over__die--left {
+  left: 0;
+  top: 60px;
+  rotate: -16deg;
+}
+
+.over__die--right {
+  right: 0;
+  top: 66px;
+  width: 36px;
+  rotate: 14deg;
+}
+
+/* Two chips of confetti caught mid-air. */
+.over__bit {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+}
+
+.over__bit--pink {
+  left: 16px;
+  top: 12px;
+  background: #ff5c8a;
+  rotate: 20deg;
+}
+
+.over__bit--blue {
+  right: 22px;
+  top: 16px;
+  width: 11px;
+  height: 11px;
+  background: #38b6ff;
+  rotate: 35deg;
+}
+
+.over__spark {
+  position: absolute;
+  left: 52px;
+  top: 0;
+  color: #ffe9a8;
+  font-size: 18px;
+}
+
+.over__said {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.over__headline {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.over__flourish {
+  flex: none;
+  color: #e8b622;
+  font-size: 22px;
+}
+
+.over__flourish--flip {
+  scale: -1 1;
+}
+
+.over__title {
+  position: relative;
+  font-family: "Baloo 2", Nunito, system-ui, sans-serif;
+  /* Fluid, because a name goes here and names are not all four letters. */
+  font-size: min(29px, 7.4vw);
+  font-weight: 800;
+  line-height: 1.05;
+  color: #ffc72e;
+  text-shadow:
+    0 3px 0 #a8600a,
+    0 7px 16px rgb(0 0 0 / 0.5);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.over__title-crown {
+  position: absolute;
+  left: 50%;
+  top: -30px;
+  translate: -50% 0;
+  width: 34px;
+  height: 22px;
+}
+
+.over__title-crown .over__crown-points {
+  height: 14px;
+  bottom: 3px;
+}
+
+.over__title-crown .over__crown-band {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.over__note {
+  color: #cdc4ee;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.over__standings {
+  list-style: none;
+  width: 100%;
+  margin-top: 4px;
+  border-radius: 12px;
+  background: rgb(14 9 44 / 0.62);
+  border: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.over__place {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 18px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.over__place:last-child {
+  border-bottom: none;
+}
+
+.over__place .over-dot {
+  width: 20px;
+  height: 20px;
+  box-shadow: 0 0 10px var(--glow);
+}
+
+.over__rank {
+  color: #cdc4ee;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.over__place:first-child .over__rank {
+  color: #ffc22e;
+}
+
+.over__place-name {
+  color: #fff;
+  font-size: 19px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- the next game --- */
+
+.over__again {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 14px 18px;
+  background: rgb(18 11 56 / 0.75);
+}
+
+.over__legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+
+.over__legend::before,
+.over__legend::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.over__legend-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.35);
+}
+
+.over__seats {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Each seat is edged in its own colour, and lit only once its answer is in. */
+.over-seat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 2px solid var(--edge);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--edge) 26%, transparent),
+    color-mix(in srgb, var(--edge) 10%, transparent)
+  );
+}
+
+/* Still thinking: the colour drops back so the answered seats stand out. */
+.over-seat--asked {
+  border-color: color-mix(in srgb, var(--edge) 45%, transparent);
+}
+
+.over-seat--out {
+  border-color: color-mix(in srgb, var(--edge) 35%, transparent);
+  opacity: 0.72;
+}
+
+.over-seat .over-dot {
+  width: 18px;
+  height: 18px;
+}
+
+.over-seat__name {
+  flex: 1;
+  min-width: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.over-seat__pill {
+  flex: none;
+  padding: 6px 15px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.over-seat__pill--in {
+  border: 1.5px solid rgb(120 230 140 / 0.7);
+  background: rgb(20 60 30 / 0.4);
+  color: #7ce88c;
+}
+
+.over-seat__pill--out {
+  border: 1.5px solid rgb(255 130 150 / 0.6);
+  background: rgb(70 20 30 / 0.4);
+  color: #ff9aab;
+}
+
+/* Three dots waiting on an answer, breathing one after another. */
+.over-seat__thinking {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 46px;
+  height: 30px;
+  border-radius: 15px;
+  border: 1.5px solid rgb(180 180 240 / 0.45);
+  background: rgb(30 22 76 / 0.5);
+}
+
+.over-seat__thinking i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #cdc4ee;
+  animation: over-think 1.4s ease-in-out infinite;
+}
+
+.over-seat__thinking i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.over-seat__thinking i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+@keyframes over-think {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .over-seat__thinking i {
+    animation: none;
+  }
+}
+
+.over__rule {
+  height: 1px;
+  border: none;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.over__rules {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* --- rule choices, in this screen's purple --- */
+
+.over-choices .option-row {
+  gap: 9px;
+  margin: 0;
+  align-items: center;
+}
+
+.over-choices .field__label {
+  color: #cdc4ee;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.over-choices .option-row__choices {
+  width: 100%;
+  gap: 8px;
+}
+
+.over-choices .option-row__choice {
+  min-height: 46px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgb(140 140 235 / 0.3);
+  background: rgb(24 15 66 / 0.6);
+  box-shadow: none;
+  color: #e6e0ff;
+  font-size: 19px;
+  font-weight: 800;
+  opacity: 1;
+}
+
+.over-choices--tokens .option-row__choice--on {
+  color: #fff;
+  background: rgb(150 40 220 / 0.25);
+  border: 2px solid #c23ef0;
+  box-shadow:
+    0 0 16px rgb(194 62 240 / 0.45),
+    inset 0 0 10px rgb(194 62 240 / 0.25);
+}
+
+.over-choices--yard .option-row__choices {
+  gap: 10px;
+}
+
+.over-choices--yard .option-row__choice {
+  font-size: 17px;
+}
+
+.over-choices--yard .option-row__choice--on {
+  color: #fff;
+  background: linear-gradient(180deg, #c23ef0, #8c17c4);
+  border: 1px solid rgb(240 180 255 / 0.6);
+  box-shadow: 0 0 18px rgb(194 62 240 / 0.45);
+}
+
+.over-choices .option-row__choice:disabled {
+  opacity: 0.5;
+}
+
+/* --- a guest's answer --- */
+
+.over__answer {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.over__rules-read {
+  color: #cdc4ee;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.over__answer-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.over__answer-button {
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid rgb(140 140 235 / 0.3);
+  background: rgb(24 15 66 / 0.6);
+  color: #e6e0ff;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.over__answer-button--on {
+  color: #fff;
+  background: linear-gradient(180deg, #c23ef0, #8c17c4);
+  border: 1px solid rgb(240 180 255 / 0.6);
+  box-shadow: 0 0 18px rgb(194 62 240 / 0.45);
+}
+
+/* --- the strip that starts the next game --- */
+
+.over__start {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  text-align: left;
+  background: linear-gradient(90deg, rgb(60 30 120 / 0.75), rgb(40 20 95 / 0.6));
+  border: 1px solid rgb(160 120 240 / 0.35);
+}
+
+/* Live once enough of the table is in, and lit to say so. */
+.over__start--ready {
+  background: linear-gradient(90deg, #c23ef0, #7d19b0);
+  border-color: rgb(240 180 255 / 0.6);
+  box-shadow: 0 0 22px rgb(194 62 240 / 0.4);
+}
+
+.over__start--ready:active {
+  translate: 0 2px;
+}
+
+.over__start-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.over__start-text strong {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+}
+
+.over__start-text em {
+  color: #cdc4ee;
+  font-size: 13px;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.over__start--ready .over__start-text em {
+  color: #f3ddff;
+}
+
+/* The key: two bars with a shaft between them, as drawn. */
+.over__key {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 52px;
+}
+
+.over__key-bar {
+  position: absolute;
+  left: 3px;
+  width: 34px;
+  height: 7px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #ffd24a, #e08c05);
+}
+
+.over__key-bar:first-child {
+  top: 0;
+}
+
+.over__key-bar:last-child {
+  bottom: 0;
+}
+
+.over__key-up {
+  position: absolute;
+  left: 8px;
+  top: 7px;
+  width: 24px;
+  height: 19px;
+  background: linear-gradient(180deg, #63c8ff, #2a7fe0);
+  clip-path: polygon(0 0, 100% 0, 54% 100%, 46% 100%);
+}
+
+.over__key-down {
+  position: absolute;
+  left: 8px;
+  bottom: 7px;
+  width: 24px;
+  height: 19px;
+  background: linear-gradient(0deg, #ffc22e, #e08c05);
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+}
+
+.over__error {
+  color: #ff9aab;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.over__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 2px;
+  min-height: 44px;
+  color: #c05df0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+/* --- the dice panel, with nothing left to roll --- */
+
+.over__panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgb(22 14 64 / 0.7);
+  border: 1px solid rgb(140 140 235 / 0.2);
+}
+
+.over__panel-who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.over__avatar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--bead);
+  box-shadow:
+    0 4px 12px rgb(0 0 0 / 0.4),
+    inset 0 2px 0 rgb(255 255 255 / 0.35);
+}
+
+.over__panel-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.over__panel-text strong {
+  color: var(--tint);
+  font-size: 18px;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.over__panel-text em {
+  color: #cdc4ee;
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.over__panel-die {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #f2eeff, #d8d0f2);
+  color: #5b32b0;
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 0.35);
+}
+
+/*
+ * With width to spare the crest opens out, as in the desktop drawing: the
+ * trophy stands beside the winner rather than above them, and the two rule
+ * rows sit side by side. Nothing is resized by hand — the same parts, laid
+ * across instead of down.
+ */
+@media (min-width: 720px) {
+  .over__inner {
+    max-width: 940px;
+    padding-inline: 12px;
+  }
+
+  .over__mark {
+    font-size: 46px;
+  }
+
+  /* Wrapping, not squeezing: if the trophy and the words cannot both fit
+     across, the words drop under it rather than the trophy shrinking and the
+     winner's name going with it. */
+  .over__crest {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 24px 34px 26px;
+  }
+
+  .over__trophy {
+    flex: none;
+    width: 280px;
+    height: 250px;
+  }
+
+  .over__trophy svg {
+    width: 200px;
+    height: 218px;
+  }
+
+  .over__glow {
+    width: 230px;
+    height: 230px;
+  }
+
+  .over__ribbon {
+    bottom: 14px;
+    padding: 9px 32px;
+    font-size: 24px;
+  }
+
+  .over__die {
+    width: 54px;
+  }
+
+  .over__die--left {
+    top: 100px;
+  }
+
+  .over__die--right {
+    width: 50px;
+    top: 108px;
+  }
+
+  /* The crest's other half: the name, and the places under it. */
+  .over__said {
+    flex: 1;
+    min-width: 340px;
+    width: auto;
+    gap: 22px;
+  }
+
+  .over__headline {
+    margin-top: 0;
+    flex-wrap: wrap;
+  }
+
+  .over__title {
+    font-size: min(44px, 4.6vw);
+  }
+
+  .over__title-crown {
+    top: -44px;
+    width: 48px;
+    height: 30px;
+  }
+
+  .over__flourish {
+    font-size: 34px;
+  }
+
+  .over__standings {
+    max-width: 460px;
+  }
+
+  .over__place {
+    padding: 15px 26px;
+  }
+
+  .over__place-name {
+    font-size: 23px;
+  }
+
+  .over__again {
+    padding: 24px 28px 26px;
+  }
+
+  .over__rules {
+    flex-direction: row;
+    gap: 34px;
+  }
+
+  .over__rules > * {
+    flex: 1;
+  }
+
+  .over__legend {
+    font-size: 19px;
+  }
+}

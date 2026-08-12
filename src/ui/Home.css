@@ -125,17 +125,25 @@
 
 /* --- the column everything real sits in --- */
 
+/*
+ * The screen is meant to be taken in at a glance, so it is sized to land on one
+ * page rather than to be scrolled. Its vertical rhythm is therefore a share of
+ * the window's height, clamped: on a phone the clamps sit at their maximum and
+ * the design is drawn exactly as given, and on a shorter window everything
+ * closes up instead of running off the bottom.
+ */
 .home__inner {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: clamp(9px, 1.9vh, 16px);
   width: 100%;
   max-width: 420px;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 26px 18px calc(26px + env(safe-area-inset-bottom));
+  padding: clamp(12px, 3.1vh, 26px) 18px
+    calc(clamp(12px, 3.1vh, 26px) + env(safe-area-inset-bottom));
 }
 
 /* --- the wordmark --- */
@@ -192,8 +200,9 @@
   align-items: flex-end;
   gap: 3px;
   font-family: "Baloo 2", Nunito, system-ui, sans-serif;
-  /* Fluid, so the mark still fits across a narrow phone. */
-  font-size: min(74px, 19vw);
+  /* Fluid on both axes: it must fit across a narrow phone, and give way on a
+     short window so the card it sits above still lands on the page. */
+  font-size: min(74px, 19vw, 8.8vh);
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: 1px;
@@ -262,9 +271,9 @@
 .home__card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: clamp(9px, 1.9vh, 16px);
   width: 100%;
-  padding: 18px 16px 20px;
+  padding: clamp(13px, 2.1vh, 18px) 16px clamp(14px, 2.4vh, 20px);
   border-radius: 20px;
   border: 1px solid rgb(255 255 255 / 0.1);
   background: linear-gradient(180deg, rgb(52 33 116 / 0.72), rgb(38 23 92 / 0.8));
@@ -686,21 +695,124 @@
   color: #ffc0c6;
 }
 
-/* A phone in landscape has no room for the artwork above the card; the card is
-   what matters, so the mark shrinks out of its way rather than pushing it off
-   the bottom of the screen. */
+/*
+ * A window with width to spare — a desktop, or a phone turned on its side —
+ * stands the mark beside the card instead of above it. Stacked, the two
+ * together ask for more height than a laptop window has, and the screen scrolls
+ * for want of the room sitting empty on either side of it.
+ */
+@media (min-width: 760px) {
+  .home__inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(28px, 6vw, 72px);
+    max-width: 880px;
+  }
+
+  .home__mark {
+    flex: none;
+  }
+
+  .home__card {
+    width: 400px;
+    flex: none;
+  }
+
+  /* The ribbon hangs off the wordmark rather than spanning the column, so it
+     needs its own bounds once there is nothing above it to match. */
+  .home__title {
+    font-size: min(96px, 11vh);
+  }
+}
+
+/* Shorter still, and the controls themselves close up. Each is left well clear
+   of the 44px a thumb needs — this is the case where the window is short
+   because it is a desktop browser, not because it is a small phone. */
+@media (max-height: 700px) {
+  .home__card {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .home-choices .option-row__choice,
+  .home-choices--yard .option-row__choice {
+    min-height: 44px;
+  }
+
+  .home-field__input {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .home-button {
+    min-height: 52px;
+  }
+
+  .home-button--create {
+    font-size: 22px;
+  }
+
+  .home-button--create img {
+    width: 32px;
+  }
+
+  .home__join-button {
+    min-height: 46px;
+  }
+
+  .home__link {
+    font-size: 15px;
+  }
+
+  .home__phone {
+    width: 15px;
+    height: 24px;
+  }
+}
+
+/* Shorter again — and this is the tightest the screen goes, enough that even
+   the rejoin button and the divider above it still fit under 560px. */
 @media (max-height: 620px) {
+  .home__inner,
+  .home__card {
+    gap: 8px;
+  }
+
+  /* A few pixels in hand, so a fractional clamp rounding upwards cannot put a
+     scrollbar on a screen that otherwise fits exactly. */
+  .home__inner {
+    padding-top: 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .home-choices .option-row__choice,
+  .home-choices--yard .option-row__choice {
+    min-height: 40px;
+  }
+
+  .home-button {
+    min-height: 48px;
+  }
+
+  .home-button--create {
+    font-size: 20px;
+  }
+
+  .home__join-button {
+    min-height: 44px;
+  }
+}
+
+/* A phone in landscape: no room for the artwork at all, so the mark gives up
+   its crown and its sparkles rather than crowding the card. */
+@media (max-height: 560px) {
   .home__crown,
   .home__sparkle {
     display: none;
   }
 
-  .home__title {
-    font-size: 46px;
-  }
-
-  .home__inner {
-    padding-top: 14px;
-    gap: 12px;
+  .home__ribbon {
+    margin-top: 4px;
   }
 }
