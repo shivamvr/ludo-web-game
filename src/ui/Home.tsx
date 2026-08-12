@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { DEFAULT_TOKEN_COUNT } from '../game/board';
+import { DEFAULT_TOKEN_COUNT, DEFAULT_YARD_EXIT } from '../game/board';
+import type { YardExit } from '../game/types';
 import { createRoom, explain, inspectRoom, normalizeCode } from '../data/rooms';
 import type { AuthState } from '../data/useAuth';
-import TokenCountPicker from './TokenCountPicker';
+import RulePicker from './RulePicker';
 import './Lobby.css';
 
 interface Props {
@@ -19,6 +20,7 @@ export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLoca
   const [busy, setBusy] = useState<'create' | 'join' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tokenCount, setTokenCount] = useState(DEFAULT_TOKEN_COUNT);
+  const [yardExit, setYardExit] = useState<YardExit>(DEFAULT_YARD_EXIT);
 
   const online = auth.configured && auth.uid !== null;
 
@@ -26,7 +28,7 @@ export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLoca
     if (!auth.uid) return;
     setBusy('create');
     setError(null);
-    const result = await createRoom(auth.uid, name.trim() || 'Player', tokenCount);
+    const result = await createRoom(auth.uid, name.trim() || 'Player', tokenCount, yardExit);
     setBusy(null);
     if (result.ok) onEnterRoom(result.value);
     else setError(explain(result));
@@ -84,9 +86,11 @@ export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLoca
             </label>
 
             {/* Only the creator picks: everyone who joins plays the host's game. */}
-            <TokenCountPicker
-              value={tokenCount}
-              onChange={setTokenCount}
+            <RulePicker
+              tokenCount={tokenCount}
+              onTokenCount={setTokenCount}
+              yardExit={yardExit}
+              onYardExit={setYardExit}
               disabled={busy !== null}
             />
 

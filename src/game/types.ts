@@ -48,6 +48,18 @@ export interface Player {
   connected?: boolean;
 }
 
+/**
+ * Which numbers bring a token out of its yard.
+ *
+ *   'six'         only a 6 opens — the classic rule
+ *   'one-or-six'  a 1 opens as well, onto the same start square
+ *
+ * Agreed before the first roll and fixed for the whole game, so every client
+ * resolves the same moves from the same dice. A 1 only opens: unlike a six it
+ * is not held, so it never earns another roll.
+ */
+export type YardExit = 'six' | 'one-or-six';
+
 export type MoveKind = 'leaveHome' | 'advance' | 'finish';
 
 /**
@@ -113,13 +125,13 @@ export interface GameState {
    * Extra rolls earned this turn and still unspent — one for sending an
    * opponent's token home, one for bringing your own token all the way in.
    *
-   * Earned the moment the move lands, but only taken once every held number has
-   * been played, so a capture with numbers still in hand does not cut the rest
-   * of the turn short. They queue: a hand that both captures and finishes is
-   * owed two. Forfeited along with everything else if the turn ends on a third
-   * six, or if the move brought the player's last token home.
+   * Taken as soon as the move lands, with any numbers still held kept in hand:
+   * the new roll joins them rather than replacing them. Forfeited if the turn
+   * ends on a third six, or if the move brought the player's last token home.
    */
   bonusRolls: number;
+  /** Which numbers bring a token out of the yard — see YardExit. */
+  yardExit: YardExit;
   /** Finish order by color. */
   winnerOrder: Color[];
   /** Serializable RNG state, so the whole GameState stays JSON and replayable. */

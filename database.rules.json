@@ -33,6 +33,13 @@
           ".validate": "newData.isNumber() && newData.val() >= 4 && newData.val() <= 8 && newData.val() % 1 === 0 && (!data.exists() || newData.val() === data.val())"
         },
 
+        // Which numbers bring a token out of the yard. Fixed for the same
+        // reason: both clients resolve moves from it, so it cannot move once
+        // anyone has rolled.
+        "yardExit": {
+          ".validate": "newData.isString() && newData.val().matches(/^(six|one-or-six)$/) && (!data.exists() || newData.val() === data.val())"
+        },
+
         // Only the host may start the game. Anyone at the table may finish it —
         // the winning move and the abandonment watchdog both need to.
         "status": {
@@ -102,6 +109,11 @@
             "$slot": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6" }
           },
           "consecutiveSixes": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 2" },
+          // Copied from the room when the game is built, and never rewritten:
+          // changing it mid-game would change which moves are legal.
+          "yardExit": {
+            ".validate": "newData.isString() && newData.val().matches(/^(six|one-or-six)$/) && (!data.exists() || newData.val() === data.val())"
+          },
           // Extra rolls earned by capturing or by bringing a token home. These
           // queue across a turn, and an earned roll can earn more, so there is
           // no tight bound worth restating here — this only rejects nonsense.

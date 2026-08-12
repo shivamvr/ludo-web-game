@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_TOKEN_COUNT,
   FINISH,
   MAIN_TRACK_STEPS,
   START_INDEX,
@@ -8,6 +9,7 @@ import {
   isSafeIndex,
 } from '../board';
 import {
+  RESCUE_DRAWS,
   applyMove,
   createGame,
   currentTurn,
@@ -101,14 +103,16 @@ describe('leaving the yard', () => {
   });
 
   it('passes the turn when a non-6 leaves every token stuck in the yard', () => {
-    const game = createGame(['red', 'green'], [], findSeed([3]));
+    // Everything is in the yard, so the rescue draw applies: the seed has to
+    // miss on all RESCUE_DRAWS attempts for the turn to pass at all.
+    const game = createGame(['red', 'green'], [], findSeed([3, 2, 4]));
     const rolled = rollDice(game);
 
     expect(rolled.phase).toBe('awaiting-roll');
     expect(rolled.dice).toEqual([]);
     // The face still shows what came up, even though it could not be used.
-    expect(rolled.lastRoll).toEqual([3]);
-    expect(rolled.lastEvent).toEqual({ type: 'noLegalMove', color: 'red', values: [3] });
+    expect(rolled.lastRoll).toEqual([4]);
+    expect(rolled.lastEvent).toEqual({ type: 'noLegalMove', color: 'red', values: [4] });
     expect(currentTurn(rolled).color).toBe('green');
   });
 
@@ -769,4 +773,119 @@ describe('full game simulation', () => {
       expect(standings(state)).toHaveLength(4);
     }
   }, 30_000);
+});
+
+describe('leaving the yard on a 1', () => {
+  it('refuses a 1 under the default rule', () => {
+    const game = awaitingMove(createGame(['red', 'green'], [], 1), 1);
+    expect(game.yardExit).toBe('six');
+    expect(getLegalMoves(game)).toEqual([]);
+  });
+
+  it('opens onto the start square when the table agreed to it', () => {
+    const game = awaitingMove(
+      createGame(['red', 'green'], [], 1, DEFAULT_TOKEN_COUNT, 'one-or-six'),
+      1,
+    );
+    const moves = getLegalMoves(game);
+    expect(moves).toHaveLength(4);
+    expect(moves.every((m) => m.kind === 'leaveHome' && m.to === 1)).toBe(true);
+
+    const after = applyMove(game, 'red-0', 1);
+    expect(progressOf(after, 'red-0')).toBe(1);
+  });
+
+  it('spends the 1 without earning another roll', () => {
+    const game = awaitingMove(
+      createGame(['red', 'green'], [], 1, DEFAULT_TOKEN_COUNT, 'one-or-six'),
+      1,
+    );
+    const after = applyMove(game, 'red-0', 1);
+
+    // A six is held and rolled on top of; a one is simply played.
+    expect(after.bonusRolls).toBe(0);
+    expect(after.dice).toEqual([]);
+    expect(currentTurn(after).color).toBe('green');
+  });
+
+  it('still lets a 6 open, and still holds it for another roll', () => {
+    const game = createGame(['red', 'green'], [], findSeed([6, 2]), DEFAULT_TOKEN_COUNT, 'one-or-six');
+    const rolled = rollDice(game);
+    expect(rolled.dice).toEqual([6]);
+    expect(rolled.phase).toBe('awaiting-roll');
+    expect(rolled.consecutiveSixes).toBe(1);
+  });
+
+  it('rejects a rule it does not recognise', () => {
+    expect(() =>
+      createGame(['red', 'green'], [], 1, DEFAULT_TOKEN_COUNT, 'sevens' as never),
+    ).toThrow(/Yard exit/);
+  });
+});
+
+describe('rescuing a player stuck in the yard', () => {
+  it('redraws for a player with nothing on the board', () => {
+    // Two duds then a six: a single draw would pass the turn, the rescue finds
+    // the six on the third attempt.
+    const game = createGame(['red', 'green'], [], findSeed([3, 2, 6]));
+    const rolled = rollDice(game);
+
+    expect(rolled.lastRoll).toEqual([6]);
+    expect(currentTurn(rolled).color).toBe('red');
+  });
+
+  it('gives up after RESCUE_DRAWS and plays the last number drawn', () => {
+    const game = createGame(['red', 'green'], [], findSeed([3, 2, 4, 6]));
+    const rolled = rollDice(game);
+
+    // The fourth roll is a six but is never reached.
+    expect(rolled.lastRoll).toEqual([4]);
+    expect(RESCUE_DRAWS).toBe(3);
+    expect(currentTurn(rolled).color).toBe('green');
+  });
+
+  it('leaves the die alone once anything is on the board', () => {
+    const game = {
+      ...gameWith(['red', 'green'], { 'red-0': 5 }),
+      rngSeed: findSeed([3, 6, 6]),
+    };
+    const rolled = rollDice(game);
+
+    // No redraw: the 3 stands even though a six was one draw away.
+    expect(rolled.lastRoll).toEqual([3]);
+    expect(rolled.dice).toEqual([3]);
+  });
+
+  it('leaves the die alone when only finished tokens are off the board', () => {
+    // Tokens home plus tokens in the yard still counts as stranded — there is
+    // nothing to move either way.
+    const game = {
+      ...gameWith(['red', 'green'], { 'red-0': FINISH, 'red-1': FINISH }),
+      rngSeed: findSeed([3, 2, 6]),
+    };
+    const rolled = rollDice(game);
+    expect(rolled.lastRoll).toEqual([6]);
+  });
+
+  it('does not weight a roll made on top of a held six', () => {
+    // Otherwise a stranded player would be pushed towards the third six that
+    // forfeits the whole turn.
+    const game = {
+      ...createGame(['red', 'green'], [], findSeed([3, 6, 6])),
+      dice: [6],
+      lastRoll: [6],
+      consecutiveSixes: 1,
+    };
+    const rolled = rollDice(game);
+    expect(rolled.dice).toEqual([6, 3]);
+    expect(rolled.consecutiveSixes).toBe(0);
+  });
+
+  it('opens on a 1 too when that is the rule', () => {
+    const game = createGame(['red', 'green'], [], findSeed([3, 1, 6]), DEFAULT_TOKEN_COUNT, 'one-or-six');
+    const rolled = rollDice(game);
+    // The 1 is an opener under this rule, so the rescue stops there.
+    expect(rolled.lastRoll).toEqual([1]);
+    expect(getLegalMoves(rolled).every((m) => m.kind === 'leaveHome')).toBe(true);
+  });
 });

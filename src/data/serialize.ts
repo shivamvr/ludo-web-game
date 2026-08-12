@@ -8,8 +8,22 @@
  * app only ever sees a complete, correctly typed GameState.
  */
 
-import { DEFAULT_TOKEN_COUNT, isTokenCount } from '../game/board';
-import type { Color, GameEvent, GameState, Move, Player, Token, TurnPhase } from '../game/types';
+import {
+  DEFAULT_TOKEN_COUNT,
+  DEFAULT_YARD_EXIT,
+  isTokenCount,
+  isYardExit,
+} from '../game/board';
+import type {
+  Color,
+  GameEvent,
+  GameState,
+  Move,
+  Player,
+  Token,
+  TurnPhase,
+  YardExit,
+} from '../game/types';
 import { COLORS } from '../game/types';
 
 export type RoomStatus = 'waiting' | 'playing' | 'finished';
@@ -37,6 +51,8 @@ export interface Room {
   endedReason: EndedReason | null;
   /** Tokens each player gets, chosen by the host when the room is created. */
   tokenCount: number;
+  /** Which numbers open the yard, chosen by the host alongside the count. */
+  yardExit: YardExit;
 }
 
 type Raw = Record<string, unknown>;
@@ -176,6 +192,8 @@ export function toGameState(value: unknown): GameState | null {
     lastRoll: toNumbers(value.lastRoll),
     consecutiveSixes: num(value.consecutiveSixes, 0),
     bonusRolls: num(value.bonusRolls, 0),
+    // Games started before this was a choice have no field; they are six-only.
+    yardExit: isYardExit(value.yardExit) ? value.yardExit : DEFAULT_YARD_EXIT,
     winnerOrder: toArray(value.winnerOrder).filter(isColor),
     rngSeed: num(value.rngSeed, 0),
     lastEvent: toEvent(value.lastEvent),
@@ -224,6 +242,7 @@ export function toRoom(id: string, value: unknown): Room | null {
     endedReason,
     // Rooms created before this was a choice have no field; they are four.
     tokenCount: isTokenCount(value.tokenCount) ? (value.tokenCount as number) : DEFAULT_TOKEN_COUNT,
+    yardExit: isYardExit(value.yardExit) ? value.yardExit : DEFAULT_YARD_EXIT,
   };
 }
 

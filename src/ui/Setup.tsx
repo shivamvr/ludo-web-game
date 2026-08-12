@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { DEFAULT_TOKEN_COUNT } from '../game/board';
-import type { Color } from '../game/types';
+import { DEFAULT_TOKEN_COUNT, DEFAULT_YARD_EXIT } from '../game/board';
+import type { Color, YardExit } from '../game/types';
 import { COLORS } from '../game/types';
-import TokenCountPicker from './TokenCountPicker';
+import RulePicker from './RulePicker';
 
 interface Props {
-  onStart: (colors: Color[], tokenCount: number) => void;
+  onStart: (colors: Color[], tokenCount: number, yardExit: YardExit) => void;
   onBack: () => void;
 }
 
@@ -16,6 +16,7 @@ interface Props {
 export default function Setup({ onStart, onBack }: Props) {
   const [selected, setSelected] = useState<Color[]>(['red', 'green', 'yellow', 'blue']);
   const [tokenCount, setTokenCount] = useState(DEFAULT_TOKEN_COUNT);
+  const [yardExit, setYardExit] = useState<YardExit>(DEFAULT_YARD_EXIT);
 
   const toggle = (color: Color) => {
     setSelected((prev) =>
@@ -48,12 +49,17 @@ export default function Setup({ onStart, onBack }: Props) {
         })}
       </div>
 
-      <TokenCountPicker value={tokenCount} onChange={setTokenCount} />
+      <RulePicker
+        tokenCount={tokenCount}
+        onTokenCount={setTokenCount}
+        yardExit={yardExit}
+        onYardExit={setYardExit}
+      />
 
       <button
         type="button"
         className="setup__start"
-        onClick={() => onStart(selected, tokenCount)}
+        onClick={() => onStart(selected, tokenCount, yardExit)}
         disabled={!ready}
       >
         {ready ? `Start ${selected.length}-player game` : 'Pick at least 2 colors'}

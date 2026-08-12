@@ -10,9 +10,15 @@
  */
 
 import { get, ref, runTransaction, serverTimestamp, update } from 'firebase/database';
-import { DEFAULT_TOKEN_COUNT, SEATING_ORDER, isTokenCount } from '../game/board';
+import {
+  DEFAULT_TOKEN_COUNT,
+  DEFAULT_YARD_EXIT,
+  SEATING_ORDER,
+  isTokenCount,
+  isYardExit,
+} from '../game/board';
 import { createGame } from '../game/engine';
-import type { Color, GameState } from '../game/types';
+import type { Color, GameState, YardExit } from '../game/types';
 import { getDb } from './firebase';
 import {
   ABANDON_GRACE_MS,
@@ -70,6 +76,7 @@ function randomCode(): string {
 export function seatGame(
   seats: { uid: string; name: string; color: Color }[],
   tokenCount: number = DEFAULT_TOKEN_COUNT,
+  yardExit: YardExit = DEFAULT_YARD_EXIT,
 ): GameState {
   const byColor = new Map(seats.map((seat) => [seat.color, seat] as const));
   const base = createGame(
@@ -77,6 +84,7 @@ export function seatGame(
     seats.map((seat) => seat.name),
     undefined,
     tokenCount,
+    yardExit,
   );
   return {
     ...base,
@@ -135,8 +143,10 @@ export async function createRoom(
   uid: string,
   name: string,
   tokenCount: number = DEFAULT_TOKEN_COUNT,
+  yardExit: YardExit = DEFAULT_YARD_EXIT,
 ): Promise<Result<string>> {
   const tokens = isTokenCount(tokenCount) ? tokenCount : DEFAULT_TOKEN_COUNT;
+  const exit = isYardExit(yardExit) ? yardExit : DEFAULT_YARD_EXIT;
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = randomCode();
     try {
@@ -150,6 +160,7 @@ export async function createRoom(
           },
           createdAt: serverTimestamp(),
           tokenCount: tokens,
+          yardExit: exit,
         };
       });
       if (result.committed) return done(code);

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { applyMove, createGame, getLegalMoves, rollDice } from '../game/engine';
-import type { Color, GameState } from '../game/types';
+import type { Color, GameState, YardExit } from '../game/types';
 import GameView from './GameView';
 import Setup from './Setup';
 import './LocalGame.css';
@@ -19,8 +19,8 @@ export default function LocalGame({ onExit }: { onExit: () => void }) {
     return (
       <main className="app app--setup">
         <Setup
-          onStart={(colors: Color[], tokenCount: number) =>
-            setState(createGame(colors, [], undefined, tokenCount))
+          onStart={(colors: Color[], tokenCount: number, yardExit: YardExit) =>
+            setState(createGame(colors, [], undefined, tokenCount, yardExit))
           }
           onBack={onExit}
         />

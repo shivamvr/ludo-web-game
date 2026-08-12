@@ -7,16 +7,27 @@
 
 import {
   DEFAULT_TOKEN_COUNT,
+  DEFAULT_YARD_EXIT,
   FINISH,
   HOME_COLUMN_START,
   MAIN_TRACK_STEPS,
   TOKEN_COUNTS,
   YARD,
+  YARD_EXITS,
   absoluteTrackIndex,
   isSafeIndex,
+  opensYard,
 } from './board';
 import { randomSeed, rollDie } from './rng';
-import type { Color, GameEvent, GameState, Move, Player, Token } from './types';
+import type {
+  Color,
+  GameEvent,
+  GameState,
+  Move,
+  Player,
+  Token,
+  YardExit,
+} from './types';
 import { COLORS } from './types';
 
 export const MAX_CONSECUTIVE_SIXES = 3;
@@ -37,6 +48,7 @@ export function createGame(
   names: string[] = [],
   seed: number = randomSeed(),
   tokenCount: number = DEFAULT_TOKEN_COUNT,
+  yardExit: YardExit = DEFAULT_YARD_EXIT,
 ): GameState {
   if (colors.length < 2 || colors.length > 4) {
     throw new Error(`A game needs 2 to 4 players, got ${colors.length}`);
@@ -46,6 +58,9 @@ export function createGame(
   }
   if (!TOKEN_COUNTS.includes(tokenCount)) {
     throw new Error(`Tokens per player must be one of ${TOKEN_COUNTS.join(', ')}`);
+  }
+  if (!YARD_EXITS.includes(yardExit)) {
+    throw new Error(`Yard exit must be one of ${YARD_EXITS.join(', ')}`);
   }
 
   const seated = COLORS.filter((c) => colors.includes(c));
@@ -65,6 +80,7 @@ export function createGame(
     lastRoll: [],
     consecutiveSixes: 0,
     bonusRolls: 0,
+    yardExit,
     winnerOrder: [],
     rngSeed: seed,
     lastEvent: null,
@@ -150,8 +166,9 @@ function resolveMove(
   let kind: Move['kind'];
 
   if (token.progress === YARD) {
-    // Only a 6 opens the yard, and it lands exactly on the start square.
-    if (dice !== 6) return null;
+    // A 6 always opens the yard, and a 1 as well if the table agreed to it.
+    // Either way the token lands exactly on the start square.
+    if (!opensYard(state.yardExit, dice)) return null;
     to = 1;
     kind = 'leaveHome';
   } else {
@@ -206,6 +223,54 @@ function capturesAt(state: GameState, color: Color, to: number): string[] {
 // ---------------------------------------------------------------------------
 
 /**
+ * How many times a player with nothing on the board may draw, looking for a
+ * number that opens the yard. See `draw`.
+ */
+export const RESCUE_DRAWS = 3;
+
+/**
+ * True when the player to move has no piece anywhere on the board — everything
+ * they have left is sitting in the yard waiting for an opening number.
+ *
+ * A roll made on top of a held six is excluded. That roll is already part of a
+ * sequence that worked, and weighting it towards another six would drag players
+ * into the three-six forfeit far more often than the rules intend.
+ */
+function stranded(state: GameState): boolean {
+  if (state.consecutiveSixes > 0) return false;
+  const { tokens } = currentTurn(state);
+  return (
+    tokens.some((token) => token.progress === YARD) &&
+    tokens.every((token) => token.progress === YARD || token.progress === FINISH)
+  );
+}
+
+/**
+ * Roll one die, giving a stranded player up to RESCUE_DRAWS attempts to find a
+ * number that gets them out.
+ *
+ * Waiting on a single face is a one-in-six chance per turn, and across a real
+ * game that reliably produces someone who sits in their yard for ten turns
+ * while everyone else races away — a game already decided but still being
+ * played out. Redrawing only for a player with nothing on the board leaves the
+ * die untouched for everyone else, and it stays a draw rather than a guarantee:
+ * if none of the attempts opens, the last one stands.
+ *
+ * The seed advances on every attempt, so this is as deterministic and as
+ * replayable as a single roll — both clients compute the same number from the
+ * same state.
+ */
+function draw(state: GameState): { value: number; nextSeed: number } {
+  let roll = rollDie(state.rngSeed);
+  if (!stranded(state)) return roll;
+  for (let attempt = 1; attempt < RESCUE_DRAWS; attempt++) {
+    if (opensYard(state.yardExit, roll.value)) break;
+    roll = rollDie(roll.nextSeed);
+  }
+  return roll;
+}
+
+/**
  * Roll for the current player.
  *
  * A six is not played immediately: it is held and rolled on top of, so the
@@ -218,7 +283,7 @@ export function rollDice(state: GameState): GameState {
     throw new Error(`Cannot roll while phase is "${state.phase}"`);
   }
 
-  const { value, nextSeed } = rollDie(state.rngSeed);
+  const { value, nextSeed } = draw(state);
   const color = currentTurn(state).color;
   const sixes = value === 6 ? state.consecutiveSixes + 1 : 0;
   const held = [...state.dice, value];

@@ -12,7 +12,7 @@
  *   - Four 6-cell home columns pointing inward, then the center goal at (7,7).
  */
 
-import type { Color } from "./types";
+import type { Color, YardExit } from "./types";
 
 export interface Cell {
   row: number;
@@ -212,6 +212,19 @@ export const MAX_TOKEN_COUNT = TOKEN_COUNTS[TOKEN_COUNTS.length - 1];
 
 export function isTokenCount(value: unknown): boolean {
   return typeof value === "number" && TOKEN_COUNTS.includes(value);
+}
+
+/** Which numbers a table may agree open the yard — see YardExit. */
+export const YARD_EXITS: readonly YardExit[] = ["six", "one-or-six"];
+export const DEFAULT_YARD_EXIT: YardExit = "six";
+
+export function isYardExit(value: unknown): value is YardExit {
+  return typeof value === "string" && YARD_EXITS.includes(value as YardExit);
+}
+
+/** Whether this number can bring a token out of the yard under `exit`. */
+export function opensYard(exit: YardExit, die: number): boolean {
+  return die === 6 || (exit === "one-or-six" && die === 1);
 }
 
 /**

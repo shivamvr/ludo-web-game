@@ -1,6 +1,6 @@
-/* --- tokens-per-player picker (shared with the online lobby) --- */
+/* --- a labelled row of rule choices, shared by the lobby and local setup --- */
 
-.tokens {
+.option-row {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -8,29 +8,32 @@
   text-align: left;
 }
 
-.tokens__options {
+.option-row__choices {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* Column count comes from the number of choices — see OptionRow. */
   gap: 8px;
 }
 
-.tokens__option {
+.option-row__choice {
   min-height: 52px;
+  padding: 0 6px;
   border-radius: 12px;
   border: 2px solid var(--line);
   background: var(--surface);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   opacity: 0.55;
-  transition: opacity 0.15s ease, border-color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.tokens__option--on {
+.option-row__choice--on {
   opacity: 1;
   border-color: var(--text);
   background: var(--surface-2);
 }
 
-.tokens__option:disabled {
+.option-row__choice:disabled {
   opacity: 0.3;
 }
