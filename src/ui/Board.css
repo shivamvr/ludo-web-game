@@ -10,6 +10,32 @@
   user-select: none;
 }
 
+/*
+ * One light for the whole board, falling from the top left — the same
+ * direction the drawn tokens and dice are lit from, so the board sits under
+ * the pieces rather than beside them.
+ *
+ * Written once and mixed from whatever --tint the element carries, so a colour
+ * is still named in exactly one place. --lit turns the light where a shape
+ * needs it; anything that does not say otherwise takes the corner-to-corner
+ * fall.
+ *
+ * It has to be declared on the elements that carry a tint rather than on the
+ * board above them. A custom property is substituted where it is written, not
+ * where it is used, so a --sheen on .board would go looking for a --tint that
+ * is not there, compute to nothing, and inherit that nothing to every square.
+ */
+.cell,
+.yard-block,
+.goal__wedge {
+  --sheen: linear-gradient(
+    var(--lit, 150deg),
+    color-mix(in srgb, var(--tint) 78%, #fff),
+    var(--tint) 48%,
+    color-mix(in srgb, var(--tint) 80%, #000)
+  );
+}
+
 .board__grid,
 .board__overlay {
   display: grid;
@@ -86,33 +112,47 @@
 
 /* Yard colour comes from one block per corner — see .yard-block. */
 
-.cell--home.cell--red {
-  background: var(--red);
+/* Every coloured square carries its colour as the tint the sheen is mixed
+   from, whatever that square happens to be. */
+.cell--red {
+  --tint: var(--red);
 }
-.cell--home.cell--green {
-  background: var(--green);
+.cell--green {
+  --tint: var(--green);
 }
-.cell--home.cell--yellow {
-  background: var(--yellow);
+.cell--yellow {
+  --tint: var(--yellow);
 }
+.cell--blue {
+  --tint: var(--blue);
+}
+
+/* A home column is five cells in a row, so a corner-to-corner sheen would run
+   its whole light-to-dark fall five times over and read as banding. Turned
+   across the narrow side instead — down the two that run horizontally, across
+   the two that run vertically — the five cells shade as one bar, lit from the
+   same side from end to end. */
+.cell--home {
+  background: var(--sheen);
+}
+
+.cell--home.cell--green,
 .cell--home.cell--blue {
-  background: var(--blue);
+  --lit: 180deg;
+}
+
+.cell--home.cell--yellow,
+.cell--home.cell--red {
+  --lit: 90deg;
 }
 
 /* Safe squares, each painted in the colour of the yard it belongs to. Both
    kinds get one: the four entry squares where tokens come out, and the four
-   mid-arm squares eight steps on, which run alongside that same yard. */
-.cell--star.cell--red {
-  background: var(--red);
-}
-.cell--star.cell--green {
-  background: var(--green);
-}
-.cell--star.cell--yellow {
-  background: var(--yellow);
-}
-.cell--star.cell--blue {
-  background: var(--blue);
+   mid-arm squares eight steps on, which run alongside that same yard. Each
+   stands alone on the white track, so each takes the full corner-to-corner
+   fall and reads as a raised tile. */
+.cell--star {
+  background: var(--sheen);
 }
 
 /* Filled rather than hollow, now that it sits on colour rather than on the
@@ -167,17 +207,24 @@
   clip-path: polygon(0 100%, 0 0, 50% 50%);
 }
 
+/* Every wedge is clipped out of the same square, so one shared fall of light
+   across that square shades all four as facets of a single lit block rather
+   than as four separately lit triangles. */
+.goal__wedge {
+  background: var(--sheen);
+}
+
 .goal__wedge--green {
-  background: var(--green);
+  --tint: var(--green);
 }
 .goal__wedge--yellow {
-  background: var(--yellow);
+  --tint: var(--yellow);
 }
 .goal__wedge--blue {
-  background: var(--blue);
+  --tint: var(--blue);
 }
 .goal__wedge--red {
-  background: var(--red);
+  --tint: var(--red);
 }
 
 /* Highlight for squares a legal move can reach. */
@@ -208,17 +255,24 @@
   background: var(--board);
 }
 
+.yard-block--red,
+.yard-block--green,
+.yard-block--yellow,
+.yard-block--blue {
+  background: var(--sheen);
+}
+
 .yard-block--red {
-  background: var(--red);
+  --tint: var(--red);
 }
 .yard-block--green {
-  background: var(--green);
+  --tint: var(--green);
 }
 .yard-block--yellow {
-  background: var(--yellow);
+  --tint: var(--yellow);
 }
 .yard-block--blue {
-  background: var(--blue);
+  --tint: var(--blue);
 }
 
 /* Grown slightly past its 4x4 grid area so the tokens are not pressed against
@@ -227,7 +281,9 @@
   /* A percentage keeps the corners equally round at every board size, which a
      fixed pixel radius does not. */
   border-radius: 15%;
-  background: var(--board);
+  /* A whisper of the same light, or the pad reads as a hole cut in a lit
+     surface rather than as part of it. */
+  background: linear-gradient(150deg, #ffffff, #f1f4fa);
   scale: 1.1;
 }
 
