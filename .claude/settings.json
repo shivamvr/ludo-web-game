@@ -85,7 +85,17 @@
       "Bash(node over.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")",
       "Bash(node setup.mjs .)",
       "Bash(node waiting.mjs .)",
-      "Bash(SKIP_PLAY=1 node game.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")"
+      "Bash(SKIP_PLAY=1 node game.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")",
+      "Bash(node -e ' *)",
+      "Bash(cd \"c:/Users/shiva/OneDrive/Documents/dev/ludo\" && cp \"C:/Users/shiva/Downloads/ludo_logo.png\" src/assets/logo-raw.png && ls -la src/assets/logo-raw.png)",
+      "Bash(node logo.mjs \"c:/Users/shiva/OneDrive/Documents/dev/ludo/src/assets/logo.png\")",
+      "Bash(node alpha.mjs)",
+      "Bash(node logo.mjs \"c:/Users/shiva/OneDrive/Documents/dev/ludo/src/assets/logo.png\" 720)",
+      "Bash(sed \"s|out.toDataURL\\('image/png'\\)|out.toDataURL\\('image/webp', 0.9\\)|\" logo.mjs)",
+      "Bash(node logo-webp.mjs \"c:/Users/shiva/OneDrive/Documents/dev/ludo/src/assets/logo.webp\" 720)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\shiva\\Downloads"
     ]
   }
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import dieFive from '../assets/dice-5.svg';
 import dieSix from '../assets/dice-6.svg';
+import logo from '../assets/logo.webp';
 import { DEFAULT_TOKEN_COUNT, DEFAULT_YARD_EXIT } from '../game/board';
 import type { YardExit } from '../game/types';
 import { createRoom, explain, inspectRoom, normalizeCode } from '../data/rooms';
@@ -105,16 +106,8 @@ export default function Home({
 
       <div className="home__inner">
         <div className="home__mark">
-          <div className="home__crown" aria-hidden="true">
-            <div className="home__crown-points" />
-            <div className="home__crown-band" />
-            <div className="home__crown-jewel" />
-          </div>
           <h1 className="home__title">
-            <span>L</span>
-            <span>U</span>
-            <span>D</span>
-            <span>O</span>
+            <img className="home__logo" src={logo} alt="Ludo" />
           </h1>
           <span className="home__sparkle home__sparkle--left" aria-hidden="true">
             ✦

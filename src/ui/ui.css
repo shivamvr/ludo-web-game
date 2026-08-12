@@ -8,68 +8,14 @@
  * against Home.css and GameOver.css.
  */
 
-/* --- the wordmark, in the small size a bar takes --- */
+/* --- the logo, in the small size a bar takes --- */
 
 .ui-mark {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 1px;
-  font-family: "Baloo 2", Nunito, system-ui, sans-serif;
-  font-size: 34px;
-  font-weight: 800;
-  line-height: 0.9;
-}
-
-.ui-mark span {
-  text-shadow: 0 3px 0 var(--under);
-  color: var(--letter);
-}
-
-.ui-mark span:nth-child(2) {
-  --letter: var(--gold);
-  --under: var(--play-yellow-shelf);
-}
-.ui-mark span:nth-child(3) {
-  --letter: #5fc23b;
-  --under: var(--play-green-shelf);
-}
-.ui-mark span:nth-child(4) {
-  --letter: var(--play-blue);
-  --under: var(--play-blue-shelf);
-}
-.ui-mark span:nth-child(5) {
-  --letter: var(--play-red);
-  --under: var(--play-red-shelf);
-}
-
-/* Sits over the U. */
-.ui-crown {
-  position: absolute;
-  left: 18px;
-  top: -13px;
-  width: 26px;
-  height: 16px;
-}
-
-.ui-crown-points {
-  position: absolute;
-  left: 0;
-  bottom: 2px;
-  width: 100%;
-  height: 11px;
-  background: linear-gradient(180deg, #ffd24a, #eea20d);
-  clip-path: polygon(0 100%, 0 22%, 20% 55%, 50% 0, 80% 55%, 100% 22%, 100% 100%);
-}
-
-.ui-crown-band {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 4px;
-  border-radius: 2px;
-  background: #f0a70b;
+  flex: none;
+  height: 44px;
+  width: auto;
+  /* It has to sit against the dark ground it is drawn for, not float above it. */
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 0.45));
 }
 
 /* --- the piece colours, as lit beads --- */

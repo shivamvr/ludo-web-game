@@ -155,83 +155,16 @@
   align-items: center;
 }
 
-/* Built rather than drawn: a band of points, a bar under it, and a jewel. */
-.home__crown {
-  position: relative;
-  width: 60px;
-  height: 38px;
-  margin-bottom: -8px;
-  z-index: 3;
-}
-
-.home__crown-points {
-  position: absolute;
-  left: 0;
-  bottom: 5px;
-  width: 60px;
-  height: 24px;
-  background: linear-gradient(180deg, #ffd24a, #eea20d);
-  clip-path: polygon(0 100%, 0 22%, 20% 55%, 50% 0, 80% 55%, 100% 22%, 100% 100%);
-}
-
-.home__crown-band {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 60px;
-  height: 9px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #ffcc3d, #e79b09);
-}
-
-.home__crown-jewel {
-  position: absolute;
-  left: 50%;
-  top: 4px;
-  translate: -50% 0;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: radial-gradient(35% 30% at 35% 30%, #ff9ad8, #c81d7a);
-}
-
 .home__title {
   display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  font-family: "Baloo 2", Nunito, system-ui, sans-serif;
-  /* Fluid on both axes: it must fit across a narrow phone, and give way on a
-     short window so the card it sits above still lands on the page. */
-  font-size: min(74px, 19vw, 8.8vh);
-  font-weight: 800;
-  line-height: 0.9;
-  letter-spacing: 1px;
 }
 
-/* Each letter is lit like the board pieces: a hard shelf of its own colour
-   underneath, then a soft shadow below that. */
-.home__title span {
-  text-shadow:
-    0 5px 0 var(--under),
-    0 8px 16px rgb(0 0 0 / 0.45);
-  color: var(--letter);
-}
-
-.home__title span:nth-child(1) {
-  --letter: #ffc22e;
-  --under: #c47a05;
-}
-.home__title span:nth-child(2) {
-  --letter: #5fc23b;
-  --under: #2c7a1c;
-}
-.home__title span:nth-child(3) {
-  --letter: #2f8ae8;
-  --under: #14549c;
-}
-.home__title span:nth-child(4) {
-  --letter: #e8402f;
-  --under: #9a1a12;
+/* Fluid on both axes: it must fit across a narrow phone, and give way on a
+   short window so the card below it still lands on the page. */
+.home__logo {
+  width: auto;
+  height: min(132px, 33vw, 15vh);
+  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 0.5));
 }
 
 .home__sparkle {
@@ -253,7 +186,8 @@
 
 .home__ribbon {
   position: relative;
-  margin-top: -8px;
+  /* Clear of the logo's own banner, which it would otherwise sit on. */
+  margin-top: 4px;
   padding: 7px 22px;
   border-radius: 6px;
   background: linear-gradient(180deg, #5a3fb0, #40277f);
@@ -719,10 +653,10 @@
     flex: none;
   }
 
-  /* The ribbon hangs off the wordmark rather than spanning the column, so it
-     needs its own bounds once there is nothing above it to match. */
-  .home__title {
-    font-size: min(96px, 11vh);
+  /* Standing beside the card rather than above it, the logo has the height to
+     be the first thing seen. */
+  .home__logo {
+    height: min(150px, 21vh);
   }
 }
 
@@ -805,9 +739,8 @@
 }
 
 /* A phone in landscape: no room for the artwork at all, so the mark gives up
-   its crown and its sparkles rather than crowding the card. */
+   its sparkles rather than crowding the card. */
 @media (max-height: 560px) {
-  .home__crown,
   .home__sparkle {
     display: none;
   }

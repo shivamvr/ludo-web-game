@@ -1,22 +1,9 @@
+import logo from '../assets/logo.webp';
 import './ui.css';
 
-/**
- * The wordmark, in the small size a bar takes: the same four letters as the
- * home screen, with the crown over the U.
- */
+/** The logo, in the small size a bar takes. */
 export default function Mark() {
-  return (
-    <div className="ui-mark">
-      <span className="ui-crown" aria-hidden="true">
-        <span className="ui-crown-points" />
-        <span className="ui-crown-band" />
-      </span>
-      <span>L</span>
-      <span>U</span>
-      <span>D</span>
-      <span>O</span>
-    </div>
-  );
+  return <img className="ui-mark" src={logo} alt="Ludo" />;
 }
 
 /** The arrow every "back" wears. */

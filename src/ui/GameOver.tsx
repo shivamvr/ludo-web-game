@@ -12,6 +12,7 @@ import type { Room } from '../data/serialize';
 import { standings } from '../game/engine';
 import type { GameState } from '../game/types';
 import { COLORS } from '../game/types';
+import Mark, { BackArrow, LeaveIcon, SoundIcon } from './Mark';
 import OptionRow from './OptionRow';
 import { COUNT_CHOICES, EXIT_CHOICES } from './RulePicker';
 import type { Sound } from './useSound';
@@ -81,65 +82,20 @@ export default function GameOver({ room, state, uid, sound, onLeave }: Props) {
 
       <div className="over__inner">
         <header className="over__bar">
-          <div className="over__mark">
-            <span className="over__crown" aria-hidden="true">
-              <span className="over__crown-points" />
-              <span className="over__crown-band" />
-            </span>
-            <span>L</span>
-            <span>U</span>
-            <span>D</span>
-            <span>O</span>
-          </div>
+          <Mark />
           <div className="over__actions">
             <button
               type="button"
-              className="over__icon"
+              className="ui-icon"
               onClick={sound.toggleMuted}
               aria-pressed={sound.muted}
               aria-label={sound.muted ? 'Unmute sound' : 'Mute sound'}
             >
-              {sound.muted ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#e9e3ff">
-                  <path d="M4 9v6h4l5 4V5L8 9z" />
-                  <path
-                    d="M16 9l5 6M21 9l-5 6"
-                    stroke="#e9e3ff"
-                    strokeWidth="1.8"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#e9e3ff">
-                  <path d="M4 9v6h4l5 4V5L8 9z" />
-                  <path
-                    d="M16.5 8.5a5 5 0 0 1 0 7"
-                    stroke="#e9e3ff"
-                    strokeWidth="1.8"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              )}
+              <SoundIcon muted={sound.muted} />
             </button>
-            <button type="button" className="over__leave" onClick={onLeave}>
+            <button type="button" className="ui-leave" onClick={onLeave}>
               Leave
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ff5f8f"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M14 4h5v16h-5" />
-                <path d="M9 8l4 4-4 4" />
-                <path d="M13 12H3" />
-              </svg>
+              <LeaveIcon />
             </button>
           </div>
         </header>
@@ -388,20 +344,7 @@ export default function GameOver({ room, state, uid, sound, onLeave }: Props) {
               {error && <p className="over__error">{error}</p>}
 
               <button type="button" className="over__back" onClick={onLeave}>
-                <svg
-                  width="22"
-                  height="16"
-                  viewBox="0 0 30 20"
-                  fill="none"
-                  stroke="#c05df0"
-                  strokeWidth="2.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M28 10H3" />
-                  <path d="M10 3 3 10l7 7" />
-                </svg>
+                <BackArrow />
                 Back to lobby
               </button>
             </div>

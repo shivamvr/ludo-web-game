@@ -383,7 +383,13 @@ body:has(.end) {
   .end__card {
     padding-top: 14px;
   }
+}
+
+@media (max-width: 700px) {
   .game__board {
     margin: 100px 0 40px 0;
+  }
+  .game__bar {
+    padding-top: 24px;
   }
 }

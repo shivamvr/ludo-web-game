@@ -107,48 +107,7 @@ body:has(.over) {
   padding: 12px 16px 8px;
 }
 
-.over__mark {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 1px;
-  font-family: "Baloo 2", Nunito, system-ui, sans-serif;
-  font-size: 34px;
-  font-weight: 800;
-  line-height: 0.9;
-}
-
-.over__mark span {
-  text-shadow: 0 3px 0 var(--under);
-  color: var(--letter);
-}
-
-.over__mark span:nth-child(2) {
-  --letter: #ffc22e;
-  --under: #c47a05;
-}
-.over__mark span:nth-child(3) {
-  --letter: #5fc23b;
-  --under: #2c7a1c;
-}
-.over__mark span:nth-child(4) {
-  --letter: #2f8ae8;
-  --under: #14549c;
-}
-.over__mark span:nth-child(5) {
-  --letter: #e8402f;
-  --under: #9a1a12;
-}
-
-/* Sits over the U, as in the design. */
-.over__crown {
-  position: absolute;
-  left: 18px;
-  top: -13px;
-  width: 26px;
-  height: 16px;
-}
-
+/* The crown over the winner's name — see .over__title-crown, which places it. */
 .over__crown-points {
   position: absolute;
   left: 0;
@@ -173,31 +132,6 @@ body:has(.over) {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.over__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 40px;
-  border-radius: 11px;
-  background: rgb(30 20 80 / 0.65);
-  border: 1px solid rgb(150 150 240 / 0.35);
-}
-
-.over__leave {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 11px;
-  background: rgb(100 20 55 / 0.45);
-  border: 1px solid rgb(255 90 140 / 0.45);
-  color: #ff5f8f;
-  font-size: 16px;
-  font-weight: 800;
 }
 
 /* --- the room strip --- */
@@ -985,8 +919,8 @@ body:has(.over) {
     padding-inline: 12px;
   }
 
-  .over__mark {
-    font-size: 46px;
+  .ui-mark {
+    height: 56px;
   }
 
   /* Wrapping, not squeezing: if the trophy and the words cannot both fit

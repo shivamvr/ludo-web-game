@@ -90,7 +90,9 @@
 .cell--arrow::before {
   content: "";
   position: absolute;
-  inset: 0;
+  /* Inside the square rather than filling it, so the arrow sits on the arm tip
+     rather than covering it. */
+  inset: 12%;
   background-image: var(--arrow-art);
   background-repeat: no-repeat;
   background-position: center;
