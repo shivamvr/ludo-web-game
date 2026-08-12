@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { ROOM_ERROR_TEXT, explain, joinRoom } from '../data/rooms';
 import { useRoom } from '../data/useRoom';
 import { usePresence } from '../data/usePresence';
+import Mark, { BackArrow } from './Mark';
 import OnlineGame from './OnlineGame';
 import WaitingRoom from './WaitingRoom';
-import './Lobby.css';
+import './Waiting.css';
 
 interface Props {
   roomId: string;
@@ -45,13 +46,23 @@ export default function Room({ roomId, uid, name, onNameChange, onLeave }: Props
   }, [joinable, roomId, uid, name]);
 
   if (loading) {
-    return <Centered>Loading room…</Centered>;
+    return (
+      <Centered>
+        <span className="room-seat__thinking" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+        Looking for room {roomId}…
+      </Centered>
+    );
   }
 
   if (error) {
     return (
       <Centered onLeave={onLeave}>
-        <div className="notice notice--error">Could not read that room: {error}</div>
+        <strong>Could not read that room</strong>
+        {error}
       </Centered>
     );
   }
@@ -59,7 +70,8 @@ export default function Room({ roomId, uid, name, onNameChange, onLeave }: Props
   if (!room) {
     return (
       <Centered onLeave={onLeave}>
-        <div className="notice notice--error">No room with the code {roomId}.</div>
+        <strong>No room with the code {roomId}</strong>
+        Check the code, or ask for the invite link again.
       </Centered>
     );
   }
@@ -84,9 +96,8 @@ export default function Room({ roomId, uid, name, onNameChange, onLeave }: Props
   if (!seated && (!joinable || joinError)) {
     return (
       <Centered onLeave={onLeave}>
-        <div className="notice notice--error">
-          {joinError ?? ROOM_ERROR_TEXT['already-started']}
-        </div>
+        <strong>Room {roomId} is busy</strong>
+        {joinError ?? ROOM_ERROR_TEXT['already-started']}
       </Centered>
     );
   }
@@ -102,16 +113,33 @@ export default function Room({ roomId, uid, name, onNameChange, onLeave }: Props
   );
 }
 
+/**
+ * What stands in for the room when there is no room to show: still the room
+ * screen, with a single card saying why.
+ */
 function Centered({ children, onLeave }: { children: React.ReactNode; onLeave?: () => void }) {
   return (
-    <main className="app app--setup">
-      <div className="lobby">
-        {children}
-        {onLeave && (
-          <button type="button" className="link-button" onClick={onLeave}>
-            Back to lobby
-          </button>
-        )}
+    <main className="room">
+      <div className="room__scene" aria-hidden="true">
+        <div className="room__board room__board--left" />
+        <div className="room__board room__board--right" />
+        <div className="room__veil" />
+      </div>
+
+      <div className="room__inner">
+        <header className="room__bar">
+          <Mark />
+        </header>
+
+        <div className="room__scroll room__scroll--middle">
+          <div className="room__card room__message">{children}</div>
+          {onLeave && (
+            <button type="button" className="ui-back" onClick={onLeave}>
+              <BackArrow />
+              Back to lobby
+            </button>
+          )}
+        </div>
       </div>
     </main>
   );

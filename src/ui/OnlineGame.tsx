@@ -14,7 +14,6 @@ import { applyMove, getLegalMoves, rollDice } from '../game/engine';
 import type { GameState } from '../game/types';
 import GameOver from './GameOver';
 import GameView from './GameView';
-import './Lobby.css';
 
 /** How often each client checks whether the table is stuck on an absent player. */
 const WATCHDOG_MS = 4000;
@@ -119,24 +118,24 @@ export default function OnlineGame({ room, state, uid, presence, onLeave }: Prop
           : undefined
       }
       banner={
-        <div className={`banner${myTurn ? ' banner--active' : ''}`}>
-          <span className="banner__room">Room {room.id}</span>
-          <span className="banner__turn">{turnText()}</span>
+        <div className={`game-strip${myTurn ? ' game-strip--active' : ''}`}>
+          <span className="game-strip__room">{room.id}</span>
+          <span className="game-strip__turn">{turnText()}</span>
           {mySeat && (
-            <span className={`banner__you banner__you--${mySeat.color}`}>
-              <span className="banner__dot" />
+            <span className={`game-strip__you ui-tint--${mySeat.color}`}>
+              <span className="ui-dot" />
               {mySeat.color}
             </span>
           )}
           {presence.online && absentNames.length > 0 && (
-            <span className="banner__away">
+            <span className="game-strip__away">
               Away: {absentNames.join(', ')}
               {canPlayOn
                 ? waitingOnAbsent && ' — playing on shortly'
                 : ' — the game ends if nobody comes back'}
             </span>
           )}
-          {error && <span className="banner__error">{error}</span>}
+          {error && <span className="game-strip__error">{error}</span>}
         </div>
       }
       headerAction={{ label: 'Leave', onClick: onLeave }}

@@ -1,0 +1,549 @@
+/*
+ * The room before the first roll.
+ *
+ * Built to the same design as the end-of-game screen, because it is the same
+ * room: the bar, the cards, the colour-edged seats and the key-marked strip all
+ * follow GameOver.css. Colours come from the tokens in index.css.
+ */
+
+/* Fixed to the window, with the scrolling done inside it: the bar stays put and
+   only the cards move, as on the end-of-game screen. */
+.room {
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  font-family: Nunito, system-ui, sans-serif;
+  color: var(--ink);
+  background: radial-gradient(
+    100% 45% at 50% 10%,
+    #2a1f6e 0%,
+    #1a1354 42%,
+    #120c3d 74%,
+    #0d0830 100%
+  );
+}
+
+/* --- the ground: two boards lying out of focus --- */
+
+.room__scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.room__board {
+  position: absolute;
+  border-radius: 22px;
+  filter: blur(5px);
+}
+
+.room__board--left {
+  left: -70px;
+  bottom: 0;
+  width: 230px;
+  height: 300px;
+  opacity: 0.4;
+  rotate: -7deg;
+  background: linear-gradient(135deg, #e8e2d2, #7d7398);
+}
+
+.room__board--right {
+  right: -80px;
+  bottom: 40px;
+  width: 230px;
+  height: 320px;
+  opacity: 0.36;
+  rotate: 8deg;
+  background: linear-gradient(135deg, #efe8d6, #8a80a6);
+}
+
+.room__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(16 10 52 / 0.3), rgb(12 8 44 / 0.88));
+}
+
+/* --- the column --- */
+
+.room__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
+}
+
+/* --- the bar --- */
+
+.room__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+}
+
+/* --- everything that can scroll if it has to --- */
+
+.room__scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 0 16px calc(14px + env(safe-area-inset-bottom));
+  scrollbar-width: none;
+}
+
+.room__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.room__card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgb(150 120 235 / 0.3);
+  background: rgb(22 14 64 / 0.7);
+  box-shadow: 0 20px 44px rgb(0 0 0 / 0.5);
+}
+
+/* A screen with one thing to say holds it in the middle rather than at the top,
+   where it would read as the first of a list that never comes. */
+.room__scroll--middle {
+  justify-content: center;
+}
+
+.room__message {
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-dim);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.room__message strong {
+  color: #fff;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.room__label {
+  color: var(--ink-dim);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* --- the invite --- */
+
+.room__invite {
+  gap: 8px;
+  align-items: center;
+  background: radial-gradient(80% 90% at 50% 0%, #45219a 0%, #2d1470 60%, #241059 100%);
+}
+
+/* The one thing on this screen that has to reach someone who is not looking at
+   it, so it is drawn like the prize it is. */
+.room__code {
+  padding: 2px 16px;
+  border-radius: 12px;
+  background: rgb(255 190 50 / 0.1);
+  border: 1px solid rgb(255 190 50 / 0.55);
+  color: var(--gold);
+  font-family: "Baloo 2", Nunito, system-ui, sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  text-shadow: 0 3px 0 rgb(120 70 0 / 0.55);
+  transition: background 0.15s ease;
+}
+
+.room__code:active {
+  background: rgb(255 190 50 / 0.22);
+}
+
+/* The selection fallback, for when the clipboard cannot be reached. */
+.room__code::selection {
+  background: var(--gold);
+  color: #3d2500;
+}
+
+.room__rules {
+  color: var(--ink-faint);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.room__share {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 11px;
+  border: 1px solid rgb(160 120 240 / 0.4);
+  background: rgb(60 30 120 / 0.55);
+  color: #e6e0ff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.room__share:active {
+  translate: 0 2px;
+}
+
+.room__manual {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.room__manual-link {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--sunk-line);
+  background: var(--well);
+  color: #fff;
+  font: inherit;
+  /* 16px or larger, or iOS Safari zooms the page in on focus. */
+  font-size: 16px;
+  text-overflow: ellipsis;
+}
+
+/* --- the table --- */
+
+.room__legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+
+.room__legend::before,
+.room__legend::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.room__legend-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.35);
+}
+
+/* --- the seats (colours come from the ui-tint utility) --- */
+
+.room__seats {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.room-seat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 2px solid var(--edge);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--edge) 26%, transparent),
+    color-mix(in srgb, var(--edge) 10%, transparent)
+  );
+}
+
+/* A seat nobody has taken: dashed and dim, with the same three dots the end
+   screen waits on an answer with. */
+.room-seat--empty {
+  border: 2px dashed rgb(160 160 235 / 0.3);
+  background: none;
+  color: var(--ink-faint);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.room-seat__name {
+  flex: 1;
+  min-width: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Your own seat carries an editable name. It is styled as a real field so that
+   someone who arrived by invite link can see they are able to rename
+   themselves — they never passed the home screen where names are set. */
+.room-seat__input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 11px;
+  border-radius: 9px;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  background: rgb(12 7 40 / 0.55);
+  color: #fff;
+  font: inherit;
+  /* 16px or larger, or iOS Safari zooms the page in on focus. */
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.room-seat__input::placeholder {
+  color: #8f84c8;
+  font-weight: 700;
+}
+
+.room-seat__input:focus-visible {
+  outline: 2px solid rgb(180 200 255 / 0.8);
+  outline-offset: 1px;
+}
+
+.room-seat__pill {
+  flex: none;
+  padding: 5px 11px;
+  border-radius: 15px;
+  border: 1.5px solid rgb(180 180 240 / 0.45);
+  background: rgb(30 22 76 / 0.5);
+  color: var(--ink-dim);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.room-seat__pill--away {
+  border-color: rgb(255 190 90 / 0.55);
+  background: rgb(80 55 10 / 0.45);
+  color: #ffcf7a;
+}
+
+/* Three dots waiting on a player, breathing one after another. */
+.room-seat__thinking {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 46px;
+  height: 30px;
+  border-radius: 15px;
+  border: 1.5px solid rgb(180 180 240 / 0.35);
+  background: rgb(30 22 76 / 0.4);
+}
+
+.room-seat__thinking i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink-dim);
+  animation: room-think 1.4s ease-in-out infinite;
+}
+
+.room-seat__thinking i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.room-seat__thinking i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+@keyframes room-think {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room-seat__thinking i {
+    animation: none;
+  }
+}
+
+.room__hr {
+  height: 1px;
+  border: none;
+  background: rgb(255 255 255 / 0.12);
+}
+
+/* --- the colour picker --- */
+
+.room__chips {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.room-chip {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--bead);
+  box-shadow:
+    0 0 12px var(--glow),
+    inset 0 -3px 6px rgb(0 0 0 / 0.35);
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.room-chip--mine {
+  border-color: #fff;
+  transform: scale(1.08);
+}
+
+.room-chip:disabled {
+  opacity: 0.26;
+  box-shadow: none;
+}
+
+/* --- the strip that starts the game --- */
+
+.room__start {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  text-align: left;
+  background: linear-gradient(90deg, rgb(60 30 120 / 0.75), rgb(40 20 95 / 0.6));
+  border: 1px solid rgb(160 120 240 / 0.35);
+}
+
+/* Live once there is a game to start, and lit to say so. */
+.room__start--ready {
+  background: linear-gradient(90deg, #c23ef0, #7d19b0);
+  border-color: rgb(240 180 255 / 0.6);
+  box-shadow: 0 0 22px rgb(194 62 240 / 0.4);
+}
+
+.room__start--ready:active {
+  translate: 0 2px;
+}
+
+.room__start-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.room__start-text strong {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+}
+
+.room__start-text em {
+  color: var(--ink-dim);
+  font-size: 13px;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.room__start--ready .room__start-text em {
+  color: #f3ddff;
+}
+
+/* The key: two bars with a shaft between them. */
+.room__key {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 52px;
+}
+
+.room__key-bar {
+  position: absolute;
+  left: 3px;
+  width: 34px;
+  height: 7px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #ffd24a, #e08c05);
+}
+
+.room__key-bar:first-child {
+  top: 0;
+}
+
+.room__key-bar:last-child {
+  bottom: 0;
+}
+
+.room__key-up {
+  position: absolute;
+  left: 8px;
+  top: 7px;
+  width: 24px;
+  height: 19px;
+  background: linear-gradient(180deg, #63c8ff, #2a7fe0);
+  clip-path: polygon(0 0, 100% 0, 54% 100%, 46% 100%);
+}
+
+.room__key-down {
+  position: absolute;
+  left: 8px;
+  bottom: 7px;
+  width: 24px;
+  height: 19px;
+  background: linear-gradient(0deg, #ffc22e, #e08c05);
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+}
+
+.room__error {
+  color: #ff9aab;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* A short window: the code gives up some of its height first, since it is the
+   one thing here that can afford to. */
+@media (max-height: 700px) {
+  .room__code {
+    font-size: 38px;
+  }
+
+  .room-seat,
+  .room__share {
+    min-height: 46px;
+  }
+
+  .room-chip {
+    width: 46px;
+    height: 46px;
+  }
+}

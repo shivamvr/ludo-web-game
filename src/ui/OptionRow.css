@@ -8,6 +8,13 @@
   text-align: left;
 }
 
+/* Each screen paints this in its own hand; this is only what it falls back to. */
+.field__label {
+  color: var(--ink-dim);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .option-row__choices {
   display: grid;
   /* Column count comes from the number of choices — see OptionRow. */

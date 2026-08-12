@@ -3,7 +3,6 @@ import { applyMove, createGame, getLegalMoves, rollDice } from '../game/engine';
 import type { Color, GameState, YardExit } from '../game/types';
 import GameView from './GameView';
 import Setup from './Setup';
-import './LocalGame.css';
 
 /**
  * Pass-and-play on one device: the GameState lives in React state and the pure

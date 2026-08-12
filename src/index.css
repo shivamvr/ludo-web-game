@@ -19,13 +19,51 @@
   /* Thin dark rules between cells, as printed on a real board. */
   --board-line: #333a47;
 
+  /*
+   * The look every screen is dressed in — the purples the app sits on, and the
+   * four play colours lit the way the wordmark lights them: a bright top, a
+   * flat body, a hard shelf under it, and the ink that reads on top.
+   *
+   * Home.css and GameOver.css were written to these values before they were
+   * named; they still spell them out, so a change here wants checking against
+   * those two.
+   */
+  --ink: #efe9ff;
+  --ink-dim: #cfc6f0;
+  --ink-faint: #bdb2e8;
+  --deep: #150b3c;
+  --card-line: rgb(255 255 255 / 0.1);
+  --well: rgb(19 10 52 / 0.6);
+  --sunk: rgb(24 14 62 / 0.45);
+  --sunk-line: rgb(140 150 230 / 0.45);
+  --gold: #ffc22e;
+  --gold-shelf: #b45c00;
+  --purple: #a24ff0;
+  --purple-shelf: #4c1088;
+  --link: #c05df0;
+
+  --play-red: #e8402f;
+  --play-red-lit: #ff6b56;
+  --play-red-shelf: #9a1a12;
+  --play-red-ink: #46060a;
+
+  --play-green: #46b32c;
+  --play-green-lit: #74d954;
+  --play-green-shelf: #2c7a1c;
+  --play-green-ink: #0e3806;
+
+  --play-yellow: #f5b21c;
+  --play-yellow-lit: #ffd75c;
+  --play-yellow-shelf: #c47a05;
+  --play-yellow-ink: #3d2500;
+
+  --play-blue: #2f8ae8;
+  --play-blue-lit: #62b1ff;
+  --play-blue-shelf: #14549c;
+  --play-blue-ink: #05264f;
+
   color-scheme: dark;
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: Nunito, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-text-size-adjust: 100%;
 }
 

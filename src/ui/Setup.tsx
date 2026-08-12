@@ -10,6 +10,7 @@ import type { Color, YardExit } from '../game/types';
 import { COLORS } from '../game/types';
 import OptionRow from './OptionRow';
 import { COUNT_CHOICES, EXIT_CHOICES } from './RulePicker';
+import './ui.css';
 import './Home.css';
 import './Setup.css';
 
@@ -159,13 +160,13 @@ export default function Setup({ onStart, onBack }: Props) {
             </span>
           </div>
 
-          <button type="button" className="setup-back" onClick={onBack}>
+          <button type="button" className="ui-back" onClick={onBack}>
             <svg
               width="22"
               height="16"
               viewBox="0 0 30 20"
               fill="none"
-              stroke="#c05df0"
+              stroke="currentColor"
               strokeWidth="2.6"
               strokeLinecap="round"
               strokeLinejoin="round"

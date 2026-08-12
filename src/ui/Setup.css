@@ -20,8 +20,8 @@
   min-height: 46px;
   padding: 0 11px;
   border-radius: 11px;
-  border: 1px solid rgb(140 150 230 / 0.45);
-  background: rgb(24 14 62 / 0.45);
+  border: 1px solid var(--sunk-line);
+  background: var(--sunk);
   box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.3);
   color: #e6e0ff;
   font-size: 15px;
@@ -39,7 +39,7 @@
 }
 
 .setup-seat--on {
-  color: var(--ink);
+  color: var(--seat-ink);
   background: linear-gradient(180deg, var(--lit), var(--tint));
   border: 2px solid rgb(255 255 255 / 0.5);
   box-shadow:
@@ -63,49 +63,37 @@
 /* The wordmark's four letters, so a seat is lit in the colour the board and the
    title already use for it. */
 .setup-seat--red {
-  --tint: #e8402f;
-  --lit: #ff6b56;
-  --shelf: #9a1a12;
-  --ink: #46060a;
+  --tint: var(--play-red);
+  --lit: var(--play-red-lit);
+  --shelf: var(--play-red-shelf);
+  --seat-ink: var(--play-red-ink);
 }
 
 .setup-seat--green {
-  --tint: #46b32c;
-  --lit: #74d954;
-  --shelf: #2c7a1c;
-  --ink: #0e3806;
+  --tint: var(--play-green);
+  --lit: var(--play-green-lit);
+  --shelf: var(--play-green-shelf);
+  --seat-ink: var(--play-green-ink);
 }
 
 .setup-seat--yellow {
-  --tint: #f5b21c;
-  --lit: #ffd75c;
-  --shelf: #c47a05;
-  --ink: #3d2500;
+  --tint: var(--play-yellow);
+  --lit: var(--play-yellow-lit);
+  --shelf: var(--play-yellow-shelf);
+  --seat-ink: var(--play-yellow-ink);
 }
 
 .setup-seat--blue {
-  --tint: #2f8ae8;
-  --lit: #62b1ff;
-  --shelf: #14549c;
-  --ink: #05264f;
+  --tint: var(--play-blue);
+  --lit: var(--play-blue-lit);
+  --shelf: var(--play-blue-shelf);
+  --seat-ink: var(--play-blue-ink);
 }
 
 /* Longer than "Create Room", so it is set smaller to stay on one line. */
 .setup-start {
   font-size: 19px;
   letter-spacing: 0.01em;
-}
-
-.setup-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 44px;
-  margin-top: 2px;
-  color: #c05df0;
-  font-size: 17px;
-  font-weight: 800;
 }
 
 /* The same two steps down Home.css takes on a short window. */
@@ -176,7 +164,7 @@
     padding-bottom: 10px;
   }
 
-  .setup-back {
+  .ui-back {
     min-height: 38px;
     font-size: 15px;
   }

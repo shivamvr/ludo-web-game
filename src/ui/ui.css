@@ -1,0 +1,149 @@
+/*
+ * The few pieces that belong to no one screen: the wordmark that heads every
+ * screen inside a game, the two buttons that sit beside it, and the quiet way
+ * back. Colours come from the tokens in index.css.
+ *
+ * The home and end-of-game screens were drawn before these were pulled out and
+ * still carry their own copies, which is why a change here wants checking
+ * against Home.css and GameOver.css.
+ */
+
+/* --- the wordmark, in the small size a bar takes --- */
+
+.ui-mark {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  font-family: "Baloo 2", Nunito, system-ui, sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 0.9;
+}
+
+.ui-mark span {
+  text-shadow: 0 3px 0 var(--under);
+  color: var(--letter);
+}
+
+.ui-mark span:nth-child(2) {
+  --letter: var(--gold);
+  --under: var(--play-yellow-shelf);
+}
+.ui-mark span:nth-child(3) {
+  --letter: #5fc23b;
+  --under: var(--play-green-shelf);
+}
+.ui-mark span:nth-child(4) {
+  --letter: var(--play-blue);
+  --under: var(--play-blue-shelf);
+}
+.ui-mark span:nth-child(5) {
+  --letter: var(--play-red);
+  --under: var(--play-red-shelf);
+}
+
+/* Sits over the U. */
+.ui-crown {
+  position: absolute;
+  left: 18px;
+  top: -13px;
+  width: 26px;
+  height: 16px;
+}
+
+.ui-crown-points {
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  width: 100%;
+  height: 11px;
+  background: linear-gradient(180deg, #ffd24a, #eea20d);
+  clip-path: polygon(0 100%, 0 22%, 20% 55%, 50% 0, 80% 55%, 100% 22%, 100% 100%);
+}
+
+.ui-crown-band {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: #f0a70b;
+}
+
+/* --- the piece colours, as lit beads --- */
+
+.ui-tint--red {
+  --bead: radial-gradient(35% 30% at 35% 30%, #ffb0a5, #d0342c);
+  --glow: rgb(232 64 47 / 0.7);
+  --edge: var(--play-red);
+}
+.ui-tint--green {
+  --bead: radial-gradient(35% 30% at 35% 30%, #a7f59a, #22a02c);
+  --glow: rgb(60 220 90 / 0.7);
+  --edge: #37c246;
+}
+.ui-tint--yellow {
+  --bead: radial-gradient(35% 30% at 35% 30%, #ffe08a, #e0a010);
+  --glow: rgb(255 190 50 / 0.7);
+  --edge: #e8b622;
+}
+.ui-tint--blue {
+  --bead: radial-gradient(35% 30% at 35% 30%, #8fc4ff, #1f6fe8);
+  --glow: rgb(60 150 255 / 0.7);
+  --edge: #2f7fe8;
+}
+
+.ui-dot {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bead);
+  box-shadow: 0 0 9px var(--glow);
+}
+
+/* --- what sits beside it --- */
+
+.ui-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  border-radius: 11px;
+  background: rgb(30 20 80 / 0.65);
+  border: 1px solid rgb(150 150 240 / 0.35);
+  color: #e9e3ff;
+}
+
+/* Leaving is the one thing on these screens you cannot take back, so it is the
+   one thing drawn in red. */
+.ui-leave {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 11px;
+  background: rgb(100 20 55 / 0.45);
+  border: 1px solid rgb(255 90 140 / 0.45);
+  color: #ff5f8f;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* The quiet way out. Every screen that has somewhere to go back to leaves by
+   the same door. */
+.ui-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 2px;
+  color: var(--link);
+  font-size: 17px;
+  font-weight: 800;
+}

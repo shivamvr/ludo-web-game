@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import dieFive from '../assets/dice-5.svg';
 import { currentTurn, standings } from '../game/engine';
 import type { GameEvent, GameState, Move } from '../game/types';
 import Board from './Board';
 import DicePanel from './DicePanel';
+import Mark, { LeaveIcon, SoundIcon } from './Mark';
+import Trophy from './Trophy';
 import { useSound, type Cue, type Sound } from './useSound';
-import './LocalGame.css';
+import './Game.css';
 
 /** Which sound, if any, a state transition should make. */
 function cueFor(event: GameEvent | null): Cue | null {
@@ -118,27 +121,30 @@ export default function GameView({
     : currentTurn(state);
 
   return (
-    <main className="app">
-      <header className="app__bar">
-        <span className="app__title">Ludo</span>
-        <button
-          type="button"
-          className="app__mute"
-          onClick={sound.toggleMuted}
-          aria-pressed={sound.muted}
-          aria-label={sound.muted ? 'Unmute sound' : 'Mute sound'}
-          title={sound.muted ? 'Unmute' : 'Mute'}
-        >
-          {sound.muted ? '🔇' : '🔊'}
-        </button>
-        <button type="button" className="app__reset" onClick={headerAction.onClick}>
-          {headerAction.label}
-        </button>
+    <main className="game">
+      <header className="game__bar">
+        <Mark />
+        <div className="game__actions">
+          <button
+            type="button"
+            className="ui-icon"
+            onClick={sound.toggleMuted}
+            aria-pressed={sound.muted}
+            aria-label={sound.muted ? 'Unmute sound' : 'Mute sound'}
+            title={sound.muted ? 'Unmute' : 'Mute'}
+          >
+            <SoundIcon muted={sound.muted} />
+          </button>
+          <button type="button" className="ui-leave" onClick={headerAction.onClick}>
+            {headerAction.label}
+            <LeaveIcon />
+          </button>
+        </div>
       </header>
 
       {banner}
 
-      <div className="app__board">
+      <div className="game__board">
         <Board
           state={state}
           legalMoves={movesForDie}
@@ -146,29 +152,6 @@ export default function GameView({
           onStep={() => sound.play('step')}
           onArrive={() => setPlayed(state.version)}
         />
-        {over && !renderOver && (
-          <div className="result">
-            <p className="result__title">
-              {ended
-                ? ended.title
-                : `${state.players.find((p) => p.color === standings(state)[0])?.name} wins!`}
-            </p>
-            {ended?.subtitle && <p className="result__subtitle">{ended.subtitle}</p>}
-            {won && (
-              <ol className="result__list">
-                {standings(state).map((color) => (
-                  <li key={color} className={`result__row result__row--${color}`}>
-                    <span className="result__dot" />
-                    {state.players.find((p) => p.color === color)?.name}
-                  </li>
-                ))}
-              </ol>
-            )}
-            <button type="button" className="result__again" onClick={resultAction.onClick}>
-              {resultAction.label}
-            </button>
-          </div>
-        )}
       </div>
 
       <DicePanel
@@ -189,6 +172,57 @@ export default function GameView({
       {/* Last, and over everything: the board keeps playing the winning move
           out behind it. */}
       {over && renderOver?.(sound)}
+
+      {/* The end of a game with no room behind it — one played on this device,
+          or one being watched. The same cup and the same places as the online
+          end screen; what it has not got is a table to ask about a rematch. */}
+      {over && !renderOver && (
+        <div className="end">
+          <div className="end__inner">
+            <div className="end__card">
+              {won && (
+                <div className="end__trophy">
+                  <span className="end__glow" aria-hidden="true" />
+                  <Trophy />
+                </div>
+              )}
+
+              <div className="end__headline">
+                <span className="end__flourish" aria-hidden="true">
+                  ❦
+                </span>
+                <h2 className="end__title">
+                  {ended ? ended.title : `${player.name} wins!`}
+                </h2>
+                <span className="end__flourish end__flourish--flip" aria-hidden="true">
+                  ❦
+                </span>
+              </div>
+
+              {ended?.subtitle && <p className="end__note">{ended.subtitle}</p>}
+
+              {won && (
+                <ol className="end__places">
+                  {standings(state).map((color, place) => (
+                    <li key={color} className={`end__place ui-tint--${color}`}>
+                      <span className="end__rank">{place + 1}.</span>
+                      <span className="ui-dot" />
+                      <span className="end__name">
+                        {state.players.find((p) => p.color === color)?.name}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+
+            <button type="button" className="end__again" onClick={resultAction.onClick}>
+              <img src={dieFive} alt="" />
+              {resultAction.label}
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
