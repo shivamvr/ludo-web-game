@@ -319,8 +319,8 @@
   pointer-events: auto;
   z-index: 3;
   box-shadow:
-    0 0 0 1.4px var(--board),
-    0 0 0 2.6px #111,
+    0 0 0 1px var(--board),
+    0 0 0 2px #ccc,
     0 2px 5px rgb(0 0 0 / 0.35);
   animation: token-bob 0.9s ease-in-out infinite;
 }
