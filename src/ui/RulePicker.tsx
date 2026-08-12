@@ -2,13 +2,25 @@ import { TOKEN_COUNTS, YARD_EXITS } from '../game/board';
 import type { YardExit } from '../game/types';
 import OptionRow from './OptionRow';
 
-const COUNTS = TOKEN_COUNTS.map((count) => ({ value: count, label: String(count) }));
+/**
+ * The choices themselves, exported because the home screen lays the same two
+ * rules out to its own design and must offer exactly the same options under
+ * exactly the same names.
+ */
+export const COUNT_CHOICES = TOKEN_COUNTS.map((count) => ({
+  value: count,
+  label: String(count),
+}));
 
 const EXIT_LABELS: Record<YardExit, string> = {
   six: 'Only a 6',
   'one-or-six': 'A 1 or a 6',
 };
-const EXITS = YARD_EXITS.map((exit) => ({ value: exit, label: EXIT_LABELS[exit] }));
+
+export const EXIT_CHOICES = YARD_EXITS.map((exit) => ({
+  value: exit,
+  label: EXIT_LABELS[exit],
+}));
 
 interface Props {
   tokenCount: number;
@@ -33,14 +45,14 @@ export default function RulePicker({
     <>
       <OptionRow
         label="Tokens each"
-        choices={COUNTS}
+        choices={COUNT_CHOICES}
         value={tokenCount}
         onChange={onTokenCount}
         disabled={disabled}
       />
       <OptionRow
         label="Leave the yard on"
-        choices={EXITS}
+        choices={EXIT_CHOICES}
         value={yardExit}
         onChange={onYardExit}
         disabled={disabled}

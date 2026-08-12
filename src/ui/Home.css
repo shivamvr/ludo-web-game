@@ -1,0 +1,706 @@
+/*
+ * The home screen, built to the supplied design.
+ *
+ * It keeps to itself: every class here is prefixed, and none of the shared
+ * lobby styles are touched, so the waiting room and the game still look the way
+ * they did. The design is drawn at 390x844; here it is fluid — the artwork is
+ * pinned to the top of the screen and the card below it grows and scrolls with
+ * whatever it has to hold, which on this screen can be a rejoin button, a
+ * warning about missing Firebase settings, or an error.
+ */
+
+.home {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  font-family: Nunito, system-ui, sans-serif;
+  color: #efe9ff;
+  background: radial-gradient(
+    120% 70% at 50% 22%,
+    #3a2178 0%,
+    #2a1663 40%,
+    #1c0f4a 72%,
+    #150b3c 100%
+  );
+}
+
+/* --- what is behind everything: two boards lying out of focus, and dice --- */
+
+.home__scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.home__board {
+  position: absolute;
+  border-radius: 26px;
+  filter: blur(6px);
+}
+
+.home__board::before,
+.home__board::after {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 16px;
+}
+
+.home__board--left {
+  left: -90px;
+  top: 120px;
+  width: 280px;
+  height: 420px;
+  opacity: 0.45;
+  rotate: -9deg;
+  background: linear-gradient(135deg, #5b5fd6, #2b2a72);
+}
+
+.home__board--left::before {
+  left: 20px;
+  top: 20px;
+  background: #2f8f7a;
+}
+
+.home__board--left::after {
+  left: 20px;
+  bottom: 20px;
+  background: #3b57c4;
+}
+
+.home__board--right {
+  right: -110px;
+  top: 220px;
+  width: 280px;
+  height: 440px;
+  opacity: 0.42;
+  rotate: 8deg;
+  background: linear-gradient(135deg, #e8e2d2, #8f86a8);
+}
+
+.home__board--right::before {
+  right: 20px;
+  top: 20px;
+  background: #c8402f;
+  opacity: 0.7;
+}
+
+.home__board--right::after {
+  right: 20px;
+  bottom: 20px;
+  background: #e0b23a;
+  opacity: 0.7;
+}
+
+/* Draws the blur back down so the card in front of it stays the brightest
+   thing on the screen. */
+.home__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(24 13 60 / 0.5), rgb(20 11 52 / 0.85));
+}
+
+.home__die {
+  position: absolute;
+  width: 52px;
+  aspect-ratio: 1;
+  opacity: 0.85;
+  filter: drop-shadow(0 14px 26px rgb(0 0 0 / 0.5));
+}
+
+.home__die--left {
+  left: 22px;
+  top: 150px;
+  rotate: -14deg;
+}
+
+.home__die--right {
+  right: 16px;
+  bottom: 60px;
+  width: 60px;
+  rotate: 12deg;
+}
+
+/* --- the column everything real sits in --- */
+
+.home__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 420px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 26px 18px calc(26px + env(safe-area-inset-bottom));
+}
+
+/* --- the wordmark --- */
+
+.home__mark {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Built rather than drawn: a band of points, a bar under it, and a jewel. */
+.home__crown {
+  position: relative;
+  width: 60px;
+  height: 38px;
+  margin-bottom: -8px;
+  z-index: 3;
+}
+
+.home__crown-points {
+  position: absolute;
+  left: 0;
+  bottom: 5px;
+  width: 60px;
+  height: 24px;
+  background: linear-gradient(180deg, #ffd24a, #eea20d);
+  clip-path: polygon(0 100%, 0 22%, 20% 55%, 50% 0, 80% 55%, 100% 22%, 100% 100%);
+}
+
+.home__crown-band {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 60px;
+  height: 9px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #ffcc3d, #e79b09);
+}
+
+.home__crown-jewel {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  translate: -50% 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(35% 30% at 35% 30%, #ff9ad8, #c81d7a);
+}
+
+.home__title {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  font-family: "Baloo 2", Nunito, system-ui, sans-serif;
+  /* Fluid, so the mark still fits across a narrow phone. */
+  font-size: min(74px, 19vw);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: 1px;
+}
+
+/* Each letter is lit like the board pieces: a hard shelf of its own colour
+   underneath, then a soft shadow below that. */
+.home__title span {
+  text-shadow:
+    0 5px 0 var(--under),
+    0 8px 16px rgb(0 0 0 / 0.45);
+  color: var(--letter);
+}
+
+.home__title span:nth-child(1) {
+  --letter: #ffc22e;
+  --under: #c47a05;
+}
+.home__title span:nth-child(2) {
+  --letter: #5fc23b;
+  --under: #2c7a1c;
+}
+.home__title span:nth-child(3) {
+  --letter: #2f8ae8;
+  --under: #14549c;
+}
+.home__title span:nth-child(4) {
+  --letter: #e8402f;
+  --under: #9a1a12;
+}
+
+.home__sparkle {
+  position: absolute;
+  color: #ffd77a;
+}
+
+.home__sparkle--left {
+  left: -26px;
+  top: 52px;
+  font-size: 20px;
+}
+
+.home__sparkle--right {
+  right: -24px;
+  top: 70px;
+  font-size: 17px;
+}
+
+.home__ribbon {
+  position: relative;
+  margin-top: -8px;
+  padding: 7px 22px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #5a3fb0, #40277f);
+  box-shadow:
+    0 6px 14px rgb(0 0 0 / 0.4),
+    inset 0 1px 0 rgb(255 255 255 / 0.18);
+  color: #f0e9ff;
+  font-size: 13px;
+  font-weight: 700;
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+}
+
+/* --- the card --- */
+
+.home__card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 16px 20px;
+  border-radius: 20px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: linear-gradient(180deg, rgb(52 33 116 / 0.72), rgb(38 23 92 / 0.8));
+  box-shadow:
+    0 24px 50px rgb(0 0 0 / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+
+/* A labelled row with its own badge: name, tokens, yard exit. */
+.home-field {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.home-field__badge {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  box-shadow:
+    0 4px 10px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.38);
+}
+
+.home-field__badge--name {
+  background: linear-gradient(180deg, #a24ff0, #7a1fd0);
+}
+.home-field__badge--tokens {
+  background: linear-gradient(180deg, #ffc23c, #ef9207);
+}
+.home-field__badge--yard {
+  background: linear-gradient(180deg, #5fd04a, #22a02c);
+}
+
+.home-field__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.home-field__label {
+  color: #cfc6f0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.home-field__input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: rgb(19 10 52 / 0.6);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.35);
+}
+
+.home-field__input input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: #fff;
+  font: inherit;
+  /* 16px or larger, or iOS Safari zooms the page in on focus. */
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.home-field__input input::placeholder {
+  color: #8f84c8;
+  font-weight: 700;
+}
+
+.home-field__input:focus-within {
+  border-color: rgb(160 175 255 / 0.7);
+}
+
+/* --- the rule choices, laid out by OptionRow --- */
+
+.home-choices .option-row {
+  gap: 6px;
+  margin: 0;
+}
+
+.home-choices .field__label {
+  color: #cfc6f0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.home-choices .option-row__choices {
+  gap: 7px;
+}
+
+.home-choices .option-row__choice {
+  min-height: 42px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgb(140 150 230 / 0.45);
+  background: rgb(24 14 62 / 0.45);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.3);
+  color: #e6e0ff;
+  font-size: 18px;
+  font-weight: 800;
+  opacity: 1;
+}
+
+/* The picked one is pressed out of the card on a shelf of its own colour —
+   amber for the count, green for the yard rule, matching each row's badge. */
+.home-choices--tokens .option-row__choice--on {
+  color: #3d2500;
+  background: linear-gradient(180deg, #ffd24a, #f79c05);
+  border: 2px solid rgb(255 240 190 / 0.85);
+  box-shadow:
+    0 4px 0 #b25c00,
+    0 8px 18px rgb(255 160 30 / 0.4),
+    inset 0 2px 0 rgb(255 255 255 / 0.5);
+}
+
+.home-choices--yard .option-row__choice {
+  min-height: 46px;
+  border-radius: 11px;
+  font-size: 17px;
+}
+
+.home-choices--yard .option-row__choice--on {
+  color: #123c05;
+  background: linear-gradient(180deg, #7ddc4e, #38ad2a);
+  border: 2px solid rgb(210 255 190 / 0.8);
+  box-shadow:
+    0 4px 0 #1f7a1c,
+    0 8px 18px rgb(90 210 70 / 0.35),
+    inset 0 2px 0 rgb(255 255 255 / 0.45);
+}
+
+.home-choices .option-row__choice:disabled {
+  opacity: 0.45;
+}
+
+/* --- the buttons --- */
+
+/* Shared shape: a slab standing on a shelf, which sinks when pressed. */
+.home-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  border-radius: 14px;
+  font-weight: 900;
+  transition:
+    translate 0.08s ease,
+    box-shadow 0.08s ease;
+}
+
+.home-button:active:not(:disabled) {
+  translate: 0 4px;
+}
+
+.home-button:disabled {
+  filter: grayscale(0.55);
+  opacity: 0.75;
+}
+
+.home-button--create {
+  background: linear-gradient(180deg, #ffd24a 0%, #ffb01f 55%, #f58e00 100%);
+  border: 2px solid rgb(255 236 180 / 0.75);
+  box-shadow:
+    0 8px 0 #b45c00,
+    0 16px 32px rgb(255 150 20 / 0.35),
+    inset 0 2px 0 rgb(255 255 255 / 0.5);
+  color: #3d2500;
+  font-size: 25px;
+}
+
+.home-button--create:active:not(:disabled) {
+  box-shadow:
+    0 4px 0 #b45c00,
+    0 10px 20px rgb(255 150 20 / 0.3),
+    inset 0 2px 0 rgb(255 255 255 / 0.5);
+}
+
+.home-button--create img {
+  width: 38px;
+  rotate: -10deg;
+  filter: drop-shadow(0 6px 12px rgb(120 60 0 / 0.35));
+}
+
+.home-button--rejoin {
+  background: linear-gradient(180deg, #a24ff0, #7a1fd0);
+  border: 2px solid rgb(226 198 255 / 0.6);
+  box-shadow:
+    0 8px 0 #4c1088,
+    0 16px 32px rgb(140 60 240 / 0.3),
+    inset 0 2px 0 rgb(255 255 255 / 0.35);
+  color: #fff;
+  font-size: 20px;
+}
+
+.home-button--rejoin:active:not(:disabled) {
+  box-shadow:
+    0 4px 0 #4c1088,
+    0 10px 20px rgb(140 60 240 / 0.25),
+    inset 0 2px 0 rgb(255 255 255 / 0.35);
+}
+
+.home__create {
+  position: relative;
+  margin-top: 2px;
+}
+
+.home__create .home__sparkle {
+  left: 22px;
+  top: 10px;
+  color: #fff8dc;
+  font-size: 15px;
+}
+
+/* --- joining --- */
+
+.home__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #bdb2e8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.home__divider::before,
+.home__divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.home__join {
+  display: flex;
+  gap: 10px;
+}
+
+.home__code {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgb(19 10 52 / 0.55);
+  border: 1px solid rgb(90 110 220 / 0.55);
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.35);
+}
+
+.home__code:focus-within {
+  border-color: rgb(150 180 255 / 0.85);
+}
+
+.home__shield {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #2f6bf0, #1d47c0);
+}
+
+.home__code input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: #fff;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  /* Spread like the four boxes in the design; the trailing space the last
+     letter carries is pulled back so the run still reads as centred. */
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+}
+
+.home__code input::placeholder {
+  color: #6b5fa8;
+}
+
+.home__join-button {
+  flex: none;
+  width: 92px;
+  min-height: 50px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  background: linear-gradient(180deg, #3f97ff, #1668e8);
+  border: 1px solid rgb(180 215 255 / 0.6);
+  box-shadow:
+    0 6px 0 #0f47a8,
+    0 12px 22px rgb(30 110 240 / 0.35),
+    inset 0 2px 0 rgb(255 255 255 / 0.35);
+  transition:
+    translate 0.08s ease,
+    box-shadow 0.08s ease;
+}
+
+.home__join-button:active:not(:disabled) {
+  translate: 0 3px;
+  box-shadow:
+    0 3px 0 #0f47a8,
+    0 8px 14px rgb(30 110 240 / 0.3),
+    inset 0 2px 0 rgb(255 255 255 / 0.35);
+}
+
+.home__join-button:disabled {
+  filter: grayscale(0.5);
+  opacity: 0.75;
+}
+
+/* --- the ways out --- */
+
+.home__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 2px;
+  color: #4da3ff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.home__link span {
+  border-bottom: 2px dashed #4da3ff;
+  padding-bottom: 3px;
+}
+
+.home__phone {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 17px;
+  height: 28px;
+  padding-bottom: 3px;
+  border: 2px solid #8f84c8;
+  border-radius: 5px;
+}
+
+.home__phone::after {
+  content: "";
+  width: 7px;
+  height: 2px;
+  border-radius: 1px;
+  background: #8f84c8;
+}
+
+.home__quiet {
+  color: #bdb2e8;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.home__quiet--link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --- notices, in this screen's colours --- */
+
+.home__notice {
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.home__notice p {
+  margin-top: 5px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.home__notice code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.12);
+  font-size: 13px;
+}
+
+.home__notice--warn {
+  border-color: #7c6320;
+  background: rgb(90 66 12 / 0.55);
+  color: #ffe6a8;
+}
+
+.home__notice--error {
+  border-color: #8d3a44;
+  background: rgb(96 26 36 / 0.55);
+  color: #ffc0c6;
+}
+
+/* A phone in landscape has no room for the artwork above the card; the card is
+   what matters, so the mark shrinks out of its way rather than pushing it off
+   the bottom of the screen. */
+@media (max-height: 620px) {
+  .home__crown,
+  .home__sparkle {
+    display: none;
+  }
+
+  .home__title {
+    font-size: 46px;
+  }
+
+  .home__inner {
+    padding-top: 14px;
+    gap: 12px;
+  }
+}

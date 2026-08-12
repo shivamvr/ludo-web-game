@@ -58,7 +58,14 @@
       "Bash(curl -s \"http://localhost:5173/src/ui/Die.tsx\")",
       "Bash(curl -s \"http://localhost:5173/src/assets/dice-2.svg?import\")",
       "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\dbg-dice.mjs\" 2>&1 | Select-Object -First 4)",
-      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\local.mjs\" \"$s\" | Select-String \"dice held\")"
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\local.mjs\" \"$s\" | Select-String \"dice held\")",
+      "Read(//c/Users/shiva/Downloads/**)",
+      "Bash(cd \"/c/Users/shiva/Downloads\" && grep -n 'data:image' \"Ludo Lobby.html\" | head -5 | cut -c1-200; echo \"=== total lines ===\"; wc -l \"Ludo Lobby.html\")",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\unbundle.mjs\" \"C:\\\\Users\\\\shiva\\\\Downloads\\\\Ludo Lobby Mobile.html\" \"$s\\\\lobby-mobile.html\")",
+      "PowerShell(npx tsc --noEmit)",
+      "PowerShell(if \\($?\\) { \"typecheck ok\" })",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\home.mjs\" \"$s\")",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\home-func.mjs\" \"$s\")"
     ]
   }
 }
