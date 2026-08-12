@@ -149,6 +149,101 @@ body:has(.game) {
   margin: auto;
 }
 
+/*
+ * A light travelling round the edge of the board, in the colour of whoever is
+ * to play — see GameView, which sets --ring, and the winner's colour once the
+ * game is decided. It is the loudest thing on the screen saying whose turn it
+ * is, and it is the thing you are already looking at.
+ *
+ * Two copies of the same conic gradient: a hairline ring just outside the
+ * board, and the same thing blurred and dropped behind it for the glow it
+ * throws. Both are turned by one custom property, so they stay in step.
+ *
+ * The ring is a gradient masked down to its own border: the mask keeps the
+ * padding box and cuts out the content box, leaving the 3px between them.
+ */
+@property --board-spin {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* Registered as a colour so it can be faded from one player's to the next's,
+   rather than switching under them mid-turn. */
+@property --ring {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #8f7ce8;
+}
+
+.game__board {
+  transition: --ring 500ms ease;
+}
+
+.game__board::before,
+.game__board::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 42px;
+  pointer-events: none;
+  /* One bright arc chasing round a dim one: full colour, a highlight of the
+     same hue at its head, then falling back into the page's own purple. */
+  background: conic-gradient(
+    from var(--board-spin),
+    color-mix(in srgb, var(--ring) 38%, #150b3c) 0%,
+    var(--ring) 25%,
+    color-mix(in srgb, var(--ring) 28%, #fff) 38%,
+    var(--ring) 50%,
+    color-mix(in srgb, var(--ring) 38%, #150b3c) 75%,
+    color-mix(in srgb, var(--ring) 38%, #150b3c) 100%
+  );
+  animation: board-spin 7s linear infinite;
+}
+
+.game__board::before {
+  padding: 2px;
+  opacity: 0.62;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+/* The spill of light, behind the board rather than on it. */
+.game__board::after {
+  z-index: -1;
+  filter: blur(14px);
+  opacity: 0.3;
+  animation:
+    board-spin 7s linear infinite,
+    board-breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes board-spin {
+  to {
+    --board-spin: 360deg;
+  }
+}
+
+@keyframes board-breathe {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Left lit, but still: a light going round and round is exactly the kind of
+   movement this setting turns off. */
+@media (prefers-reduced-motion: reduce) {
+  .game__board::before,
+  .game__board::after {
+    animation: none;
+  }
+}
+
 /* --- the dice panel --- */
 
 .dice-panel {

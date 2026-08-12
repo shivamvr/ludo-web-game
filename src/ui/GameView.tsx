@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import dieFive from '../assets/dice-5.svg';
 import { currentTurn, standings } from '../game/engine';
 import type { GameEvent, GameState, Move } from '../game/types';
@@ -144,7 +151,12 @@ export default function GameView({
 
       {banner}
 
-      <div className="game__board">
+      {/* The light around the board is the colour of whoever is to play — and
+          of the winner, once there is one. */}
+      <div
+        className="game__board"
+        style={{ '--ring': `var(--play-${player.color})` } as CSSProperties}
+      >
         <Board
           state={state}
           legalMoves={movesForDie}
