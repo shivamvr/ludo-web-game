@@ -74,7 +74,10 @@
       "Bash(awk '/^<div style=\"position:relative;width/{p=1} p' over-desktop.html)",
       "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\unbundle.mjs\" \"C:\\\\Users\\\\shiva\\\\Downloads\\\\Ludo Game Over.html\" \"$s\\\\over-desktop.html\" 2>&1 | Select-Object -First 2)",
       "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\over.mjs\" \"$s\")",
-      "PowerShell(npx tsc --noEmit; if \\($?\\) { $s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\over.mjs\" \"$s\" 2>&1 | Select-Object -Last 6 })"
+      "PowerShell(npx tsc --noEmit; if \\($?\\) { $s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\over.mjs\" \"$s\" 2>&1 | Select-Object -Last 6 })",
+      "Bash(node setup.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")",
+      "Bash(node land.mjs 844 390)",
+      "Bash(node home-only.mjs)"
     ]
   }
 }

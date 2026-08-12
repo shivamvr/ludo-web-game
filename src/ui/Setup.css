@@ -1,0 +1,194 @@
+/*
+ * Only what the pass-and-play setup screen has that the lobby does not: the row
+ * of colours you can seat. Everything else it wears — the backdrop, the
+ * wordmark, the card, the fields, the amber button — is Home.css, so the two
+ * screens stay the same screen.
+ */
+
+.setup-seats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* Off: sunk into the card, like an unpicked rule. On: pressed out on a shelf of
+   its own colour, like a picked one. */
+.setup-seat {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 0 11px;
+  border-radius: 11px;
+  border: 1px solid rgb(140 150 230 / 0.45);
+  background: rgb(24 14 62 / 0.45);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.3);
+  color: #e6e0ff;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: capitalize;
+  transition:
+    translate 0.08s ease,
+    box-shadow 0.08s ease;
+}
+
+.setup-seat__token {
+  width: 26px;
+  flex: none;
+  filter: saturate(0.55) brightness(0.8);
+}
+
+.setup-seat--on {
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--lit), var(--tint));
+  border: 2px solid rgb(255 255 255 / 0.5);
+  box-shadow:
+    0 4px 0 var(--shelf),
+    0 8px 18px rgb(0 0 0 / 0.32),
+    inset 0 2px 0 rgb(255 255 255 / 0.4);
+}
+
+.setup-seat--on .setup-seat__token {
+  filter: drop-shadow(0 3px 5px rgb(0 0 0 / 0.35));
+}
+
+.setup-seat--on:active {
+  translate: 0 3px;
+  box-shadow:
+    0 1px 0 var(--shelf),
+    0 5px 10px rgb(0 0 0 / 0.28),
+    inset 0 2px 0 rgb(255 255 255 / 0.4);
+}
+
+/* The wordmark's four letters, so a seat is lit in the colour the board and the
+   title already use for it. */
+.setup-seat--red {
+  --tint: #e8402f;
+  --lit: #ff6b56;
+  --shelf: #9a1a12;
+  --ink: #46060a;
+}
+
+.setup-seat--green {
+  --tint: #46b32c;
+  --lit: #74d954;
+  --shelf: #2c7a1c;
+  --ink: #0e3806;
+}
+
+.setup-seat--yellow {
+  --tint: #f5b21c;
+  --lit: #ffd75c;
+  --shelf: #c47a05;
+  --ink: #3d2500;
+}
+
+.setup-seat--blue {
+  --tint: #2f8ae8;
+  --lit: #62b1ff;
+  --shelf: #14549c;
+  --ink: #05264f;
+}
+
+/* Longer than "Create Room", so it is set smaller to stay on one line. */
+.setup-start {
+  font-size: 19px;
+  letter-spacing: 0.01em;
+}
+
+.setup-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 2px;
+  color: #c05df0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+/* The same two steps down Home.css takes on a short window. */
+@media (max-height: 700px) {
+  .setup-seat {
+    min-height: 44px;
+  }
+
+  .setup-start {
+    font-size: 18px;
+  }
+}
+
+@media (max-height: 620px) {
+  .setup-seat {
+    min-height: 40px;
+  }
+
+  .setup-seat__token {
+    width: 22px;
+  }
+
+  .setup-start {
+    font-size: 17px;
+  }
+}
+
+/*
+ * A phone on its side. This screen carries one row more than the lobby does —
+ * the colours — and that row is what puts it over the edge of a 390px-tall
+ * window. There is width going spare, so the four seats stand in a single line
+ * instead of two, which is the height back.
+ */
+@media (max-height: 560px) and (min-width: 560px) {
+  .setup-seats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .setup-seat {
+    gap: 6px;
+    padding: 0 7px;
+    font-size: 13px;
+  }
+
+  .setup-seat__token {
+    width: 20px;
+  }
+
+  /* And for the same reason the card stands beside the wordmark here, a little
+     below the width the lobby asks for before it does the same. */
+  .home--setup .home__inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(20px, 5vw, 48px);
+    max-width: 880px;
+  }
+
+  .home--setup .home__mark {
+    flex: none;
+  }
+
+  .home--setup .home__card {
+    width: 400px;
+    flex: none;
+    gap: 7px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .setup-back {
+    min-height: 38px;
+    font-size: 15px;
+  }
+}
+
+/* Narrow and short both: no room to spread them out, so they only get smaller. */
+@media (max-height: 560px) and (max-width: 559px) {
+  .setup-seat {
+    min-height: 36px;
+  }
+
+  .setup-seat__token {
+    width: 19px;
+  }
+}

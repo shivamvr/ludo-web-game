@@ -15,16 +15,16 @@ export default function LocalGame({ onExit }: { onExit: () => void }) {
 
   const legalMoves = useMemo(() => (state ? getLegalMoves(state) : []), [state]);
 
+  // Setup brings its own page — it is the lobby screen wearing different
+  // controls, not something framed by the game's layout.
   if (!state) {
     return (
-      <main className="app app--setup">
-        <Setup
-          onStart={(colors: Color[], tokenCount: number, yardExit: YardExit) =>
-            setState(createGame(colors, [], undefined, tokenCount, yardExit))
-          }
-          onBack={onExit}
-        />
-      </main>
+      <Setup
+        onStart={(colors: Color[], tokenCount: number, yardExit: YardExit) =>
+          setState(createGame(colors, [], undefined, tokenCount, yardExit))
+        }
+        onBack={onExit}
+      />
     );
   }
 
