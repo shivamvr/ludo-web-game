@@ -77,37 +77,50 @@
 
 /* --- arm-tip arrows, pointing into each colour's home column --- */
 
+/*
+ * Drawn art rather than a clipped triangle: a stemmed arrow lit from the same
+ * corner as the tokens and the dice, with its own shadow under it. The artwork
+ * points up and carries its own margins, so a cell only has to turn it.
+ *
+ * The URL is quoted, and it has to be: the file is small enough that Vite
+ * inlines it as a data URI, and the artwork refers to its own gradient as
+ * url(#ar). Unquoted, that inner bracket closes this one and the whole
+ * declaration is thrown away — leaving an arm tip with no arrow on it.
+ */
 .cell--arrow::before {
   content: "";
   position: absolute;
-  inset: 26%;
-  background: currentColor;
+  inset: 0;
+  background-image: var(--arrow-art);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 .cell--arrow-green {
-  color: var(--green);
+  --arrow-art: url("../assets/arrow-green.svg");
 }
 .cell--arrow-yellow {
-  color: var(--yellow);
+  --arrow-art: url("../assets/arrow-yellow.svg");
 }
 .cell--arrow-blue {
-  color: var(--blue);
+  --arrow-art: url("../assets/arrow-blue.svg");
 }
 .cell--arrow-red {
-  color: var(--red);
+  --arrow-art: url("../assets/arrow-red.svg");
 }
 
-.cell--arrow-right::before {
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
+.cell--arrow-up::before {
+  rotate: 0deg;
 }
-.cell--arrow-left::before {
-  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+.cell--arrow-right::before {
+  rotate: 90deg;
 }
 .cell--arrow-down::before {
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  rotate: 180deg;
 }
-.cell--arrow-up::before {
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+.cell--arrow-left::before {
+  rotate: -90deg;
 }
 
 /* Yard colour comes from one block per corner — see .yard-block. */
