@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { explain, joinRoom } from '../data/rooms';
+import { ROOM_ERROR_TEXT, explain, joinRoom } from '../data/rooms';
 import { useRoom } from '../data/useRoom';
 import { usePresence } from '../data/usePresence';
 import OnlineGame from './OnlineGame';
@@ -23,7 +23,9 @@ export default function Room({ roomId, uid, name, onNameChange, onLeave }: Props
   const [joinError, setJoinError] = useState<string | null>(null);
 
   const seated = room !== null && uid in room.players;
-  const joinable = room !== null && room.status === 'waiting' && !seated;
+  // Open before the first game and again between games — only a game actually
+  // being played turns an arrival away.
+  const joinable = room !== null && room.status !== 'playing' && !seated;
 
   // Keeps this player's presence flag live, and clears it on disconnect.
   const presence = usePresence(roomId, uid, seated);
@@ -71,6 +73,21 @@ export default function Room({ roomId, uid, name, onNameChange, onLeave }: Props
         onNameChange={onNameChange}
         onLeave={onLeave}
       />
+    );
+  }
+
+  // Somebody who could not be seated: the game was already under way when they
+  // arrived, or the table filled up while they were joining. Say so, rather
+  // than dropping them onto a board they have no part in — which is also what
+  // they would meet anyway once the security rules are published, since a room
+  // mid-game is only readable by the people playing it.
+  if (!seated && (!joinable || joinError)) {
+    return (
+      <Centered onLeave={onLeave}>
+        <div className="notice notice--error">
+          {joinError ?? ROOM_ERROR_TEXT['already-started']}
+        </div>
+      </Centered>
     );
   }
 

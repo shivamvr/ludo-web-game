@@ -199,7 +199,8 @@ export async function inspectRoom(roomId: string, uid: string): Promise<Result<v
 
   const players = room.players ?? {};
   if (players[uid]) return done(undefined); // already seated: rejoining
-  if (room.status !== 'waiting') return fail('already-started');
+  // Between games is as good a moment to sit down as before the first one.
+  if (room.status === 'playing') return fail('already-started');
   if (Object.keys(players).length >= MAX_PLAYERS) return fail('room-full');
   return done(undefined);
 }

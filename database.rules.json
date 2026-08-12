@@ -5,16 +5,18 @@
 
     "rooms": {
       "$roomId": {
-        // Readable by anyone signed in while the room is still open to joiners,
-        // and thereafter only by the people sitting at it. A room that does not
+        // Readable by anyone signed in while the room is open to joiners —
+        // before the first game and again between games — and while a game is
+        // being played only by the people sitting at it. A room that does not
         // exist reads as null rather than as a permission error, so entering a
         // wrong code shows "no such room" instead of a scary failure.
-        ".read": "auth != null && (!data.exists() || data.child('status').val() === 'waiting' || data.child('players').hasChild(auth.uid))",
+        ".read": "auth != null && (!data.exists() || data.child('status').val() !== 'playing' || data.child('players').hasChild(auth.uid))",
 
         // Create a room by seating yourself as host, or write to a room you are
-        // already in. A waiting room also accepts the write from someone who is
-        // joining it in that same write.
-        ".write": "auth != null && ((!data.exists() && newData.child('hostId').val() === auth.uid && newData.child('status').val() === 'waiting') || (data.exists() && (data.child('players').hasChild(auth.uid) || (data.child('status').val() === 'waiting' && newData.child('players').hasChild(auth.uid)))))",
+        // already in. A room that is not mid-game also accepts the write from
+        // someone who is joining it in that same write, which is what keeps one
+        // invite link working for game after game.
+        ".write": "auth != null && ((!data.exists() && newData.child('hostId').val() === auth.uid && newData.child('status').val() === 'waiting') || (data.exists() && (data.child('players').hasChild(auth.uid) || (data.child('status').val() !== 'playing' && newData.child('players').hasChild(auth.uid)))))",
 
         ".validate": "newData.hasChildren(['hostId', 'status', 'players', 'createdAt'])",
 

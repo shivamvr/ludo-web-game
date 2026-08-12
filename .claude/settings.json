@@ -44,7 +44,9 @@
       "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\rematch.mjs\" \"$s\")",
       "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\rematch.mjs\" \"$s\" 2>&1 | Select-Object -Last 6)",
       "PowerShell($r = Invoke-WebRequest -Uri \"https://ludo-ab6cc-default-rtdb.firebaseio.com/rooms.json\" -UseBasicParsing -TimeoutSec 20 | ConvertFrom-Json; $r.PSObject.Properties | Where-Object { $_.Value.status -eq 'playing' } | Select-Object -First 5 Name)",
-      "PowerShell(node scripts/end-game.mjs 4GK6; \\(Invoke-WebRequest -Uri \"https://ludo-ab6cc-default-rtdb.firebaseio.com/rooms/4GK6.json?shallow=false\" -UseBasicParsing | ConvertFrom-Json\\) | Select-Object status, endedReason | Format-List; node scripts/end-game.mjs 4GK6)"
+      "PowerShell(node scripts/end-game.mjs 4GK6; \\(Invoke-WebRequest -Uri \"https://ludo-ab6cc-default-rtdb.firebaseio.com/rooms/4GK6.json?shallow=false\" -UseBasicParsing | ConvertFrom-Json\\) | Select-Object status, endedReason | Format-List; node scripts/end-game.mjs 4GK6)",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\room-lives-on.mjs\" \"$s\")",
+      "PowerShell($s = \"C:\\\\Users\\\\shiva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\scratchpad\"; node \"$s\\\\local.mjs\" \"$s\" 2>&1 | Select-Object -First 3)"
     ]
   }
 }

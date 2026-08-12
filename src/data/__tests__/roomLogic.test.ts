@@ -121,6 +121,35 @@ describe('joining', () => {
     expectDenied(decideJoin(room, 'uid-b', 'Bo'), 'already-started');
   });
 
+  it('seats a newcomer between games, so one invite link lasts', () => {
+    const room: StoredRoom = {
+      ...waitingRoom({ 'uid-a': player('Ana', 'red'), 'uid-b': player('Bo', 'yellow') }),
+      status: 'finished',
+      endedReason: 'won',
+    };
+    const decision = decideJoin(room, 'uid-c', 'Cy');
+
+    expectWritable(decision);
+    if (!decision.ok) return;
+    expect(decision.value.players['uid-c'].name).toBe('Cy');
+    // The room is still finished: they have joined the table, not the game
+    // that was played on it.
+    expect(decision.value.status).toBe('finished');
+  });
+
+  it('still turns a newcomer away from a full room between games', () => {
+    const full: StoredRoom = {
+      ...waitingRoom({
+        'uid-a': player('Ana', 'red'),
+        'uid-b': player('Bo', 'green'),
+        'uid-c': player('Cy', 'yellow'),
+        'uid-d': player('Di', 'blue'),
+      }),
+      status: 'finished',
+    };
+    expectDenied(decideJoin(full, 'uid-e', 'Eve'), 'room-full');
+  });
+
   it('lets a seated player back in mid-game, so a refresh keeps their seat', () => {
     const room: StoredRoom = {
       ...waitingRoom({ 'uid-a': player('Ana', 'red'), 'uid-b': player('Bo', 'green') }),

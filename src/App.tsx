@@ -6,11 +6,19 @@ import LocalGame from './ui/LocalGame';
 import Room from './ui/Room';
 
 const NAME_KEY = 'ludo.name';
+const ROOM_KEY = 'ludo.room';
 
 /** The room code lives in the URL so an invite link drops you straight in. */
 function readRoomFromUrl(): string | null {
   const raw = new URLSearchParams(window.location.search).get('room');
   const code = raw ? normalizeCode(raw) : '';
+  return code.length === 4 ? code : null;
+}
+
+/** The room this device was last in, if it still looks like a room code. */
+function readRememberedRoom(): string | null {
+  const stored = localStorage.getItem(ROOM_KEY);
+  const code = stored ? normalizeCode(stored) : '';
   return code.length === 4 ? code : null;
 }
 
@@ -26,10 +34,23 @@ export default function App() {
   const [roomId, setRoomId] = useState<string | null>(readRoomFromUrl);
   const [local, setLocal] = useState(false);
   const [name, setName] = useState(() => localStorage.getItem(NAME_KEY) ?? '');
+  const [lastRoom, setLastRoom] = useState<string | null>(readRememberedRoom);
 
   useEffect(() => {
     localStorage.setItem(NAME_KEY, name);
   }, [name]);
+
+  /**
+   * The room stays yours after you leave it: leaving is only a step off this
+   * device, and your seat, the code and the invite link all outlive it. So the
+   * last room is remembered and offered back, rather than making everyone swap
+   * a fresh code around after every game.
+   */
+  useEffect(() => {
+    if (!roomId) return;
+    setLastRoom(roomId);
+    localStorage.setItem(ROOM_KEY, roomId);
+  }, [roomId]);
 
   const enterRoom = (id: string) => {
     setRoomId(id);
@@ -39,6 +60,11 @@ export default function App() {
   const leaveRoom = () => {
     setRoomId(null);
     writeRoomToUrl(null);
+  };
+
+  const forgetRoom = () => {
+    setLastRoom(null);
+    localStorage.removeItem(ROOM_KEY);
   };
 
   if (local) {
@@ -61,8 +87,10 @@ export default function App() {
     <Home
       auth={auth}
       name={name}
+      lastRoom={lastRoom}
       onNameChange={setName}
       onEnterRoom={enterRoom}
+      onForgetRoom={forgetRoom}
       onPlayLocal={() => setLocal(true)}
     />
   );

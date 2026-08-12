@@ -227,6 +227,11 @@ export function currentSeatUid(state: GameState): string | undefined {
  * Join, or re-join. Re-entering a room you already hold a seat in is always
  * allowed, so a refresh mid-game puts you back in your seat rather than being
  * turned away for the game having started.
+ *
+ * A new player may sit down between games as well as before the first one. A
+ * room outlives the game played in it, so the invite link a table was set up
+ * with keeps working for the next friend along — only a game actually in
+ * progress turns anyone away.
  */
 export function decideJoin(
   current: unknown,
@@ -237,7 +242,7 @@ export function decideJoin(
   const room = asRoom(current);
   if (!room) return deny('not-found');
   if (room.players[uid]) return allow(room);
-  if (room.status !== 'waiting') return deny('already-started');
+  if (room.status === 'playing') return deny('already-started');
 
   const color = freeColor(room.players);
   if (!color || Object.keys(room.players).length >= MAX_PLAYERS) return deny('room-full');

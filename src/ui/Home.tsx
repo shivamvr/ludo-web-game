@@ -9,15 +9,26 @@ import './Lobby.css';
 interface Props {
   auth: AuthState;
   name: string;
+  /** The room this device was last in, offered back rather than retyped. */
+  lastRoom: string | null;
   onNameChange: (name: string) => void;
   onEnterRoom: (roomId: string) => void;
+  onForgetRoom: () => void;
   onPlayLocal: () => void;
 }
 
 /** Create a room, join one by code, or play locally on this device. */
-export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLocal }: Props) {
+export default function Home({
+  auth,
+  name,
+  lastRoom,
+  onNameChange,
+  onEnterRoom,
+  onForgetRoom,
+  onPlayLocal,
+}: Props) {
   const [code, setCode] = useState('');
-  const [busy, setBusy] = useState<'create' | 'join' | null>(null);
+  const [busy, setBusy] = useState<'create' | 'join' | 'rejoin' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tokenCount, setTokenCount] = useState(DEFAULT_TOKEN_COUNT);
   const [yardExit, setYardExit] = useState<YardExit>(DEFAULT_YARD_EXIT);
@@ -32,6 +43,27 @@ export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLoca
     setBusy(null);
     if (result.ok) onEnterRoom(result.value);
     else setError(explain(result));
+  };
+
+  /**
+   * Back to the room this device was last in, keeping the code everyone
+   * already has. Your seat is still there — a room only turns you away while a
+   * game is actually being played — so this is a tap rather than a code to
+   * type and share round again.
+   */
+  const rejoin = async () => {
+    if (!auth.uid || !lastRoom) return;
+    setBusy('rejoin');
+    setError(null);
+    const result = await inspectRoom(lastRoom, auth.uid);
+    setBusy(null);
+    if (result.ok) {
+      onEnterRoom(lastRoom);
+      return;
+    }
+    // Gone, or moved on without us. Stop offering a button that cannot work.
+    onForgetRoom();
+    setError(explain(result));
   };
 
   /**
@@ -71,6 +103,25 @@ export default function Home({ auth, name, onNameChange, onEnterRoom, onPlayLoca
           </div>
         )}
         {auth.error && <div className="notice notice--warn">{auth.error}</div>}
+
+        {online && lastRoom && (
+          <>
+            <button
+              type="button"
+              className="setup__start"
+              onClick={rejoin}
+              disabled={busy !== null}
+            >
+              {busy === 'rejoin' ? 'Rejoining…' : `Rejoin room ${lastRoom}`}
+            </button>
+            {/* Only stops this room being offered — the seat itself stays, so
+                the code still works if it is wanted back later. */}
+            <button type="button" className="link-button" onClick={onForgetRoom}>
+              Forget this room
+            </button>
+            <div className="lobby__divider">or start a new game</div>
+          </>
+        )}
 
         {online && (
           <>
