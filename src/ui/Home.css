@@ -99,7 +99,11 @@
 .home__veil {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(24 13 60 / 0.5), rgb(20 11 52 / 0.85));
+  background: linear-gradient(
+    180deg,
+    rgb(24 13 60 / 0.5),
+    rgb(20 11 52 / 0.85)
+  );
 }
 
 .home__die {
@@ -160,11 +164,18 @@
 }
 
 /* Fluid on both axes: it must fit across a narrow phone, and give way on a
-   short window so the card below it still lands on the page. */
+   short window so the card below it — which on this screen is the taller of the
+   two, and the one that has to be reachable — still lands on the page. */
 .home__logo {
   width: auto;
-  height: min(132px, 33vw, 15vh);
+  height: min(132px, 33vw, 10.5vh);
   filter: drop-shadow(0 8px 18px rgb(0 0 0 / 0.5));
+}
+
+/* A phone has no room for it: there the mark sits directly above the card, and
+   anything between the two would push the card off the bottom. */
+.home__art {
+  display: none;
 }
 
 .home__sparkle {
@@ -210,7 +221,11 @@
   padding: clamp(13px, 2.1vh, 18px) 16px clamp(14px, 2.4vh, 20px);
   border-radius: 20px;
   border: 1px solid rgb(255 255 255 / 0.1);
-  background: linear-gradient(180deg, rgb(52 33 116 / 0.72), rgb(38 23 92 / 0.8));
+  background: linear-gradient(
+    180deg,
+    rgb(52 33 116 / 0.72),
+    rgb(38 23 92 / 0.8)
+  );
   box-shadow:
     0 24px 50px rgb(0 0 0 / 0.45),
     inset 0 1px 0 rgb(255 255 255 / 0.1);
@@ -646,6 +661,17 @@
 
   .home__mark {
     flex: none;
+  }
+
+  /* With the artwork under it the column has a top and a bottom, so it is hung
+     from the top of the window rather than floated in the middle of it. */
+
+  .home__art {
+    display: block;
+    width: min(430px, 34vw);
+    height: auto;
+    margin-top: clamp(6px, 2.4vh, 24px);
+    filter: drop-shadow(0 18px 34px rgb(0 0 0 / 0.45));
   }
 
   .home__card {

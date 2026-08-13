@@ -93,7 +93,15 @@
       "Bash(node logo.mjs \"c:/Users/shiva/OneDrive/Documents/dev/ludo/src/assets/logo.png\" 720)",
       "Bash(sed \"s|out.toDataURL\\('image/png'\\)|out.toDataURL\\('image/webp', 0.9\\)|\" logo.mjs)",
       "Bash(node logo-webp.mjs \"c:/Users/shiva/OneDrive/Documents/dev/ludo/src/assets/logo.webp\" 720)",
-      "Bash(node ring.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")"
+      "Bash(node ring.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")",
+      "Bash(cp \"C:/Users/shiva/Downloads/home-arts_effects.png\" src/assets/hero-raw.png)",
+      "Bash(sed -e \"s|/src/assets/logo-raw.png|/src/assets/hero-raw.png|g\" -e \"s|out.toDataURL\\('image/png'\\)|out.toDataURL\\('image/webp', 0.86\\)|\" logo.mjs)",
+      "Bash(node hero.mjs \"c:/Users/shiva/OneDrive/Documents/dev/ludo/src/assets/hero.webp\" 840)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{size_download}\\\\n\" \"http://localhost:5173/src/assets/hero-raw.png\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:5173/src/assets/hero-raw.png\")",
+      "Bash(node home.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")",
+      "Bash(CHROME_PATH=\"C:\\\\\\\\Program Files\\\\\\\\Google\\\\\\\\Chrome\\\\\\\\Application\\\\\\\\chrome.exe\" node parts.mjs)"
     ],
     "additionalDirectories": [
       "C:\\Users\\shiva\\Downloads"

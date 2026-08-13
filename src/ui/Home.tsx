@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import dieFive from '../assets/dice-5.svg';
 import dieSix from '../assets/dice-6.svg';
+import hero from '../assets/hero.webp';
 import logo from '../assets/logo.webp';
 import { DEFAULT_TOKEN_COUNT, DEFAULT_YARD_EXIT } from '../game/board';
 import type { YardExit } from '../game/types';
@@ -116,6 +117,9 @@ export default function Home({
             ✦
           </span>
           <p className="home__ribbon">Play with friends on their own phones</p>
+          {/* Only ever seen on a wide window, where the mark has a column to
+              itself and room under it going spare. */}
+          <img className="home__art" src={hero} alt="" aria-hidden="true" />
         </div>
 
         <div className="home__card">
