@@ -101,7 +101,10 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:5173/src/assets/hero-raw.png\")",
       "Bash(node home.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")",
-      "Bash(CHROME_PATH=\"C:\\\\\\\\Program Files\\\\\\\\Google\\\\\\\\Chrome\\\\\\\\Application\\\\\\\\chrome.exe\" node parts.mjs)"
+      "Bash(CHROME_PATH=\"C:\\\\\\\\Program Files\\\\\\\\Google\\\\\\\\Chrome\\\\\\\\Application\\\\\\\\chrome.exe\" node parts.mjs)",
+      "Bash(node signing-in.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")",
+      "Bash(node home.mjs .)",
+      "Bash(node signing-in.mjs .)"
     ],
     "additionalDirectories": [
       "C:\\Users\\shiva\\Downloads"

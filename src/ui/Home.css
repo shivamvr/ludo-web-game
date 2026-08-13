@@ -178,6 +178,41 @@
   display: none;
 }
 
+/*
+ * Except while signing in, when the card is one line of text and the rest of
+ * the screen is empty. Something to look at beats an empty page, and it is
+ * gone by the time the controls arrive to need the room.
+ */
+@media (max-width: 759px) {
+  /* Nothing is waiting below to be reached, so what there is sits in the middle
+     of the screen rather than hanging from the top of it. */
+  .home--waiting .home__inner {
+    justify-content: center;
+  }
+
+  .home--waiting .home__art {
+    display: block;
+    width: min(360px, 82vw);
+    height: auto;
+    margin-top: clamp(10px, 3vh, 28px);
+    filter: drop-shadow(0 18px 34px rgb(0 0 0 / 0.45));
+    animation: home-art-in 0.5s ease both;
+  }
+}
+
+@keyframes home-art-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home--waiting .home__art {
+    animation: none;
+  }
+}
+
 .home__sparkle {
   position: absolute;
   color: #ffd77a;
@@ -662,9 +697,6 @@
   .home__mark {
     flex: none;
   }
-
-  /* With the artwork under it the column has a top and a bottom, so it is hung
-     from the top of the window rather than floated in the middle of it. */
 
   .home__art {
     display: block;

@@ -40,6 +40,12 @@ export default function Home({
 
   const online = auth.configured && auth.uid !== null;
   const working = busy !== null;
+  /**
+   * Still signing in: the card holds one line of text and nothing else. That is
+   * the one moment a phone has room for the artwork, so it gets it — see
+   * .home--waiting.
+   */
+  const waiting = auth.configured && auth.uid === null && !auth.error;
 
   const create = async () => {
     if (!auth.uid) return;
@@ -94,7 +100,7 @@ export default function Home({
   };
 
   return (
-    <main className="home">
+    <main className={`home${waiting ? ' home--waiting' : ''}`}>
       {/* Two boards lying out of focus and a pair of dice, none of it
           interactive — the screen's backdrop, not its furniture. */}
       <div className="home__scene" aria-hidden="true">
@@ -106,7 +112,9 @@ export default function Home({
       </div>
 
       <div className="home__inner">
-        <div className="home__mark">
+        {/* --hero: this is the mark with the artwork under it, which the setup
+            screen's copy of this markup does not have. */}
+        <div className="home__mark home__mark--hero">
           <h1 className="home__title">
             <img className="home__logo" src={logo} alt="Ludo" />
           </h1>
