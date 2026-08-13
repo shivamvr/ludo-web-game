@@ -151,19 +151,23 @@ export default function GameView({
 
       {banner}
 
-      {/* The light around the board is the colour of whoever is to play — and
-          of the winner, once there is one. */}
-      <div
-        className="game__board"
-        style={{ '--ring': `var(--play-${player.color})` } as CSSProperties}
-      >
-        <Board
-          state={state}
-          legalMoves={movesForDie}
-          onTokenClick={(tokenId) => selectedDie !== null && onTokenClick(tokenId, selectedDie)}
-          onStep={() => sound.play('step')}
-          onArrive={() => setPlayed(state.version)}
-        />
+      {/* The stage takes whatever height the bar, the strip and the dice panel
+          leave, and the board is the largest square that fits inside it — see
+          Game.css. The light around it is the colour of whoever is to play, and
+          of the winner once there is one. */}
+      <div className="game__stage">
+        <div
+          className="game__board"
+          style={{ '--ring': `var(--play-${player.color})` } as CSSProperties}
+        >
+          <Board
+            state={state}
+            legalMoves={movesForDie}
+            onTokenClick={(tokenId) => selectedDie !== null && onTokenClick(tokenId, selectedDie)}
+            onStep={() => sound.play('step')}
+            onArrive={() => setPlayed(state.version)}
+          />
+        </div>
       </div>
 
       <DicePanel

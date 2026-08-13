@@ -35,7 +35,7 @@ body:has(.game) {
    is just a small board. */
 @media (min-width: 760px) {
   .game {
-    max-width: 720px;
+    max-width: 600px;
   }
 }
 
@@ -140,13 +140,30 @@ body:has(.game) {
 
 /* --- the board --- */
 
+/*
+ * The stage is whatever height is left once the bar, the strip and the dice
+ * panel have taken theirs, and the board is the largest square that fits in it.
+ *
+ * Measured rather than guessed: it used to reserve a fixed 190px for everything
+ * around the board, which was a little short on a desktop — where the strip is
+ * there as well — and the page scrolled by the difference. Asking the stage how
+ * big it actually is costs nothing and cannot drift, which matters because the
+ * strip grows a line whenever somebody is away.
+ */
+.game__stage {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  container-type: size;
+}
+
+/* A little inside the room it is given rather than filling it edge to edge, so
+   the ring has somewhere to glow and the panel below it has air. */
 .game__board {
   position: relative;
-  /* Keep the whole board on screen in portrait without scrolling. */
-  width: min(100%, 100dvh - 190px);
-  /* Takes the height left over after the bar, the strip and the dice panel, so
-     the board sits in the middle of it and the dice stay by the thumb. */
-  margin: auto;
+  width: min(100cqw, 92cqh);
+  aspect-ratio: 1;
 }
 
 /*
@@ -481,10 +498,19 @@ body:has(.end) {
 }
 
 @media (max-width: 700px) {
+  .game {
+    height: auto;
+  }
+  .game__stage {
+    min-height: 546px;
+  }
   .game__board {
     margin: 100px 0 40px 0;
   }
   .game__bar {
     padding-top: 24px;
+  }
+  .game__stage {
+    place-items: start;
   }
 }
