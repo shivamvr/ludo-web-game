@@ -10,6 +10,8 @@
    only the cards move, as on the end-of-game screen. */
 .room {
   position: relative;
+  /* vh first for anything too old to know what a dynamic viewport is. */
+  height: 100vh;
   height: 100dvh;
   overflow: hidden;
   font-family: Nunito, system-ui, sans-serif;

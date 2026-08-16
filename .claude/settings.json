@@ -107,7 +107,10 @@
       "Bash(node signing-in.mjs .)",
       "Bash(SKIP_PLAY=1 node game.mjs .)",
       "Bash(node ring.mjs .)",
-      "Bash(node over.mjs .)"
+      "Bash(node over.mjs .)",
+      "Bash(node fit.mjs \"C:\\\\\\\\Users\\\\\\\\shiva\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-shiva-OneDrive-Documents-dev-ludo\\\\\\\\d8a05daf-d72b-4a32-9825-ebf075e83c57\\\\\\\\scratchpad\")",
+      "Bash(node parts2.mjs)",
+      "Bash(curl -s \"http://localhost:5173/src/ui/Game.css\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\shiva\\Downloads"
