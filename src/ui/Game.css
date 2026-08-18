@@ -167,6 +167,21 @@ body:has(.game) {
   place-items: center;
 }
 
+/*
+ * On a phone the dice belong with the board rather than at the far end of the
+ * screen. The board stays in the middle of the space it is given; the panel is
+ * brought up from the bottom of the screen to sit 24px under it — see GameView,
+ * which measures how far that is.
+ *
+ * Moved rather than laid out: giving the space back in layout would grow the
+ * stage, which would resize the board, which would move the panel again.
+ */
+@media (max-width: 759px) {
+  .dice-panel {
+    transform: translateY(calc(-1 * var(--lift, 0px)));
+  }
+}
+
 .game__board {
   position: relative;
   /* Only until the first measurement lands, which is before the first paint. */

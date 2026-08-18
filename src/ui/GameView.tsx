@@ -23,9 +23,26 @@ import './Game.css';
  */
 const BOARD_SHARE = 0.92;
 
+/** What the dice panel is asked to sit under the board by, on a phone. */
+const PANEL_GAP = 24;
+
+/** The column's own gap, which is already part of the distance to the panel. */
+const COLUMN_GAP = 10;
+
+interface Stage {
+  /** The side of the largest square that fits the space left for the board. */
+  square: number;
+  /**
+   * How far the dice panel has to come up from the bottom of that space to sit
+   * PANEL_GAP under a centred board. A transform, not a margin: moving the
+   * panel in layout would give the space back to the stage, which would resize
+   * the board, which would move the panel again.
+   */
+  lift: number;
+}
+
 /**
- * The largest square that fits the space left for the board, measured rather
- * than reserved.
+ * The board's size, measured rather than reserved.
  *
  * The board has to fit inside whatever the bar, the strip and the dice panel
  * leave, on every phone, with or without the strip, and with the strip a line
@@ -34,8 +51,8 @@ const BOARD_SHARE = 0.92;
  * phone browser ignores — and a board with no width of its own covers the dice.
  * Asking the element how big it is works everywhere.
  */
-function useSquare(stage: React.RefObject<HTMLDivElement | null>): number | null {
-  const [size, setSize] = useState<number | null>(null);
+function useStage(stage: React.RefObject<HTMLDivElement | null>): Stage | null {
+  const [measured, setMeasured] = useState<Stage | null>(null);
 
   useLayoutEffect(() => {
     const element = stage.current;
@@ -43,7 +60,11 @@ function useSquare(stage: React.RefObject<HTMLDivElement | null>): number | null
 
     const measure = () => {
       const { width, height } = element.getBoundingClientRect();
-      setSize(Math.max(0, Math.floor(Math.min(width, height * BOARD_SHARE))));
+      const square = Math.max(0, Math.floor(Math.min(width, height * BOARD_SHARE)));
+      // The board is centred, so half the spare height falls under it. The
+      // panel comes up over that, less the gap the column already leaves.
+      const below = (height - square) / 2;
+      setMeasured({ square, lift: Math.max(0, Math.round(below - PANEL_GAP + COLUMN_GAP)) });
     };
     measure();
 
@@ -59,7 +80,7 @@ function useSquare(stage: React.RefObject<HTMLDivElement | null>): number | null
     return () => observer.disconnect();
   }, [stage]);
 
-  return size;
+  return measured;
 }
 
 /** Which sound, if any, a state transition should make. */
@@ -130,7 +151,7 @@ export default function GameView({
   const over = won || ended !== undefined;
 
   const stage = useRef<HTMLDivElement>(null);
-  const square = useSquare(stage);
+  const measured = useStage(stage);
 
   /**
    * Which held number the player is about to spend. Only the numbers that can
@@ -177,7 +198,11 @@ export default function GameView({
     : currentTurn(state);
 
   return (
-    <main className="game">
+    <main
+      className="game"
+      // Read by the phone layout to bring the dice panel up under the board.
+      style={{ '--lift': `${measured?.lift ?? 0}px` } as CSSProperties}
+    >
       <header className="game__bar">
         <Mark />
         <div className="game__actions">
@@ -210,7 +235,7 @@ export default function GameView({
           style={
             {
               '--ring': `var(--play-${player.color})`,
-              ...(square === null ? {} : { width: square }),
+              ...(measured === null ? {} : { width: measured.square }),
             } as CSSProperties
           }
         >
